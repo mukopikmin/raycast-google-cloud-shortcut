@@ -1,4 +1,6 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
+import { useEffect, useState } from "react";
+import { ProjectsClient } from "@google-cloud/resource-manager";
 
 type Service = {
   name: string;
@@ -133,17 +135,69 @@ const services: Service[] = [
   { name: "Budgets & Alerts", category: "Billing", url: "https://console.cloud.google.com/billing/budgets" },
 ];
 
+async function listProjects() {
+  const client = new ProjectsClient();
+
+  const projects: Project[] = [];
+  const iterable = client.searchProjectsAsync({});
+
+  for await (const project of iterable) {
+    projects.push({
+      id: project.projectId ?? "",
+      name: project.displayName ?? "",
+    });
+  }
+
+  return projects;
+}
+
+type Project = {
+  id: string;
+  name: string;
+};
+
 export default function Command() {
+  const [projects, setProjects] = useState<Project[] | undefined>();
+
+  useEffect(() => {
+    const fetch = async () => {
+      setProjects(await listProjects());
+    };
+
+    fetch();
+  }, []);
+
   return (
-    <List>
-      {services.map((item) => (
+    <List isLoading={projects === undefined}>
+      {projects?.map((project) => (
         <List.Item
+          key={project.id}
           icon={Icon.Bird}
-          title={item.name}
-          subtitle={item.category}
+          title={project.name}
+          subtitle={project.id}
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser url={item.url} />
+              <Action.Push title="Search Google Cloud Services" target={<ServiceList projectId={project.id} />} />
+            </ActionPanel>
+          }
+        />
+      ))}
+    </List>
+  );
+}
+
+function ServiceList(props: { projectId: string }) {
+  return (
+    <List>
+      {services.map((service) => (
+        <List.Item
+          key={service.url}
+          icon={Icon.Bird}
+          title={service.name}
+          subtitle={service.category}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser url={`${service.url}?project=${props.projectId}`} />
             </ActionPanel>
           }
         />
