@@ -168,6 +168,12 @@ async function cacheProjects(projects: Project[]) {
   await LocalStorage.setItem(CACHE_KEY_PROJECTS, JSON.stringify(projects));
 }
 
+async function updateProjects(callback: (projects: Project[]) => void) {
+  const fetchedProjects = await listProjects();
+  cacheProjects(fetchedProjects);
+  callback(fetchedProjects);
+}
+
 type Project = {
   id: string;
   name: string;
@@ -181,9 +187,7 @@ export default function Command() {
       const cachedProjects = await listCachedProjects();
 
       if (cachedProjects === undefined) {
-        const fetchedProjects = await listProjects();
-        setProjects(fetchedProjects);
-        cacheProjects(fetchedProjects);
+        updateProjects(setProjects);
       } else {
         setProjects(cachedProjects);
       }
@@ -207,6 +211,15 @@ export default function Command() {
           }
         />
       ))}
+      <List.Item
+        icon={Icon.Bird}
+        title="Update Google Cloud projects"
+        actions={
+          <ActionPanel>
+            <Action title="Update" onAction={() => updateProjects(setProjects)} />
+          </ActionPanel>
+        }
+      />
     </List>
   );
 }
