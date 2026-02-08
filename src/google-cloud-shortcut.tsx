@@ -15,7 +15,7 @@ export const Command = () => {
           subtitle={project.id}
           actions={
             <ActionPanel>
-              <Action.Push title="Search Google Cloud Services" target={<ServiceList projectId={project.id} />} />
+              <Action.Push title="Show Google Cloud Services" target={<ServiceList projectId={project.id} />} />
             </ActionPanel>
           }
         />
