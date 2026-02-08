@@ -8,7 +8,7 @@ export type Project = {
   name: string;
 };
 
-export async function listProjects() {
+export const listProjects = async () => {
   const client = new ProjectsClient();
 
   const projects: Project[] = [];
@@ -22,9 +22,9 @@ export async function listProjects() {
   }
 
   return projects;
-}
+};
 
-export async function listCachedProjects() {
+export const listCachedProjects = async () => {
   const cachedProjects = await LocalStorage.getItem<string>(CACHE_KEY_PROJECTS);
 
   if (cachedProjects === undefined) {
@@ -32,8 +32,8 @@ export async function listCachedProjects() {
   }
 
   return JSON.parse(cachedProjects) as Project[];
-}
+};
 
-export async function cacheProjects(projects: Project[]) {
+export const cacheProjects = async (projects: Project[]) => {
   await LocalStorage.setItem(CACHE_KEY_PROJECTS, JSON.stringify(projects));
-}
+};

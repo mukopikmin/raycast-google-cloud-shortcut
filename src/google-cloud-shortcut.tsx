@@ -2,7 +2,7 @@ import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { ServiceList } from "./service-list";
 import { useProjects } from "./use-projects";
 
-export default function Command() {
+export const Command = () => {
   const { projects, isLoading, updateProjects } = useProjects();
 
   return (
@@ -31,4 +31,6 @@ export default function Command() {
       />
     </List>
   );
-}
+};
+
+export default Command;

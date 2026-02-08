@@ -1,7 +1,11 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { services } from "./services";
 
-export function ServiceList(props: { projectId: string }) {
+type Props = {
+  projectId: string;
+};
+
+export const ServiceList = (props: Props) => {
   return (
     <List>
       {services.map((service) => (
@@ -19,4 +23,4 @@ export function ServiceList(props: { projectId: string }) {
       ))}
     </List>
   );
-}
+};

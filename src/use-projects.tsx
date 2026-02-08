@@ -13,7 +13,7 @@ type UseProjectsResult =
       updateProjects: () => void;
     };
 
-export function useProjects(): UseProjectsResult {
+export const useProjects = (): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();
   const updateProjects = async () => {
     const fetchedProjects = await listProjects();
@@ -46,4 +46,4 @@ export function useProjects(): UseProjectsResult {
         updateProjects,
         isLoading: false,
       };
-}
+};
