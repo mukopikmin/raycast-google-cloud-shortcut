@@ -10,7 +10,7 @@ export const Command = () => {
       {projects?.map((project) => (
         <List.Item
           key={project.id}
-          icon={Icon.Bird}
+          icon={Icon.Cloud}
           title={project.name}
           subtitle={project.id}
           actions={
@@ -21,7 +21,7 @@ export const Command = () => {
         />
       ))}
       <List.Item
-        icon={Icon.Bird}
+        icon={Icon.CircleProgress}
         title="Update Google Cloud projects"
         actions={
           <ActionPanel>

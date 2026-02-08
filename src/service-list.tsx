@@ -11,7 +11,7 @@ export const ServiceList = (props: Props) => {
       {services.map((service) => (
         <List.Item
           key={service.url}
-          icon={Icon.Bird}
+          icon={Icon.ComputerChip}
           title={service.name}
           subtitle={service.category}
           actions={
