@@ -37,9 +37,3 @@ export async function listCachedProjects() {
 export async function cacheProjects(projects: Project[]) {
   await LocalStorage.setItem(CACHE_KEY_PROJECTS, JSON.stringify(projects));
 }
-
-export async function updateProjects(callback: (projects: Project[]) => void) {
-  const fetchedProjects = await listProjects();
-  cacheProjects(fetchedProjects);
-  callback(fetchedProjects);
-}
