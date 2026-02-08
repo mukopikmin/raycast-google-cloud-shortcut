@@ -4,7 +4,7 @@
   "title": "Google Cloud Shortcut",
   "description": "Open the Google Cloud service console quickly. ",
   "icon": "extension-icon.png",
-  "author": "yusuke_mukai",
+  "author": "mukopikmin",
   "platforms": [
     "macOS",
     "Windows"
