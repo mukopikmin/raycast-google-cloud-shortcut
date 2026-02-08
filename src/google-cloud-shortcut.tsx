@@ -1,6 +1,7 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { ProjectsClient } from "@google-cloud/resource-manager";
+import { LocalStorage } from "@raycast/api";
 
 type Service = {
   name: string;
@@ -151,6 +152,22 @@ async function listProjects() {
   return projects;
 }
 
+const CACHE_KEY_PROJECTS = "projects";
+
+async function listCachedProjects() {
+  const cachedProjects = await LocalStorage.getItem<string>(CACHE_KEY_PROJECTS);
+
+  if (cachedProjects === undefined) {
+    return undefined;
+  }
+
+  return JSON.parse(cachedProjects) as Project[];
+}
+
+async function cacheProjects(projects: Project[]) {
+  await LocalStorage.setItem(CACHE_KEY_PROJECTS, JSON.stringify(projects));
+}
+
 type Project = {
   id: string;
   name: string;
@@ -161,7 +178,15 @@ export default function Command() {
 
   useEffect(() => {
     const fetch = async () => {
-      setProjects(await listProjects());
+      const cachedProjects = await listCachedProjects();
+
+      if (cachedProjects === undefined) {
+        const fetchedProjects = await listProjects();
+        setProjects(fetchedProjects);
+        cacheProjects(fetchedProjects);
+      } else {
+        setProjects(cachedProjects);
+      }
     };
 
     fetch();
