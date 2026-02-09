@@ -1,4 +1,4 @@
-type Service = {
+export type Service = {
   name: string;
   category: Category;
   url: string;

@@ -3,14 +3,14 @@ import { LocalStorage } from "@raycast/api";
 
 const CACHE_KEY_PROJECTS = "projects";
 
+const client = new ProjectsClient();
+
 export type Project = {
   id: string;
   name: string;
 };
 
 export const listProjects = async () => {
-  const client = new ProjectsClient();
-
   const projects: Project[] = [];
   const iterable = client.searchProjectsAsync({});
 
