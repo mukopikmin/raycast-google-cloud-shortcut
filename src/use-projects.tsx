@@ -18,6 +18,7 @@ type UpdateProjectResultLoaded = {
 export const useProjects = (): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();
   const updateProjects = async () => {
+    setProjects(undefined);
     const fetchedProjects = await listProjects();
     cacheProjects(fetchedProjects);
     setProjects(fetchedProjects);

@@ -4,7 +4,7 @@ import { useProjects } from "./use-projects";
 
 export const Command = () => {
   const { projects, isLoading, updateProjects } = useProjects();
-
+  console.log({ isLoading });
   return (
     <List isLoading={isLoading}>
       {projects?.map((project) => (
@@ -22,10 +22,10 @@ export const Command = () => {
       ))}
       <List.Item
         icon={Icon.CircleProgress}
-        title="Update Google Cloud projects"
+        title={isLoading ? "Updating Projects ..." : "Update Projects"}
         actions={
           <ActionPanel>
-            <Action title="Update" onAction={updateProjects} />
+            <Action title="Update Projects" onAction={updateProjects} />
           </ActionPanel>
         }
       />
