@@ -1,4 +1,4 @@
-import { ProjectList } from "./project-list";
+import { ProjectList } from "./project/project-list";
 
 export const Command = () => {
   return <ProjectList />;

@@ -1,5 +1,5 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
-import { ServiceList } from "./service-list";
+import { ServiceList } from "../service/service-list";
 import { useProjects } from "./use-projects";
 
 export const ProjectList = () => {
