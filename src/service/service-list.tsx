@@ -19,7 +19,7 @@ export const ServiceList = (props: Props) => {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={`${service.url}?project=${props.projectId}`} />
-              {detectServiceAction(service, props.projectId)}
+              <ServiceDetailAction service={service} projectId={props.projectId} />
             </ActionPanel>
           }
         />
@@ -28,12 +28,19 @@ export const ServiceList = (props: Props) => {
   );
 };
 
-export const detectServiceAction = (service: Service, projectId: string) => {
+type DetectServiceActionProps = {
+  service: Service;
+  projectId: string;
+};
+
+export const ServiceDetailAction = (props: DetectServiceActionProps) => {
+  const { service, projectId } = props;
+
   switch (service.name) {
     case "Cloud Run":
-      return <Action.Push title="Show Cloud Run Resources" target={<RunList projectId={projectId} />} />;
+      return <Action.Push title={`Show ${service.name} Resources`} target={<RunList projectId={projectId} />} />;
     case "Cloud SQL":
-      return <Action.Push title="Show Cloud SQL Resources" target={<SqlList projectId={projectId} />} />;
+      return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
 
     default:
       return <></>;
