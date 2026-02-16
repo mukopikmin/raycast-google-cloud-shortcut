@@ -1,5 +1,5 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
-import { Service, services } from "./service";
+import { Service, ServiceName, services } from "./service";
 import { RunList } from "../run/run-list";
 import { SqlList } from "../sql/list";
 import { StorageBucketList } from "../storage/list";
@@ -38,7 +38,7 @@ type DetectServiceActionProps = {
 export const ServiceDetailAction = (props: DetectServiceActionProps) => {
   const { service, projectId } = props;
 
-  switch (service.name) {
+  switch (service.name as ServiceName) {
     case "Cloud Run":
       return <Action.Push title={`Show ${service.name} Resources`} target={<RunList projectId={projectId} />} />;
     case "Cloud SQL":
