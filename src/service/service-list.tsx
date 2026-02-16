@@ -2,6 +2,7 @@ import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { Service, services } from "./service";
 import { RunList } from "../run/run-list";
 import { SqlList } from "../sql/list";
+import { StorageBucketList } from "../storage/list";
 
 type Props = {
   projectId: string;
@@ -43,6 +44,10 @@ export const ServiceDetailAction = (props: DetectServiceActionProps) => {
       return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
     case "AlloyDB":
       return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
+    case "Cloud Storage":
+      return (
+        <Action.Push title={`Show ${service.name} Resources`} target={<StorageBucketList projectId={projectId} />} />
+      );
 
     default:
       return <></>;
