@@ -11,7 +11,13 @@ export const SqlList = (props: Props) => {
   return (
     <List isLoading={isLoading}>
       {sqls?.map((sql) => (
-        <List.Item key={sql.id} id={sql.id} icon={Icon.ComputerChip} title={sql.id} subtitle={sql.region} />
+        <List.Item
+          key={sql.id}
+          id={sql.id}
+          icon={Icon.ComputerChip}
+          title={sql.id}
+          subtitle={`${sql.region} ${sql.state}`}
+        />
       ))}
     </List>
   );
