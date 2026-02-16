@@ -31,6 +31,7 @@ export const listStorageBuckets = async (projectId: string): Promise<StorageBuck
 
   const body = (await response.json()) as StorageBucketResponse;
   return body.items.map((item) => ({
+    id: item.id,
     name: item.name,
     location: item.location,
   }));
