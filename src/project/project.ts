@@ -24,7 +24,7 @@ type ProjectResponse = {
 export const listProjects = async () => {
   const googleApi = useGoogleApi();
   const response = await fetch("https://cloudresourcemanager.googleapis.com/v1/projects", {
-    headers: { Authorization: `Bearer ${googleApi.accesToken}` },
+    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
   });
 
   if (!response.ok) {

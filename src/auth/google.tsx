@@ -4,7 +4,7 @@ const OAUTH_CLIENT_ID = "943687027492-ljl37fkhv85e5h6uuevj16dvq4n721ga.apps.goog
 
 type AuthorizedGoogleApiClient = {
   authorized: true;
-  accesToken: string;
+  accessToken: string;
 };
 
 type UnauthorizedGoogleApiClient = {
@@ -25,7 +25,7 @@ const google = OAuthService.google({
   onAuthorize: ({ token }) => {
     googleApi = {
       authorized: true,
-      accesToken: token,
+      accessToken: token,
     };
   },
 });

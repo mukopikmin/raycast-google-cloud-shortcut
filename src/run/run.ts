@@ -21,7 +21,7 @@ type RunServicesResponse = {
 export const listCloudRuns = async (projectId: string): Promise<Run[]> => {
   const googleApi = useGoogleApi();
   const response = await fetch(`https://run.googleapis.com/v2/projects/${projectId}/locations/-/services`, {
-    headers: { Authorization: `Bearer ${googleApi.accesToken}` },
+    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
   });
 
   if (!response.ok) {

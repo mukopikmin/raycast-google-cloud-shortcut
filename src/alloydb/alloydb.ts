@@ -22,7 +22,7 @@ type AlloyDbClustersResponse = {
 export const listAlloyDbClusters = async (projectId: string): Promise<AlloyDbCluster[]> => {
   const googleApi = useGoogleApi();
   const response = await fetch(`https://alloydb.googleapis.com/v1/projects/${projectId}/locations/-/clusters`, {
-    headers: { Authorization: `Bearer ${googleApi.accesToken}` },
+    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
   });
 
   if (!response.ok) {

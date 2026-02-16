@@ -22,7 +22,7 @@ type SqlsResponse = {
 export const listCloudSqls = async (projectId: string): Promise<Sql[]> => {
   const googleApi = useGoogleApi();
   const response = await fetch(`https://sqladmin.googleapis.com/sql/v1beta4/projects/${projectId}/instances`, {
-    headers: { Authorization: `Bearer ${googleApi.accesToken}` },
+    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
   });
 
   if (!response.ok) {

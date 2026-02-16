@@ -17,7 +17,7 @@ export const listTasksQueues = async (projectId: string): Promise<TasksQueue[]> 
   const googleApi = useGoogleApi();
   const response = await fetch(`https://cloudtasks.googleapis.com/v2/projects/${projectId}/locations/-/queues`, {
     headers: {
-      Authorization: `Bearer ${googleApi.accesToken}`,
+      Authorization: `Bearer ${googleApi.accessToken}`,
     },
   });
 

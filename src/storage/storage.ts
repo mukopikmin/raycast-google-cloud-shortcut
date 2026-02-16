@@ -21,7 +21,7 @@ export const listStorageBuckets = async (projectId: string): Promise<StorageBuck
   const googleApi = useGoogleApi();
   const response = await fetch(`https://www.googleapis.com/storage/v1/b?project=${projectId}`, {
     headers: {
-      Authorization: `Bearer ${googleApi.accesToken}`,
+      Authorization: `Bearer ${googleApi.accessToken}`,
     },
   });
 
