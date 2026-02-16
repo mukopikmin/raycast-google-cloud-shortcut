@@ -1,27 +1,25 @@
 import { Action, ActionPanel, List } from "@raycast/api";
-import { useTasksLocations } from "./use-tasks-location";
 import { TasksQueueList } from "./list";
+import { regions } from "../service/region";
 
 type Props = {
   projectId: string;
 };
 
 export const TasksLocationList = (props: Props) => {
-  const { locations, isLoading } = useTasksLocations(props.projectId);
-  console.log(locations);
   return (
-    <List isLoading={isLoading}>
-      {locations?.map((location) => (
+    <List>
+      {regions?.map((region) => (
         <List.Item
-          key={location.id}
-          id={location.id}
-          title={location.id}
-          subtitle={location.id}
+          key={region.id}
+          id={region.id}
+          title={region.name}
+          subtitle={region.id}
           actions={
             <ActionPanel>
               <Action.Push
-                title={`Show ${location.id} Resources`}
-                target={<TasksQueueList projectId={props.projectId} locationId={location.id} />}
+                title={`Show Resources in ${region.id}`}
+                target={<TasksQueueList projectId={props.projectId} locationId={region.id} />}
               />
             </ActionPanel>
           }

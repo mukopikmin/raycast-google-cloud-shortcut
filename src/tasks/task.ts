@@ -7,41 +7,11 @@ export type TasksQueue = {
   url: string;
 };
 
-export type TasksLocation = {
-  id: string;
-};
-
 type TasksQueuesResponse = {
   queues: {
     name: string;
     state: string;
   }[];
-};
-
-type TasksLocationsResponse = {
-  locations: {
-    locationId: string;
-  }[];
-};
-
-export const listLocations = async (projectId: string): Promise<TasksLocation[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://cloudtasks.googleapis.com/v2beta3/projects/${projectId}/locations`, {
-    headers: {
-      Authorization: `Bearer ${googleApi.accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Tasks locations: ${response.statusText}`);
-  }
-
-  const data = (await response.json()) as TasksLocationsResponse;
-
-  console.log(data);
-  return data.locations.map((loc) => ({
-    id: loc.locationId,
-  }));
 };
 
 export const listTasksQueues = async (projectId: string, locationId: string): Promise<TasksQueue[]> => {
