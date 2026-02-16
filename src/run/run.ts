@@ -5,6 +5,7 @@ export type Run = {
   name: string;
   region: string;
   type: RunType;
+  url: string;
 };
 
 type RunType = "services" | "jobs" | "worker pools";
@@ -39,6 +40,7 @@ export const listCloudRuns = async (projectId: string): Promise<Run[]> => {
       name,
       region,
       type: "services" as RunType,
+      url: `https://console.cloud.google.com/run/detail/${region}/${name}?project=${projectId}`,
     };
   });
 

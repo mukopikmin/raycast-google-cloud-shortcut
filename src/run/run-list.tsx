@@ -1,4 +1,4 @@
-import { Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useRuns } from "./use-runs";
 
 type Props = {
@@ -10,9 +10,22 @@ export const RunList = (props: Props) => {
 
   return (
     <List isLoading={isLoading}>
-      {runs?.map((run) => (
-        <List.Item key={run.id} id={run.id} icon={Icon.ComputerChip} title={run.name} subtitle={run.region} />
-      ))}
+      {runs?.map((run) => {
+        return (
+          <List.Item
+            key={run.id}
+            id={run.id}
+            icon={Icon.ComputerChip}
+            title={run.name}
+            subtitle={run.region}
+            actions={
+              <ActionPanel>
+                <Action.OpenInBrowser url={run.url} />
+              </ActionPanel>
+            }
+          />
+        );
+      })}
     </List>
   );
 };
