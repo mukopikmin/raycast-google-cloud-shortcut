@@ -1,4 +1,4 @@
-import { List } from "@raycast/api";
+import { Action, ActionPanel, List } from "@raycast/api";
 import { useStorage } from "./use-storage";
 
 type Props = {
@@ -11,7 +11,17 @@ export const StorageBucketList = (props: Props) => {
   return (
     <List isLoading={isLoading}>
       {buckets?.map((bucket) => (
-        <List.Item key={bucket.id} id={bucket.id} title={bucket.name} subtitle={bucket.location} />
+        <List.Item
+          key={bucket.id}
+          id={bucket.id}
+          title={bucket.name}
+          subtitle={bucket.location}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser url={bucket.url} />
+            </ActionPanel>
+          }
+        />
       ))}
     </List>
   );

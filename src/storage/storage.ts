@@ -4,6 +4,7 @@ export type StorageBucket = {
   id: string;
   name: string;
   location: string;
+  url: string;
 };
 
 type StorageBucketResponse = {
@@ -34,5 +35,6 @@ export const listStorageBuckets = async (projectId: string): Promise<StorageBuck
     id: item.id,
     name: item.name,
     location: item.location,
+    url: `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
   }));
 };
