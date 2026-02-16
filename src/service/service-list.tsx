@@ -3,7 +3,7 @@ import { Service, services } from "./service";
 import { RunList } from "../run/run-list";
 import { SqlList } from "../sql/list";
 import { StorageBucketList } from "../storage/list";
-import { TasksQueueList } from "../tasks/list";
+import { TasksLocationList } from "../tasks/location-list";
 
 type Props = {
   projectId: string;
@@ -49,9 +49,10 @@ export const ServiceDetailAction = (props: DetectServiceActionProps) => {
       return (
         <Action.Push title={`Show ${service.name} Resources`} target={<StorageBucketList projectId={projectId} />} />
       );
-    case "Cloud Tasks":
-      return <Action.Push title={`Show ${service.name} Resources`} target={<TasksQueueList projectId={projectId} />} />;
-
+    case "Tasks":
+      return (
+        <Action.Push title={`Show ${service.name} Resources`} target={<TasksLocationList projectId={projectId} />} />
+      );
     default:
       return <></>;
   }
