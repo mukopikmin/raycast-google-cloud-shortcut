@@ -16,6 +16,9 @@ type SqlsResponse = {
   }[];
 };
 
+/**
+ * @see https://docs.cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/instances/list
+ */
 export const listCloudSqls = async (projectId: string): Promise<Sql[]> => {
   const googleApi = useGoogleApi();
   const response = await fetch(`https://sqladmin.googleapis.com/sql/v1beta4/projects/${projectId}/instances`, {

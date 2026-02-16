@@ -41,6 +41,8 @@ export const ServiceDetailAction = (props: DetectServiceActionProps) => {
       return <Action.Push title={`Show ${service.name} Resources`} target={<RunList projectId={projectId} />} />;
     case "Cloud SQL":
       return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
+    case "AlloyDB":
+      return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
 
     default:
       return <></>;
