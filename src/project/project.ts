@@ -1,27 +1,44 @@
-import { ProjectsClient } from "@google-cloud/resource-manager";
 import { LocalStorage } from "@raycast/api";
+import { useGoogleApi } from "../auth/google";
 
 const CACHE_KEY_PROJECTS = "projects";
-
-const client = new ProjectsClient();
 
 export type Project = {
   id: string;
   name: string;
 };
 
-export const listProjects = async () => {
-  const projects: Project[] = [];
-  const iterable = client.searchProjectsAsync({});
+type ProjectResponse = {
+  projects: Array<{
+    projectNumber: string;
+    projectId: string;
+    lifecycleState: string;
+    name: string;
+    createTime: string;
+    labels?: {
+      firebase: string;
+    };
+  }>;
+};
 
-  for await (const project of iterable) {
-    projects.push({
-      id: project.projectId ?? "",
-      name: project.displayName ?? "",
-    });
+export const listProjects = async () => {
+  const googleApi = useGoogleApi();
+  const response = await fetch("https://cloudresourcemanager.googleapis.com/v1/projects", {
+    headers: { Authorization: `Bearer ${googleApi.accesToken}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Cloud Run services: ${response.statusText}`);
   }
 
-  return projects;
+  const body = (await response.json()) as ProjectResponse;
+
+  return body.projects.map((project) => {
+    return {
+      id: project.projectId,
+      name: project.name,
+    };
+  });
 };
 
 export const listCachedProjects = async () => {

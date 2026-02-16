@@ -19,13 +19,14 @@ export const useProjects = (): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();
   const updateProjects = async () => {
     setProjects(undefined);
+
     const fetchedProjects = await listProjects();
     cacheProjects(fetchedProjects);
     setProjects(fetchedProjects);
   };
 
   useEffect(() => {
-    const fetch = async () => {
+    const load = async () => {
       const cachedProjects = await listCachedProjects();
 
       if (cachedProjects === undefined) {
@@ -35,7 +36,7 @@ export const useProjects = (): UseProjectsResult => {
       }
     };
 
-    fetch();
+    load();
   }, []);
 
   return projects === undefined

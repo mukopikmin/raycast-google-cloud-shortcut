@@ -23,8 +23,6 @@
     }
   ],
   "dependencies": {
-    "@google-cloud/resource-manager": "^6.2.1",
-    "@google-cloud/run": "^3.2.0",
     "@raycast/api": "^1.104.4",
     "@raycast/utils": "^1.17.0"
   },
