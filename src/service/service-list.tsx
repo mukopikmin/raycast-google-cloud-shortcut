@@ -4,6 +4,7 @@ import { RunList } from "../run/run-list";
 import { SqlList } from "../sql/list";
 import { StorageBucketList } from "../storage/list";
 import { TasksLocationList } from "../tasks/location-list";
+import { SecretManagerList } from "../secret-manager/list";
 
 type Props = {
   projectId: string;
@@ -37,22 +38,21 @@ type DetectServiceActionProps = {
 
 export const ServiceDetailAction = (props: DetectServiceActionProps) => {
   const { service, projectId } = props;
+  const title = `Show ${service.name} Resources`;
 
   switch (service.name as ServiceName) {
     case "Cloud Run":
-      return <Action.Push title={`Show ${service.name} Resources`} target={<RunList projectId={projectId} />} />;
+      return <Action.Push title={title} target={<RunList projectId={projectId} />} />;
     case "Cloud SQL":
-      return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
+      return <Action.Push title={title} target={<SqlList projectId={projectId} />} />;
     case "AlloyDB":
-      return <Action.Push title={`Show ${service.name} Resources`} target={<SqlList projectId={projectId} />} />;
+      return <Action.Push title={title} target={<SqlList projectId={projectId} />} />;
     case "Cloud Storage":
-      return (
-        <Action.Push title={`Show ${service.name} Resources`} target={<StorageBucketList projectId={projectId} />} />
-      );
+      return <Action.Push title={title} target={<StorageBucketList projectId={projectId} />} />;
     case "Tasks":
-      return (
-        <Action.Push title={`Show ${service.name} Resources`} target={<TasksLocationList projectId={projectId} />} />
-      );
+      return <Action.Push title={title} target={<TasksLocationList projectId={projectId} />} />;
+    case "Secret Manager":
+      return <Action.Push title={title} target={<SecretManagerList projectId={projectId} />} />;
     default:
       return <></>;
   }
