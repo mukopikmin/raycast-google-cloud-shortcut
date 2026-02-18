@@ -1,4 +1,4 @@
-import { List } from "@raycast/api";
+import { Icon, List } from "@raycast/api";
 import { useSecretManager } from "./use-secret-manager";
 
 type Props = {
@@ -11,7 +11,7 @@ export const SecretManagerList = (props: Props) => {
   return (
     <List isLoading={isLoading}>
       {secrets?.map((secret) => (
-        <List.Item key={secret.id} id={secret.id} title={secret.name} />
+        <List.Item key={secret.id} id={secret.id} title={secret.name} icon={Icon.Box} />
       ))}
     </List>
   );

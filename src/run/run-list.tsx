@@ -15,7 +15,7 @@ export const RunList = (props: Props) => {
           <List.Item
             key={run.id}
             id={run.id}
-            icon={Icon.ComputerChip}
+            icon={Icon.Box}
             title={run.name}
             subtitle={run.region}
             actions={

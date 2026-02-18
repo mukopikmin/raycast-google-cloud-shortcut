@@ -14,7 +14,7 @@ export const SqlList = (props: Props) => {
         <List.Item
           key={cluster.id}
           id={cluster.id}
-          icon={Icon.ComputerChip}
+          icon={Icon.Box}
           title={cluster.name}
           subtitle={`${cluster.region} ${cluster.state}`}
         />

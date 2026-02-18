@@ -1,4 +1,4 @@
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useStorage } from "./use-storage";
 
 type Props = {
@@ -16,6 +16,7 @@ export const StorageBucketList = (props: Props) => {
           id={bucket.id}
           title={bucket.name}
           subtitle={bucket.location}
+          icon={Icon.Box}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={bucket.url} />

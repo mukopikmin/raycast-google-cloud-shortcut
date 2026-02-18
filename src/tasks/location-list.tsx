@@ -1,4 +1,4 @@
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { TasksQueueList } from "./list";
 import { regions } from "../service/region";
 
@@ -15,6 +15,7 @@ export const TasksLocationList = (props: Props) => {
           id={region.id}
           title={region.name}
           subtitle={region.id}
+          icon={Icon.Map}
           actions={
             <ActionPanel>
               <Action.Push
