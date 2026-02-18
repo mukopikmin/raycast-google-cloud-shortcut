@@ -5,6 +5,7 @@ export type AlloyDbCluster = {
   name: string;
   region: string;
   state: string;
+  url: string;
 };
 
 type AlloyDbClustersResponse = {
@@ -40,6 +41,7 @@ export const listAlloyDbClusters = async (projectId: string): Promise<AlloyDbClu
       name: cluster.displayName,
       region,
       state: cluster.state,
+      url: `https://console.cloud.google.com/alloydb/clusters/${region}/${cluster.displayName}?project=${projectId}`,
     };
   });
 

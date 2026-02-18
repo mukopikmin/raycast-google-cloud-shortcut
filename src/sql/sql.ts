@@ -4,6 +4,7 @@ export type Sql = {
   id: string;
   region: string;
   state: string;
+  url: string;
 };
 
 type SqlsResponse = {
@@ -35,6 +36,7 @@ export const listCloudSqls = async (projectId: string): Promise<Sql[]> => {
       id: sql.name,
       region: sql.region,
       state: sql.state,
+      url: `https://console.cloud.google.com/sql/instances/${sql.name}/overview?project=${projectId}`,
     };
   });
 
