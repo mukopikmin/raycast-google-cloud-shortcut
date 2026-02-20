@@ -88,25 +88,17 @@ export const searchDisabledServiceNames = [
 
 export type ServiceName = SearchEnabledServiceName | SearchDisabledServiceName;
 
-export type SearchEnabledServiceName =
-  (typeof serchEnabledSeriviceNames)[number];
+export type SearchEnabledServiceName = (typeof serchEnabledSeriviceNames)[number];
 
-export const isSearchEnabledService = (
-  value: Service,
-): value is SearchEnabledService => {
-  return serchEnabledSeriviceNames.includes(
-    value.name as SearchEnabledServiceName,
-  );
+export const isSearchEnabledService = (value: Service): value is SearchEnabledService => {
+  return serchEnabledSeriviceNames.includes(value.name as SearchEnabledServiceName);
 };
 
-export const isSearchEnabledServiceName = (
-  value: ServiceName,
-): value is SearchEnabledServiceName => {
+export const isSearchEnabledServiceName = (value: ServiceName): value is SearchEnabledServiceName => {
   return serchEnabledSeriviceNames.includes(value as SearchEnabledServiceName);
 };
 
-export type SearchDisabledServiceName =
-  (typeof searchDisabledServiceNames)[number];
+export type SearchDisabledServiceName = (typeof searchDisabledServiceNames)[number];
 
 type Category =
   | "Compute"

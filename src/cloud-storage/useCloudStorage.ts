@@ -7,36 +7,30 @@ type UseCloudStorageResult =
   | {
       buckets: CloudStorageBucket[];
       isLoading: false;
-      error: undefined;
     }
   | {
       buckets: undefined;
       isLoading: true;
-      error: undefined;
     };
 
 export const useCloudStorage = (projectId: string): UseCloudStorageResult => {
   const { accessToken } = useGoogleApi();
-  const [buckets, setBuckets] = useState<CloudStorageBucket[] | undefined>(undefined);
+  const [buckets, setBuckets] = useState<CloudStorageBucket[] | undefined>();
 
   useEffect(() => {
-    const load = async () => {
-      const fetchedBuckets = await listCloudStorageBuckets(projectId, accessToken);
-      setBuckets(fetchedBuckets);
-    };
-
-    load();
+    (async () => {
+      const data = await listCloudStorageBuckets(projectId, accessToken);
+      setBuckets(data);
+    })();
   }, [projectId]);
 
   return buckets === undefined
     ? {
         buckets: undefined,
         isLoading: true,
-        error: undefined,
       }
     : {
         buckets,
         isLoading: false,
-        error: undefined,
       };
 };

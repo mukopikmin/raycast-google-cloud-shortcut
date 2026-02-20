@@ -7,36 +7,30 @@ type UseAlloyDbClustersResult =
   | {
       clusters: AlloyDbCluster[];
       isLoading: false;
-      error: undefined;
     }
   | {
       clusters: undefined;
       isLoading: true;
-      error: undefined;
     };
 
 export const useAlloyDbClusters = (projectId: string): UseAlloyDbClustersResult => {
   const { accessToken } = useGoogleApi();
-  const [clusters, setClusters] = useState<AlloyDbCluster[] | undefined>(undefined);
+  const [clusters, setClusters] = useState<AlloyDbCluster[] | undefined>();
 
   useEffect(() => {
-    const load = async () => {
-      const fetchedClusters = await listAlloyDbClusters(projectId, accessToken);
-      setClusters(fetchedClusters);
-    };
-
-    load();
+    (async () => {
+      const data = await listAlloyDbClusters(projectId, accessToken);
+      setClusters(data);
+    })();
   }, [projectId]);
 
   return clusters === undefined
     ? {
         clusters: undefined,
         isLoading: true,
-        error: undefined,
       }
     : {
         clusters,
         isLoading: false,
-        error: undefined,
       };
 };

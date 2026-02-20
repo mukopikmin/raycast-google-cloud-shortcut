@@ -7,32 +7,27 @@ type UseCloudTasksResult =
   | {
       queues: CloudTasksQueue[];
       isLoading: false;
-      error: undefined;
     }
-  | { queues: undefined; isLoading: true; error: undefined };
+  | { queues: undefined; isLoading: true };
 
 export const useCloudTasks = (projectId: string, locationId: string): UseCloudTasksResult => {
   const { accessToken } = useGoogleApi();
-  const [queues, setTasks] = useState<CloudTasksQueue[] | undefined>(undefined);
+  const [queues, setTasks] = useState<CloudTasksQueue[] | undefined>();
 
   useEffect(() => {
-    const load = async () => {
-      const fetchedTasks = await listCloudTasksQueues(projectId, locationId, accessToken);
-      setTasks(fetchedTasks);
-    };
-
-    load();
+    (async () => {
+      const data = await listCloudTasksQueues(projectId, locationId, accessToken);
+      setTasks(data);
+    })();
   }, [projectId, locationId]);
 
   return queues === undefined
     ? {
         queues: undefined,
         isLoading: true,
-        error: undefined,
       }
     : {
         queues,
         isLoading: false,
-        error: undefined,
       };
 };

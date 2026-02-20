@@ -7,36 +7,30 @@ type UseCloudSqlInstancesResult =
   | {
       cloudSqlInstances: CloudSqlInstance[];
       isLoading: false;
-      error: undefined;
     }
   | {
       cloudSqlInstances: undefined;
       isLoading: true;
-      error: undefined;
     };
 
 export const useCloudSqlInstances = (projectId: string): UseCloudSqlInstancesResult => {
   const { accessToken } = useGoogleApi();
-  const [cloudSqlInstances, setCloudSqlInstances] = useState<CloudSqlInstance[] | undefined>(undefined);
+  const [cloudSqlInstances, setCloudSqlInstances] = useState<CloudSqlInstance[] | undefined>();
 
   useEffect(() => {
-    const load = async () => {
-      const fetchedInstances = await listCloudSqlInstances(projectId, accessToken);
-      setCloudSqlInstances(fetchedInstances);
-    };
-
-    load();
+    (async () => {
+      const data = await listCloudSqlInstances(projectId, accessToken);
+      setCloudSqlInstances(data);
+    })();
   }, [projectId]);
 
   return cloudSqlInstances === undefined
     ? {
         cloudSqlInstances: undefined,
         isLoading: true,
-        error: undefined,
       }
     : {
         cloudSqlInstances,
         isLoading: false,
-        error: undefined,
       };
 };

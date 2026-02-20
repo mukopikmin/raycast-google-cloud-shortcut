@@ -9,10 +9,7 @@ type ServiceAccountListResponse = {
   }[];
 };
 
-export const fetchServiceAccounts = async (
-  projectId: string,
-  accessToken: string,
-): Promise<ServiceAccount[]> => {
+export const fetchServiceAccounts = async (projectId: string, accessToken: string): Promise<ServiceAccount[]> => {
   const data = await fetchGoogleApi<ServiceAccountListResponse>(
     `https://iam.googleapis.com/v1/projects/${projectId}/serviceAccounts`,
     accessToken,

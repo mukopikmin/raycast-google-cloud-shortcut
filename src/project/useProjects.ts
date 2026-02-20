@@ -29,7 +29,7 @@ export const useProjects = (): UseProjectsResult => {
   };
 
   useEffect(() => {
-    const load = async () => {
+    (async () => {
       const cachedProjects = await listCachedProjects();
 
       if (cachedProjects === undefined) {
@@ -37,9 +37,7 @@ export const useProjects = (): UseProjectsResult => {
       } else {
         setProjects(cachedProjects);
       }
-    };
-
-    load();
+    })();
   }, []);
 
   return projects === undefined

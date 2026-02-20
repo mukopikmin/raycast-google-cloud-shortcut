@@ -5,21 +5,17 @@ import { useGoogleApi } from "../auth/google";
 
 type UseServiceAccountResult =
   | {
-    serviceAccounts: ServiceAccount[];
-    isLoading: false;
-  }
+      serviceAccounts: ServiceAccount[];
+      isLoading: false;
+    }
   | {
-    serviceAccounts: undefined;
-    isLoading: true;
-  };
+      serviceAccounts: undefined;
+      isLoading: true;
+    };
 
-export const useServiceAccounts = (
-  projectId: string,
-): UseServiceAccountResult => {
+export const useServiceAccounts = (projectId: string): UseServiceAccountResult => {
   const { accessToken } = useGoogleApi();
-  const [serviceAccounts, setServiceAccounts] = useState<
-    ServiceAccount[] | undefined
-  >();
+  const [serviceAccounts, setServiceAccounts] = useState<ServiceAccount[] | undefined>();
 
   useEffect(() => {
     (async () => {
@@ -30,11 +26,11 @@ export const useServiceAccounts = (
 
   return serviceAccounts === undefined
     ? {
-      serviceAccounts: undefined,
-      isLoading: true,
-    }
+        serviceAccounts: undefined,
+        isLoading: true,
+      }
     : {
-      serviceAccounts,
-      isLoading: false,
-    };
+        serviceAccounts,
+        isLoading: false,
+      };
 };

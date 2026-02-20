@@ -7,36 +7,30 @@ type UseCloudRunsResult =
   | {
       runs: CloudRun[];
       isLoading: false;
-      error: undefined;
     }
   | {
       runs: undefined;
       isLoading: true;
-      error: undefined;
     };
 
 export const useCloudRuns = (projectId: string): UseCloudRunsResult => {
   const { accessToken } = useGoogleApi();
-  const [runs, setRuns] = useState<CloudRun[] | undefined>(undefined);
+  const [runs, setRuns] = useState<CloudRun[] | undefined>();
 
   useEffect(() => {
-    const load = async () => {
-      const fetchedRuns = await listCloudRuns(projectId, accessToken);
-      setRuns(fetchedRuns);
-    };
-
-    load();
+    (async () => {
+      const data = await listCloudRuns(projectId, accessToken);
+      setRuns(data);
+    })();
   }, [projectId]);
 
   return runs === undefined
     ? {
         runs: undefined,
         isLoading: true,
-        error: undefined,
       }
     : {
         runs,
         isLoading: false,
-        error: undefined,
       };
 };
