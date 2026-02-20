@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { TasksQueueList } from "./list";
+import { TasksQueueList } from "./TasksQueueList";
 import { regions } from "../service/region";
 
 type Props = {

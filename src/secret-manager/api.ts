@@ -1,14 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-
-export type SecretManagerSecret = {
-  id: string;
-  name: string;
-  url: string;
-};
-
-type SecretManagerSecretsResponse = {
-  secrets: { name: string }[];
-};
+import { SecretManagerSecret, SecretManagerSecretsResponse } from "./types";
 
 /**
  * @see https://docs.cloud.google.com/secret-manager/docs/reference/rest/v1beta1/projects.secrets/list

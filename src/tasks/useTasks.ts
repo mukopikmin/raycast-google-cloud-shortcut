@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listTasksQueues, TasksQueue } from "./task";
+import { listTasksQueues } from "./api";
+import { TasksQueue } from "./types";
 
 type UseTasksResult =
   | {

@@ -1,25 +1,25 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useAlloyDb } from "./use-alloydb";
+import { useSqls } from "./useSqls";
 
 type Props = {
   projectId: string;
 };
 
 export const SqlList = (props: Props) => {
-  const { clusters, isLoading } = useAlloyDb(props.projectId);
+  const { sqls, isLoading } = useSqls(props.projectId);
 
   return (
     <List isLoading={isLoading}>
-      {clusters?.map((cluster) => (
+      {sqls?.map((sql) => (
         <List.Item
-          key={cluster.id}
-          id={cluster.id}
+          key={sql.id}
+          id={sql.id}
           icon={Icon.Box}
-          title={cluster.name}
-          subtitle={`${cluster.region} ${cluster.state}`}
+          title={sql.id}
+          subtitle={`${sql.region} ${sql.state}`}
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser url={cluster.url} />
+              <Action.OpenInBrowser url={sql.url} />
             </ActionPanel>
           }
         />

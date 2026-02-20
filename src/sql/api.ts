@@ -1,21 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-
-export type Sql = {
-  id: string;
-  region: string;
-  state: string;
-  url: string;
-};
-
-type SqlsResponse = {
-  items: {
-    name: string;
-    region: string;
-    state: string;
-    databaseVersion: string;
-    instanceType: string;
-  }[];
-};
+import { Sql, SqlsResponse } from "./types";
 
 /**
  * @see https://docs.cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/instances/list

@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useSecretManager } from "./use-secret-manager";
+import { useSecretManager } from "./useSecretManager";
 
 type Props = {
   projectId: string;

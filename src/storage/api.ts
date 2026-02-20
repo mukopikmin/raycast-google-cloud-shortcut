@@ -1,19 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-
-export type StorageBucket = {
-  id: string;
-  name: string;
-  location: string;
-  url: string;
-};
-
-type StorageBucketResponse = {
-  items: {
-    id: string;
-    name: string;
-    location: string;
-  }[];
-};
+import { StorageBucket, StorageBucketResponse } from "./types";
 
 /**
  * @see https://docs.cloud.google.com/storage/docs/json_api/v1/buckets/list

@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useTasks } from "./use-tasks";
+import { useTasks } from "./useTasks";
 
 type Props = {
   projectId: string;

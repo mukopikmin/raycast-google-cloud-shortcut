@@ -1,18 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-
-export type TasksQueue = {
-  name: string;
-  region: string;
-  state: string;
-  url: string;
-};
-
-type TasksQueuesResponse = {
-  queues: {
-    name: string;
-    state: string;
-  }[];
-};
+import { TasksQueue, TasksQueuesResponse } from "./types";
 
 export const listTasksQueues = async (
   projectId: string,

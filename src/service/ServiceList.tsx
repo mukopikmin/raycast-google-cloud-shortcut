@@ -1,5 +1,5 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
-import { useServiceResource } from "./use-service-resource";
+import { useServiceResource } from "./useServiceResource";
 
 type Props = {
   projectId: string;

@@ -1,25 +1,8 @@
 import { LocalStorage } from "@raycast/api";
 import { fetchGoogleApi } from "../auth/api";
+import { Project, ProjectResponse } from "./types";
 
 const CACHE_KEY_PROJECTS = "projects";
-
-export type Project = {
-  id: string;
-  name: string;
-};
-
-type ProjectResponse = {
-  projects: Array<{
-    projectNumber: string;
-    projectId: string;
-    lifecycleState: string;
-    name: string;
-    createTime: string;
-    labels?: {
-      firebase: string;
-    };
-  }>;
-};
 
 export const listProjects = async (accessToken: string) => {
   const body = await fetchGoogleApi<ProjectResponse>(

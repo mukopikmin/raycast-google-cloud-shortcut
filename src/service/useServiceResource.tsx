@@ -1,10 +1,11 @@
 import { Action } from "@raycast/api";
-import { RunList } from "../run/run-list";
-import { SecretManagerList } from "../secret-manager/list";
+import { AlloyDbList } from "../alloydb/AlloyDbList";
+import { RunList } from "../run/RunList";
+import { SecretManagerList } from "../secret-manager/SecretManagerList";
 import { ServiceAccountList } from "../service-account/ServiceAccountList";
-import { SqlList } from "../sql/list";
-import { StorageBucketList } from "../storage/list";
-import { TasksLocationList } from "../tasks/location-list";
+import { SqlList } from "../sql/SqlList";
+import { StorageBucketList } from "../storage/StorageBucketList";
+import { TasksLocationList } from "../tasks/TasksLocationList";
 import { availableServices, isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./service";
 
 export type UserServiceResourceResult = {
@@ -17,7 +18,10 @@ type SearchableService = SearchEnabledService & {
   searchAction: React.ReactNode;
 };
 
-type NonSearchableService = SearchDisabledService & { keywords: string[]; isSearchEnabled: false };
+type NonSearchableService = SearchDisabledService & {
+  keywords: string[];
+  isSearchEnabled: false;
+};
 
 export const useServiceResource = (projectId: string): UserServiceResourceResult => {
   return {
@@ -46,7 +50,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<SqlList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<AlloyDbList projectId={projectId} />} />,
             };
           case "Cloud Storage":
             return {

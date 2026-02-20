@@ -1,40 +1,41 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listStorageBuckets, StorageBucket } from "./storage";
+import { listCloudRuns } from "./api";
+import { Run } from "./types";
 
-type UseStorageResult =
+type UseRunsResult =
   | {
-      buckets: StorageBucket[];
+      runs: Run[];
       isLoading: false;
       error: undefined;
     }
   | {
-      buckets: undefined;
+      runs: undefined;
       isLoading: true;
       error: undefined;
     };
 
-export const useStorage = (projectId: string): UseStorageResult => {
+export const useRuns = (projectId: string): UseRunsResult => {
   const { accessToken } = useGoogleApi();
-  const [buckets, setBuckets] = useState<StorageBucket[] | undefined>(undefined);
+  const [runs, setRuns] = useState<Run[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedBuckets = await listStorageBuckets(projectId, accessToken);
-      setBuckets(fetchedBuckets);
+      const fetchedRuns = await listCloudRuns(projectId, accessToken);
+      setRuns(fetchedRuns);
     };
 
     load();
   }, [projectId]);
 
-  return buckets === undefined
+  return runs === undefined
     ? {
-        buckets: undefined,
+        runs: undefined,
         isLoading: true,
         error: undefined,
       }
     : {
-        buckets,
+        runs,
         isLoading: false,
         error: undefined,
       };

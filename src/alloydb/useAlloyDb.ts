@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { AlloyDbCluster, listAlloyDbClusters } from "./alloydb";
+import { listAlloyDbClusters } from "./api";
+import { AlloyDbCluster } from "./types";
 
 type UseAlloyDbResult =
   | {

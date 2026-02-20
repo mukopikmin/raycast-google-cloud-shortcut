@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listSecretManagerSecrets, SecretManagerSecret } from "./secret-manager";
+import { listSecretManagerSecrets } from "./api";
+import { SecretManagerSecret } from "./types";
 
 type UseSecretManagerResult =
   | {
