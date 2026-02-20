@@ -88,17 +88,25 @@ export const searchDisabledServiceNames = [
 
 export type ServiceName = SearchEnabledServiceName | SearchDisabledServiceName;
 
-export type SearchEnabledServiceName = (typeof serchEnabledSeriviceNames)[number];
+export type SearchEnabledServiceName =
+  (typeof serchEnabledSeriviceNames)[number];
 
-export const isSearchEnabledService = (value: Service): value is SearchEnabledService => {
-  return serchEnabledSeriviceNames.includes(value.name as SearchEnabledServiceName);
+export const isSearchEnabledService = (
+  value: Service,
+): value is SearchEnabledService => {
+  return serchEnabledSeriviceNames.includes(
+    value.name as SearchEnabledServiceName,
+  );
 };
 
-export const isSearchEnabledServiceName = (value: ServiceName): value is SearchEnabledServiceName => {
+export const isSearchEnabledServiceName = (
+  value: ServiceName,
+): value is SearchEnabledServiceName => {
   return serchEnabledSeriviceNames.includes(value as SearchEnabledServiceName);
 };
 
-export type SearchDisabledServiceName = (typeof searchDisabledServiceNames)[number];
+export type SearchDisabledServiceName =
+  (typeof searchDisabledServiceNames)[number];
 
 type Category =
   | "Compute"
@@ -192,6 +200,11 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/kubernetes/list",
   },
   {
+    name: "Cloud Run",
+    category: "Compute",
+    url: "https://console.cloud.google.com/run",
+  },
+  {
     name: "Cloud Functions",
     category: "Compute",
     url: "https://console.cloud.google.com/functions",
@@ -201,7 +214,11 @@ export const availableServices: Service[] = [
     category: "Compute",
     url: "https://console.cloud.google.com/appengine",
   },
-  { name: "Batch", category: "Compute", url: "https://console.cloud.google.com/batch/jobs" },
+  {
+    name: "Batch",
+    category: "Compute",
+    url: "https://console.cloud.google.com/batch/jobs",
+  },
 
   {
     name: "Cloud Storage",
@@ -437,7 +454,11 @@ export const availableServices: Service[] = [
     category: "Billing",
     url: "https://console.cloud.google.com/apis/credentials",
   },
-  { name: "Billing", category: "Billing", url: "https://console.cloud.google.com/billing" },
+  {
+    name: "Billing",
+    category: "Billing",
+    url: "https://console.cloud.google.com/billing",
+  },
   {
     name: "Quotas",
     category: "Billing",
