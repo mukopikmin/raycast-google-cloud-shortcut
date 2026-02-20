@@ -7,16 +7,18 @@ type Props = {
 
 export const ServiceList = (props: Props) => {
   const { services } = useServiceResource(props.projectId);
+  const searchAccessory = [{ icon: Icon.MagnifyingGlass, tooltip: "Show Resources" }];
 
   return (
     <List>
       {services.map((service) => (
         <List.Item
-          key={service.url}
-          icon={Icon.ComputerChip}
+          key={service.name}
           title={service.name}
           subtitle={service.category}
-          accessories={service.isSearchEnabled ? [{ icon: Icon.MagnifyingGlass, tooltip: "Show Resources" }] : []}
+          keywords={service.keywords}
+          icon={Icon.ComputerChip}
+          accessories={service.isSearchEnabled ? searchAccessory : []}
           actions={
             <ActionPanel>
               {service.isSearchEnabled && service.searchAction}
