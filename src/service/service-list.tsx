@@ -5,6 +5,7 @@ import { SqlList } from "../sql/list";
 import { StorageBucketList } from "../storage/list";
 import { TasksLocationList } from "../tasks/location-list";
 import { SecretManagerList } from "../secret-manager/list";
+import { ServiceAccountList } from "../service-account/list";
 
 type Props = {
   projectId: string;
@@ -53,6 +54,8 @@ export const ServiceDetailAction = (props: DetectServiceActionProps) => {
       return <Action.Push title={title} target={<TasksLocationList projectId={projectId} />} />;
     case "Secret Manager":
       return <Action.Push title={title} target={<SecretManagerList projectId={projectId} />} />;
+    case "Service Accounts":
+      return <Action.Push title={title} target={<ServiceAccountList projectId={projectId} />} />;
     default:
       return <></>;
   }
