@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { listCloudSqls, Sql } from "./sql";
 
 type UseSqlsResult =
@@ -14,11 +15,12 @@ type UseSqlsResult =
     };
 
 export const useSqls = (projectId: string): UseSqlsResult => {
+  const { accessToken } = useGoogleApi();
   const [sqls, setSqls] = useState<Sql[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedSqls = await listCloudSqls(projectId);
+      const fetchedSqls = await listCloudSqls(projectId, accessToken);
       setSqls(fetchedSqls);
     };
 

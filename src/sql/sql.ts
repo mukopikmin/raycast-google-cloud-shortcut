@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type Sql = {
   id: string;
@@ -20,17 +20,11 @@ type SqlsResponse = {
 /**
  * @see https://docs.cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/instances/list
  */
-export const listCloudSqls = async (projectId: string): Promise<Sql[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://sqladmin.googleapis.com/sql/v1beta4/projects/${projectId}/instances`, {
-    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Cloud SQL instances: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as SqlsResponse;
+export const listCloudSqls = async (projectId: string, accessToken: string): Promise<Sql[]> => {
+  const body = await fetchGoogleApi<SqlsResponse>(
+    `https://sqladmin.googleapis.com/sql/v1beta4/projects/${projectId}/instances`,
+    accessToken,
+  );
   const sqls = body.items.map((sql) => {
     return {
       id: sql.name,

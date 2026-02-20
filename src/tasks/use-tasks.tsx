@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { listTasksQueues, TasksQueue } from "./task";
 
 type UseTasksResult =
@@ -10,11 +11,12 @@ type UseTasksResult =
   | { queues: undefined; isLoading: true; error: undefined };
 
 export const useTasks = (projectId: string, locationId: string): UseTasksResult => {
+  const { accessToken } = useGoogleApi();
   const [queues, setTasks] = useState<TasksQueue[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedTasks = await listTasksQueues(projectId, locationId);
+      const fetchedTasks = await listTasksQueues(projectId, locationId, accessToken);
       setTasks(fetchedTasks);
     };
 

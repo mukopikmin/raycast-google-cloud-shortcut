@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { cacheProjects, listCachedProjects, listProjects, Project } from "./project";
 
 type UseProjectsResult = (UpdateProjectResultLoading | UpdateProjectResultLoaded) & {
@@ -16,11 +17,12 @@ type UpdateProjectResultLoaded = {
 };
 
 export const useProjects = (): UseProjectsResult => {
+  const { accessToken } = useGoogleApi();
   const [projects, setProjects] = useState<Project[] | undefined>();
   const updateProjects = async () => {
     setProjects(undefined);
 
-    const fetchedProjects = await listProjects();
+    const fetchedProjects = await listProjects(accessToken);
     cacheProjects(fetchedProjects);
     setProjects(fetchedProjects);
   };

@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type Run = {
   id: string;
@@ -19,17 +19,11 @@ type RunServicesResponse = {
   }[];
 };
 
-export const listCloudRuns = async (projectId: string): Promise<Run[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://run.googleapis.com/v2/projects/${projectId}/locations/-/services`, {
-    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Cloud Run services: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as RunServicesResponse;
+export const listCloudRuns = async (projectId: string, accessToken: string): Promise<Run[]> => {
+  const body = await fetchGoogleApi<RunServicesResponse>(
+    `https://run.googleapis.com/v2/projects/${projectId}/locations/-/services`,
+    accessToken,
+  );
   const runServices = body.services.map((service) => {
     const parts = service.name.split("/");
     const region = parts[parts.length - 3];

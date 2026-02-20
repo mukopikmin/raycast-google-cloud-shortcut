@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type StorageBucket = {
   id: string;
@@ -18,19 +18,11 @@ type StorageBucketResponse = {
 /**
  * @see https://docs.cloud.google.com/storage/docs/json_api/v1/buckets/list
  */
-export const listStorageBuckets = async (projectId: string): Promise<StorageBucket[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://www.googleapis.com/storage/v1/b?project=${projectId}`, {
-    headers: {
-      Authorization: `Bearer ${googleApi.accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Storage buckets: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as StorageBucketResponse;
+export const listStorageBuckets = async (projectId: string, accessToken: string): Promise<StorageBucket[]> => {
+  const body = await fetchGoogleApi<StorageBucketResponse>(
+    `https://www.googleapis.com/storage/v1/b?project=${projectId}`,
+    accessToken,
+  );
   return body.items.map((item) => ({
     id: item.id,
     name: item.name,

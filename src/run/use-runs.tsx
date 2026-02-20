@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { listCloudRuns, Run } from "./run";
 
 type UseRunsResult =
@@ -14,11 +15,12 @@ type UseRunsResult =
     };
 
 export const useRuns = (projectId: string): UseRunsResult => {
+  const { accessToken } = useGoogleApi();
   const [runs, setRuns] = useState<Run[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedRuns = await listCloudRuns(projectId);
+      const fetchedRuns = await listCloudRuns(projectId, accessToken);
       setRuns(fetchedRuns);
     };
 

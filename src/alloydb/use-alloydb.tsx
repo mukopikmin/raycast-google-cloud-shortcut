@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { AlloyDbCluster, listAlloyDbClusters } from "./alloydb";
 
 type UseAlloyDbResult =
@@ -14,11 +15,12 @@ type UseAlloyDbResult =
     };
 
 export const useAlloyDb = (projectId: string): UseAlloyDbResult => {
+  const { accessToken } = useGoogleApi();
   const [clusters, setClusters] = useState<AlloyDbCluster[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedClusters = await listAlloyDbClusters(projectId);
+      const fetchedClusters = await listAlloyDbClusters(projectId, accessToken);
       setClusters(fetchedClusters);
     };
 

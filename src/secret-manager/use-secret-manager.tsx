@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { listSecretManagerSecrets, SecretManagerSecret } from "./secret-manager";
 
 type UseSecretManagerResult =
@@ -14,11 +15,12 @@ type UseSecretManagerResult =
     };
 
 export const useSecretManager = (projectId: string): UseSecretManagerResult => {
+  const { accessToken } = useGoogleApi();
   const [secrets, setSecrets] = useState<SecretManagerSecret[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedSecrets = await listSecretManagerSecrets(projectId);
+      const fetchedSecrets = await listSecretManagerSecrets(projectId, accessToken);
       setSecrets(fetchedSecrets);
     };
 

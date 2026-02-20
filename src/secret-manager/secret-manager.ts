@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type SecretManagerSecret = {
   id: string;
@@ -13,17 +13,14 @@ type SecretManagerSecretsResponse = {
 /**
  * @see https://docs.cloud.google.com/secret-manager/docs/reference/rest/v1beta1/projects.secrets/list
  */
-export const listSecretManagerSecrets = async (projectId: string): Promise<SecretManagerSecret[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://secretmanager.googleapis.com/v1beta1/projects/${projectId}/secrets`, {
-    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Secret Manager secrets: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as SecretManagerSecretsResponse;
+export const listSecretManagerSecrets = async (
+  projectId: string,
+  accessToken: string,
+): Promise<SecretManagerSecret[]> => {
+  const body = await fetchGoogleApi<SecretManagerSecretsResponse>(
+    `https://secretmanager.googleapis.com/v1beta1/projects/${projectId}/secrets`,
+    accessToken,
+  );
   const secrets = body.secrets.map((secret) => {
     // projects/{project}/secrets/{secretId}
     const parts = secret.name.split("/");

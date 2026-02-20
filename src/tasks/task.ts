@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type TasksQueue = {
   name: string;
@@ -14,24 +14,17 @@ type TasksQueuesResponse = {
   }[];
 };
 
-export const listTasksQueues = async (projectId: string, locationId: string): Promise<TasksQueue[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(
+export const listTasksQueues = async (
+  projectId: string,
+  locationId: string,
+  accessToken: string,
+): Promise<TasksQueue[]> => {
+  const data = await fetchGoogleApi<TasksQueuesResponse>(
     `https://cloudtasks.googleapis.com/v2/projects/${projectId}/locations/${locationId}/queues`,
-    {
-      headers: {
-        Authorization: `Bearer ${googleApi.accessToken}`,
-      },
-    },
+    accessToken,
   );
 
-  console.log(googleApi.accessToken);
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Tasks Queues: ${response.statusText}`);
-  }
-
-  const data: TasksQueuesResponse = (await response.json()) as TasksQueuesResponse;
+  console.log(accessToken);
   return data.queues.map((queue) => {
     // projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID
     const parts = queue.name.split("/");

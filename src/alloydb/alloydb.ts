@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type AlloyDbCluster = {
   id: string;
@@ -20,17 +20,11 @@ type AlloyDbClustersResponse = {
 /**
  * @see https://docs.cloud.google.com/alloydb/docs/reference/rest/v1beta/projects.locations.clusters/list
  */
-export const listAlloyDbClusters = async (projectId: string): Promise<AlloyDbCluster[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://alloydb.googleapis.com/v1/projects/${projectId}/locations/-/clusters`, {
-    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch AlloyDB clusters: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as AlloyDbClustersResponse;
+export const listAlloyDbClusters = async (projectId: string, accessToken: string): Promise<AlloyDbCluster[]> => {
+  const body = await fetchGoogleApi<AlloyDbClustersResponse>(
+    `https://alloydb.googleapis.com/v1/projects/${projectId}/locations/-/clusters`,
+    accessToken,
+  );
   const clusters = body.clusters.map((cluster) => {
     // projects/{project}/locations/{region}/clusters/{clusterId}
     const parts = cluster.name.split("/");

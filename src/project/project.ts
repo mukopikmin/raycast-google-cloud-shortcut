@@ -1,5 +1,5 @@
 import { LocalStorage } from "@raycast/api";
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 const CACHE_KEY_PROJECTS = "projects";
 
@@ -21,17 +21,11 @@ type ProjectResponse = {
   }>;
 };
 
-export const listProjects = async () => {
-  const googleApi = useGoogleApi();
-  const response = await fetch("https://cloudresourcemanager.googleapis.com/v1/projects", {
-    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Cloud Run services: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as ProjectResponse;
+export const listProjects = async (accessToken: string) => {
+  const body = await fetchGoogleApi<ProjectResponse>(
+    "https://cloudresourcemanager.googleapis.com/v1/projects",
+    accessToken,
+  );
 
   return body.projects.map((project) => {
     return {

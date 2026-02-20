@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGoogleApi } from "../auth/google";
 import { listStorageBuckets, StorageBucket } from "./storage";
 
 type UseStorageResult =
@@ -14,11 +15,12 @@ type UseStorageResult =
     };
 
 export const useStorage = (projectId: string): UseStorageResult => {
+  const { accessToken } = useGoogleApi();
   const [buckets, setBuckets] = useState<StorageBucket[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedBuckets = await listStorageBuckets(projectId);
+      const fetchedBuckets = await listStorageBuckets(projectId, accessToken);
       setBuckets(fetchedBuckets);
     };
 
