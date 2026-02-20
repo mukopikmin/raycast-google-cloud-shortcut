@@ -1,8 +1,17 @@
 import { fetchGoogleApi } from "../auth/api";
-import { Run, RunServicesResponse } from "./types";
+import { CloudRun } from "./types";
 
-export const listCloudRuns = async (projectId: string, accessToken: string): Promise<Run[]> => {
-  const body = await fetchGoogleApi<RunServicesResponse>(
+type CloudRunServicesResponse = {
+  services: {
+    name: string;
+    description: string;
+    uid: string;
+    generation: string;
+  }[];
+};
+
+export const listCloudRuns = async (projectId: string, accessToken: string): Promise<CloudRun[]> => {
+  const body = await fetchGoogleApi<CloudRunServicesResponse>(
     `https://run.googleapis.com/v2/projects/${projectId}/locations/-/services`,
     accessToken,
   );

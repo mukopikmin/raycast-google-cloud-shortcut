@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listStorageBuckets } from "./api";
-import { StorageBucket } from "./types";
+import { listCloudStorageBuckets } from "./api";
+import { CloudStorageBucket } from "./types";
 
-type UseStorageResult =
+type UseCloudStorageResult =
   | {
-      buckets: StorageBucket[];
+      buckets: CloudStorageBucket[];
       isLoading: false;
       error: undefined;
     }
@@ -15,13 +15,13 @@ type UseStorageResult =
       error: undefined;
     };
 
-export const useStorage = (projectId: string): UseStorageResult => {
+export const useCloudStorage = (projectId: string): UseCloudStorageResult => {
   const { accessToken } = useGoogleApi();
-  const [buckets, setBuckets] = useState<StorageBucket[] | undefined>(undefined);
+  const [buckets, setBuckets] = useState<CloudStorageBucket[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedBuckets = await listStorageBuckets(projectId, accessToken);
+      const fetchedBuckets = await listCloudStorageBuckets(projectId, accessToken);
       setBuckets(fetchedBuckets);
     };
 

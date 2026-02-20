@@ -1,6 +1,5 @@
-export type AlloyDbCluster = {
+export type CloudSqlInstance = {
   id: string;
-  name: string;
   region: string;
   state: string;
   url: string;

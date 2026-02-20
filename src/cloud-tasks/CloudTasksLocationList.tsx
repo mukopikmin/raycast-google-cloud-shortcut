@@ -1,12 +1,12 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { TasksQueueList } from "./TasksQueueList";
+import { CloudTasksQueueList } from "./CloudTasksQueueList";
 import { regions } from "../service/region";
 
 type Props = {
   projectId: string;
 };
 
-export const TasksLocationList = (props: Props) => {
+export const CloudTasksLocationList = (props: Props) => {
   return (
     <List>
       {regions?.map((region) => (
@@ -20,7 +20,7 @@ export const TasksLocationList = (props: Props) => {
             <ActionPanel>
               <Action.Push
                 title={`Show Resources in ${region.id}`}
-                target={<TasksQueueList projectId={props.projectId} locationId={region.id} />}
+                target={<CloudTasksQueueList projectId={props.projectId} locationId={region.id} />}
               />
             </ActionPanel>
           }

@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listTasksQueues } from "./api";
-import { TasksQueue } from "./types";
+import { listCloudTasksQueues } from "./api";
+import { CloudTasksQueue } from "./types";
 
-type UseTasksResult =
+type UseCloudTasksResult =
   | {
-      queues: TasksQueue[];
+      queues: CloudTasksQueue[];
       isLoading: false;
       error: undefined;
     }
   | { queues: undefined; isLoading: true; error: undefined };
 
-export const useTasks = (projectId: string, locationId: string): UseTasksResult => {
+export const useCloudTasks = (projectId: string, locationId: string): UseCloudTasksResult => {
   const { accessToken } = useGoogleApi();
-  const [queues, setTasks] = useState<TasksQueue[] | undefined>(undefined);
+  const [queues, setTasks] = useState<CloudTasksQueue[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedTasks = await listTasksQueues(projectId, locationId, accessToken);
+      const fetchedTasks = await listCloudTasksQueues(projectId, locationId, accessToken);
       setTasks(fetchedTasks);
     };
 

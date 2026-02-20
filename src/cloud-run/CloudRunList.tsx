@@ -1,12 +1,12 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useRuns } from "./useRuns";
+import { useCloudRuns } from "./useCloudRuns";
 
 type Props = {
   projectId: string;
 };
 
-export const RunList = (props: Props) => {
-  const { runs, isLoading } = useRuns(props.projectId);
+export const CloudRunList = (props: Props) => {
+  const { runs, isLoading } = useCloudRuns(props.projectId);
 
   return (
     <List isLoading={isLoading}>

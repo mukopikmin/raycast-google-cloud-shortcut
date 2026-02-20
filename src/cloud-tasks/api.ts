@@ -1,12 +1,19 @@
 import { fetchGoogleApi } from "../auth/api";
-import { TasksQueue, TasksQueuesResponse } from "./types";
+import { CloudTasksQueue } from "./types";
 
-export const listTasksQueues = async (
+type CloudTasksQueuesResponse = {
+  queues: {
+    name: string;
+    state: string;
+  }[];
+};
+
+export const listCloudTasksQueues = async (
   projectId: string,
   locationId: string,
   accessToken: string,
-): Promise<TasksQueue[]> => {
-  const data = await fetchGoogleApi<TasksQueuesResponse>(
+): Promise<CloudTasksQueue[]> => {
+  const data = await fetchGoogleApi<CloudTasksQueuesResponse>(
     `https://cloudtasks.googleapis.com/v2/projects/${projectId}/locations/${locationId}/queues`,
     accessToken,
   );

@@ -1,12 +1,12 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useStorage } from "./useStorage";
+import { useCloudStorage } from "./useCloudStorage";
 
 type Props = {
   projectId: string;
 };
 
-export const StorageBucketList = (props: Props) => {
-  const { buckets, isLoading } = useStorage(props.projectId);
+export const CloudStorageBucketList = (props: Props) => {
+  const { buckets, isLoading } = useCloudStorage(props.projectId);
 
   return (
     <List isLoading={isLoading}>

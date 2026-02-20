@@ -1,13 +1,13 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useTasks } from "./useTasks";
+import { useCloudTasks } from "./useCloudTasks";
 
 type Props = {
   projectId: string;
   locationId: string;
 };
 
-export const TasksQueueList = (props: Props) => {
-  const { queues, isLoading } = useTasks(props.projectId, props.locationId);
+export const CloudTasksQueueList = (props: Props) => {
+  const { queues, isLoading } = useCloudTasks(props.projectId, props.locationId);
 
   return (
     <List isLoading={isLoading}>

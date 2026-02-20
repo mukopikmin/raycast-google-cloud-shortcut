@@ -1,5 +1,4 @@
-export type AlloyDbCluster = {
-  id: string;
+export type CloudTasksQueue = {
   name: string;
   region: string;
   state: string;

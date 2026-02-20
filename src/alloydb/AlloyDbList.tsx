@@ -1,12 +1,12 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useAlloyDb } from "./useAlloyDb";
+import { useAlloyDbClusters } from "./useAlloyDbClusters";
 
 type Props = {
   projectId: string;
 };
 
-export const AlloyDbList = (props: Props) => {
-  const { clusters, isLoading } = useAlloyDb(props.projectId);
+export const AlloyDbClusterList = (props: Props) => {
+  const { clusters, isLoading } = useAlloyDbClusters(props.projectId);
 
   return (
     <List isLoading={isLoading}>

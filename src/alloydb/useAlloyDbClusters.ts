@@ -3,7 +3,7 @@ import { useGoogleApi } from "../auth/google";
 import { listAlloyDbClusters } from "./api";
 import { AlloyDbCluster } from "./types";
 
-type UseAlloyDbResult =
+type UseAlloyDbClustersResult =
   | {
       clusters: AlloyDbCluster[];
       isLoading: false;
@@ -15,7 +15,7 @@ type UseAlloyDbResult =
       error: undefined;
     };
 
-export const useAlloyDb = (projectId: string): UseAlloyDbResult => {
+export const useAlloyDbClusters = (projectId: string): UseAlloyDbClustersResult => {
   const { accessToken } = useGoogleApi();
   const [clusters, setClusters] = useState<AlloyDbCluster[] | undefined>(undefined);
 

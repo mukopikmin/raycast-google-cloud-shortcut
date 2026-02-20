@@ -1,11 +1,11 @@
 import { Action } from "@raycast/api";
-import { AlloyDbList } from "../alloydb/AlloyDbList";
-import { RunList } from "../run/RunList";
+import { AlloyDbClusterList } from "../alloydb/AlloyDbList";
+import { CloudRunList } from "../cloud-run/CloudRunList";
 import { SecretManagerList } from "../secret-manager/SecretManagerList";
 import { ServiceAccountList } from "../service-account/ServiceAccountList";
-import { SqlList } from "../sql/SqlList";
-import { StorageBucketList } from "../storage/StorageBucketList";
-import { TasksLocationList } from "../tasks/TasksLocationList";
+import { CloudSqlInstanceList } from "../cloud-sql/CloudSqlInstanceList";
+import { CloudStorageBucketList } from "../cloud-storage/CloudStorageBucketList";
+import { CloudTasksLocationList } from "../cloud-tasks/CloudTasksLocationList";
 import { availableServices, isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./service";
 
 export type UserServiceResourceResult = {
@@ -36,35 +36,35 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<RunList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<CloudRunList projectId={projectId} />} />,
             };
           case "Cloud SQL":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<SqlList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<CloudSqlInstanceList projectId={projectId} />} />,
             };
           case "AlloyDB":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<AlloyDbList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<AlloyDbClusterList projectId={projectId} />} />,
             };
           case "Cloud Storage":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<StorageBucketList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<CloudStorageBucketList projectId={projectId} />} />,
             };
           case "Tasks":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<TasksLocationList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<CloudTasksLocationList projectId={projectId} />} />,
             };
           case "Secret Manager":
             return {

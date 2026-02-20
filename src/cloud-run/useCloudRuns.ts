@@ -1,41 +1,41 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listCloudSqls } from "./api";
-import { Sql } from "./types";
+import { listCloudRuns } from "./api";
+import { CloudRun } from "./types";
 
-type UseSqlsResult =
+type UseCloudRunsResult =
   | {
-      sqls: Sql[];
+      runs: CloudRun[];
       isLoading: false;
       error: undefined;
     }
   | {
-      sqls: undefined;
+      runs: undefined;
       isLoading: true;
       error: undefined;
     };
 
-export const useSqls = (projectId: string): UseSqlsResult => {
+export const useCloudRuns = (projectId: string): UseCloudRunsResult => {
   const { accessToken } = useGoogleApi();
-  const [sqls, setSqls] = useState<Sql[] | undefined>(undefined);
+  const [runs, setRuns] = useState<CloudRun[] | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
-      const fetchedSqls = await listCloudSqls(projectId, accessToken);
-      setSqls(fetchedSqls);
+      const fetchedRuns = await listCloudRuns(projectId, accessToken);
+      setRuns(fetchedRuns);
     };
 
     load();
   }, [projectId]);
 
-  return sqls === undefined
+  return runs === undefined
     ? {
-        sqls: undefined,
+        runs: undefined,
         isLoading: true,
         error: undefined,
       }
     : {
-        sqls,
+        runs,
         isLoading: false,
         error: undefined,
       };

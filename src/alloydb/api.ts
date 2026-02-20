@@ -1,5 +1,14 @@
 import { fetchGoogleApi } from "../auth/api";
-import { AlloyDbCluster, AlloyDbClustersResponse } from "./types";
+import { AlloyDbCluster } from "./types";
+
+type AlloyDbClustersResponse = {
+  clusters: {
+    uid: string;
+    name: string;
+    displayName: string;
+    state: string;
+  }[];
+};
 
 /**
  * @see https://docs.cloud.google.com/alloydb/docs/reference/rest/v1beta/projects.locations.clusters/list
