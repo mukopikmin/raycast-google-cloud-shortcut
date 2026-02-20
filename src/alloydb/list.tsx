@@ -1,4 +1,4 @@
-import { Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useAlloyDb } from "./use-alloydb";
 
 type Props = {
@@ -17,6 +17,11 @@ export const SqlList = (props: Props) => {
           icon={Icon.Box}
           title={cluster.name}
           subtitle={`${cluster.region} ${cluster.state}`}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser url={cluster.url} />
+            </ActionPanel>
+          }
         />
       ))}
     </List>

@@ -1,4 +1,4 @@
-import { Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useTasks } from "./use-tasks";
 
 type Props = {
@@ -12,7 +12,18 @@ export const TasksQueueList = (props: Props) => {
   return (
     <List isLoading={isLoading}>
       {queues?.map((queue) => (
-        <List.Item key={queue.name} id={queue.name} title={queue.name} subtitle={queue.region} icon={Icon.Box} />
+        <List.Item
+          key={queue.name}
+          id={queue.name}
+          title={queue.name}
+          subtitle={queue.region}
+          icon={Icon.Box}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser url={queue.url} />
+            </ActionPanel>
+          }
+        />
       ))}
     </List>
   );

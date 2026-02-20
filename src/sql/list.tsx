@@ -1,4 +1,4 @@
-import { Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useSqls } from "./use-sqls";
 
 type Props = {
@@ -11,7 +11,18 @@ export const SqlList = (props: Props) => {
   return (
     <List isLoading={isLoading}>
       {sqls?.map((sql) => (
-        <List.Item key={sql.id} id={sql.id} icon={Icon.Box} title={sql.id} subtitle={`${sql.region} ${sql.state}`} />
+        <List.Item
+          key={sql.id}
+          id={sql.id}
+          icon={Icon.Box}
+          title={sql.id}
+          subtitle={`${sql.region} ${sql.state}`}
+          actions={
+            <ActionPanel>
+              <Action.OpenInBrowser url={sql.url} />
+            </ActionPanel>
+          }
+        />
       ))}
     </List>
   );
