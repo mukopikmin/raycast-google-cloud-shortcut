@@ -1,4 +1,4 @@
-import { useGoogleApi } from "../auth/google";
+import { fetchGoogleApi } from "../auth/api";
 
 export type ServiceAccount = {
   id: string;
@@ -15,18 +15,13 @@ type ServiceAccountListResponse = {
   }[];
 };
 
-export const fetchServiceAccounts = async (projectId: string): Promise<ServiceAccount[]> => {
-  const googleApi = useGoogleApi();
-  const response = await fetch(`https://iam.googleapis.com/v1/projects/${projectId}/serviceAccounts`, {
-    headers: { Authorization: `Bearer ${googleApi.accessToken}` },
-  });
+export const fetchServiceAccounts = async (projectId: string, accessToken: string): Promise<ServiceAccount[]> => {
+  const data = await fetchGoogleApi<ServiceAccountListResponse>(
+    `https://iam.googleapis.com/v1/projects/${projectId}/serviceAccounts`,
+    accessToken,
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch service accounts: ${response.statusText}`);
-  }
-
-  const body = (await response.json()) as ServiceAccountListResponse;
-  const serviceAccounts = body.accounts.map((account) => {
+  return data.accounts.map((account) => {
     return {
       id: account.uniqueId,
       name: account.displayName,
@@ -34,6 +29,4 @@ export const fetchServiceAccounts = async (projectId: string): Promise<ServiceAc
       url: `https://console.cloud.google.com/iam-admin/serviceaccounts/details/${account.uniqueId}?project=${projectId}`,
     };
   });
-
-  return serviceAccounts;
 };

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchServiceAccounts, ServiceAccount } from "./service-account";
+import { useGoogleApi } from "../auth/google";
 
 type UseServiceAccountResult =
   | {
@@ -12,15 +13,14 @@ type UseServiceAccountResult =
     };
 
 export const useServiceAccount = (projectId: string): UseServiceAccountResult => {
-  const [serviceAccounts, setServiceAccounts] = useState<ServiceAccount[] | undefined>(undefined);
+  const { accessToken } = useGoogleApi();
+  const [serviceAccounts, setServiceAccounts] = useState<ServiceAccount[] | undefined>();
 
   useEffect(() => {
-    const load = async () => {
-      const fetchedServiceAccounts = await fetchServiceAccounts(projectId);
-      setServiceAccounts(fetchedServiceAccounts);
-    };
-
-    load();
+    (async () => {
+      const data = await fetchServiceAccounts(projectId, accessToken);
+      setServiceAccounts(data);
+    })();
   }, [projectId]);
 
   return serviceAccounts === undefined
