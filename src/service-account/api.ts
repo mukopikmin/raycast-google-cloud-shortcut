@@ -1,19 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-
-export type ServiceAccount = {
-  id: string;
-  name: string;
-  email: string;
-  url: string;
-};
-
-type ServiceAccountListResponse = {
-  accounts: {
-    uniqueId: string;
-    displayName: string;
-    email: string;
-  }[];
-};
+import { ServiceAccount, ServiceAccountListResponse } from "./types";
 
 export const fetchServiceAccounts = async (projectId: string, accessToken: string): Promise<ServiceAccount[]> => {
   const data = await fetchGoogleApi<ServiceAccountListResponse>(

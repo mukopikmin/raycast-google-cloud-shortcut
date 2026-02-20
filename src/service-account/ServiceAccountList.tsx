@@ -1,12 +1,12 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useServiceAccount } from "./use-service-account";
+import { useServiceAccounts } from "./useServiceAccounts";
 
 type Props = {
   projectId: string;
 };
 
 export const ServiceAccountList = (props: Props) => {
-  const { serviceAccounts, isLoading } = useServiceAccount(props.projectId);
+  const { serviceAccounts, isLoading } = useServiceAccounts(props.projectId);
 
   return (
     <List isLoading={isLoading}>

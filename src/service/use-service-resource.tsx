@@ -1,7 +1,7 @@
 import { Action } from "@raycast/api";
 import { RunList } from "../run/run-list";
 import { SecretManagerList } from "../secret-manager/list";
-import { ServiceAccountList } from "../service-account/list";
+import { ServiceAccountList } from "../service-account/ServiceAccountList";
 import { SqlList } from "../sql/list";
 import { StorageBucketList } from "../storage/list";
 import { TasksLocationList } from "../tasks/location-list";

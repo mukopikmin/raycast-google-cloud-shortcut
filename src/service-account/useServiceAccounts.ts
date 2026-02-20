@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchServiceAccounts, ServiceAccount } from "./service-account";
+import { ServiceAccount } from "./types";
+import { fetchServiceAccounts } from "./api";
 import { useGoogleApi } from "../auth/google";
 
 type UseServiceAccountResult =
@@ -12,7 +13,7 @@ type UseServiceAccountResult =
       isLoading: true;
     };
 
-export const useServiceAccount = (projectId: string): UseServiceAccountResult => {
+export const useServiceAccounts = (projectId: string): UseServiceAccountResult => {
   const { accessToken } = useGoogleApi();
   const [serviceAccounts, setServiceAccounts] = useState<ServiceAccount[] | undefined>();
 
