@@ -16,6 +16,7 @@ export const ServiceAccountList = (props: Props) => {
           id={serviceAccount.id}
           title={serviceAccount.name}
           subtitle={serviceAccount.email}
+          keywords={serviceAccount.keywords}
           icon={Icon.Box}
           actions={
             <ActionPanel>
