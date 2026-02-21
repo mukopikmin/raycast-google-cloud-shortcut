@@ -1,6 +1,7 @@
 import { CloudRunDeployment } from "./types";
 import { useCloudRunJobs } from "./useCloudRunJobs";
 import { useCloudRunServices } from "./useCloudRunServices";
+import { useCloudRunWorkerPools } from "./useCloudRunWorkerPools";
 
 type UseCloudRunDeploymentsResult =
     | {
@@ -19,14 +20,16 @@ export const useCloudRunDeployments = (
         projectId,
     );
     const { jobs, isLoading: isLoadingJobs } = useCloudRunJobs(projectId);
+    const { workerPools, isLoading: isLoadingWorkerPools } =
+        useCloudRunWorkerPools(projectId);
 
-    return isLoadingServices || isLoadingJobs
+    return isLoadingServices || isLoadingJobs || isLoadingWorkerPools
         ? {
             deployments: undefined,
             isLoading: true,
         }
         : {
-            deployments: [...services, ...jobs],
+            deployments: [...services, ...jobs, ...workerPools],
             isLoading: false,
         };
 };

@@ -15,7 +15,20 @@ type CloudRunServicesResponse = {
 };
 
 type CloudRunJobsResponse = {
-  items: {
+  items?: {
+    metadata: {
+      name: string;
+      uid: string;
+      generation: string;
+      labels: {
+        "cloud.googleapis.com/location": string;
+      };
+    };
+  }[];
+};
+
+type CloudRunWorkerPoolsResponse = {
+  items?: {
     metadata: {
       name: string;
       uid: string;
@@ -69,7 +82,7 @@ export const listCloudRunJobs = async (
     accessToken,
   );
 
-  return body.items.map((job) => {
+  return body.items?.map((job) => {
     const name = job.metadata.name;
     const region = job.metadata.labels["cloud.googleapis.com/location"];
 
@@ -81,5 +94,29 @@ export const listCloudRunJobs = async (
       url:
         `https://console.cloud.google.com/run/jobs/detail/${region}/${name}?project=${projectId}`,
     });
-  });
+  }) ?? [];
+};
+
+export const listCloudRunWorkerPools = async (
+  projectId: string,
+  accessToken: string,
+): Promise<CloudRunDeployment[]> => {
+  const body = await fetchGoogleApi<CloudRunWorkerPoolsResponse>(
+    `https://run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${projectId}/workerpools`,
+    accessToken,
+  );
+
+  return body.items?.map((workerPool) => {
+    const name = workerPool.metadata.name;
+    const region = workerPool.metadata.labels["cloud.googleapis.com/location"];
+
+    return createCloudRunDeployment({
+      id: workerPool.metadata.uid,
+      name,
+      region,
+      deployType: "Worker Pools" as const,
+      url:
+        `https://console.cloud.google.com/run/worker-pools/detail/${region}/${name}?project=${projectId}`,
+    });
+  }) ?? [];
 };
