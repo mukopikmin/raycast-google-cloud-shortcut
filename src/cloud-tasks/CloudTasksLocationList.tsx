@@ -1,12 +1,14 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { CloudTasksQueueList } from "./CloudTasksQueueList";
-import { regions } from "../service/region";
+import { useRegion } from "../region/useRegion";
 
 type Props = {
   projectId: string;
 };
 
 export const CloudTasksLocationList = (props: Props) => {
+  const { regions } = useRegion();
+
   return (
     <List>
       {regions?.map((region) => (
