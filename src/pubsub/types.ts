@@ -13,7 +13,7 @@ export const createPubSubSubscription = (
         name: args.name,
         topic: args.topic,
         subscriptionType: args.subscriptionType,
-        url: `https://console.cloud.google.com/pubsub/subscription/${args.name}?project=${args.projectId}`,
+        url: `https://console.cloud.google.com/cloudpubsub/subscription/detail/${args.name}?project=${args.projectId}`,
         keywords: [
             args.name,
             args.topic,
