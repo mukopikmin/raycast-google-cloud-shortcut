@@ -1,5 +1,4 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { useCloudRunServices } from "./useCloudRunServices";
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
 
 type Props = {
@@ -19,6 +18,7 @@ export const CloudRunServicesList = (props: Props) => {
             icon={Icon.Box}
             title={deployment.name}
             subtitle={`${deployment.deployType} / ${deployment.region}`}
+            keywords={deployment.keywords}
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={deployment.url} />

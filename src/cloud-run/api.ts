@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import { CloudRunDeployment } from "./types";
+import { CloudRunDeployment, createCloudRunDeployment } from "./types";
 
 type CloudRunServicesResponse = {
   services: {
@@ -44,7 +44,7 @@ export const listCloudRunServices = async (
     const region = parts[parts.length - 3];
     const name = parts[parts.length - 1];
 
-    return {
+    return createCloudRunDeployment({
       id: service.uid,
       name,
       region,
@@ -53,7 +53,7 @@ export const listCloudRunServices = async (
         : "Function Services",
       url:
         `https://console.cloud.google.com/run/detail/${region}/${name}?project=${projectId}`,
-    };
+    });
   });
 };
 
@@ -73,13 +73,13 @@ export const listCloudRunJobs = async (
     const name = job.metadata.name;
     const region = job.metadata.labels["cloud.googleapis.com/location"];
 
-    return {
+    return createCloudRunDeployment({
       id: job.metadata.uid,
       name,
       region,
       deployType: "Jobs" as const,
       url:
         `https://console.cloud.google.com/run/jobs/detail/${region}/${name}?project=${projectId}`,
-    };
+    });
   });
 };
