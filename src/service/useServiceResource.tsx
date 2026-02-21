@@ -5,9 +5,9 @@ import { SecretManagerList } from "../secret-manager/SecretManagerList";
 import { ServiceAccountList } from "../service-account/ServiceAccountList";
 import { CloudSqlInstanceList } from "../cloud-sql/CloudSqlInstanceList";
 import { CloudStorageBucketList } from "../cloud-storage/CloudStorageBucketList";
-import { CloudTasksLocationList } from "../cloud-tasks/CloudTasksLocationList";
 import { availableServices, isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./service";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
+import { CloudTasksRegionList } from "../cloud-tasks/CloudTasksRegionList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -65,7 +65,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudTasksLocationList projectId={projectId} />} />,
+              searchAction: <Action.Push title={title} target={<CloudTasksRegionList projectId={projectId} />} />,
             };
           case "Secret Manager":
             return {

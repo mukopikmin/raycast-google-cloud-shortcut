@@ -1,12 +1,12 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { CloudTasksQueueList } from "./CloudTasksQueueList";
-import { useRegion } from "../region/useRegion";
+import { useRegion } from "./useRegion";
 
 type Props = {
   projectId: string;
+  target: (args: { projectId: string; locationId: string }) => React.ReactNode;
 };
 
-export const CloudTasksLocationList = (props: Props) => {
+export const RegionList = (props: Props) => {
   const { regions } = useRegion();
 
   return (
@@ -22,7 +22,7 @@ export const CloudTasksLocationList = (props: Props) => {
             <ActionPanel>
               <Action.Push
                 title={`Show Resources in ${region.id}`}
-                target={<CloudTasksQueueList projectId={props.projectId} locationId={region.id} />}
+                target={props.target({ projectId: props.projectId, locationId: region.id })}
               />
             </ActionPanel>
           }
