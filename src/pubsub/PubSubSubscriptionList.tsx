@@ -15,7 +15,7 @@ export const PubSubSubscriptionList = (props: Props) => {
           key={subscription.name}
           id={subscription.name}
           title={subscription.name}
-          subtitle={`Topic: ${subscription.topic}`}
+          subtitle={`Subscribing to ${subscription.topic}`}
           icon={Icon.Box}
           actions={
             <ActionPanel>
