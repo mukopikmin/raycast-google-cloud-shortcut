@@ -15,11 +15,18 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "google-cloud-shortcut",
-      "title": "Google Cloud Shortcut",
+      "name": "search-google-cloud-resources",
+      "title": "Search Google Cloud Resources",
       "subtitle": "Google Cloud Shortcut",
       "description": "Open the Google Cloud service console quickly.",
       "mode": "view"
+    },
+    {
+      "name": "update-google-cloud-projects",
+      "title": "Update Google Cloud Projects",
+      "subtitle": "Google Cloud Shortcut",
+      "description": "Update Google Cloud projects.",
+      "mode": "no-view"
     }
   ],
   "dependencies": {

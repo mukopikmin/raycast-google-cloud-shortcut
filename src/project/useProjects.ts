@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { cacheProjects, listCachedProjects, listProjects } from "./api";
+import { cacheProjects, listCachedProjects } from "./cache";
 import { Project } from "./types";
+import { listProjects } from "./api";
 
 type UseProjectsResult = (UpdateProjectResultLoading | UpdateProjectResultLoaded) & {
   updateProjects: () => void;
