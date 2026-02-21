@@ -1,5 +1,5 @@
 import { Action } from "@raycast/api";
-import { AlloyDbClusterList } from "../alloydb/AlloyDbList";
+import { AlloyDbClusterList } from "../alloydb/AlloyDbClusterList";
 import { CloudRunServicesList } from "../cloud-run/CloudRunServicesList";
 import { SecretManagerList } from "../secret-manager/SecretManagerList";
 import { ServiceAccountList } from "../service-account/ServiceAccountList";
