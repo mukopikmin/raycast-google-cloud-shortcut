@@ -18,7 +18,6 @@ export const listCloudTasksQueues = async (
     accessToken,
   );
 
-  console.log(accessToken);
   return data.queues?.map((queue) => {
     // projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID
     const parts = queue.name.split("/");
