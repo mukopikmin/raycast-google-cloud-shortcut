@@ -1,9 +1,9 @@
-export type CloudRun = {
+export type CloudRunDeployment = {
   id: string;
   name: string;
   region: string;
-  type: CloudRunType;
+  deployType: CloudRunDeployType;
   url: string;
 };
 
-export type CloudRunType = "services" | "jobs" | "worker pools";
+export type CloudRunDeployType = "services" | "jobs" | "worker pools";

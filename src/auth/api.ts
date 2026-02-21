@@ -1,4 +1,7 @@
-export const fetchGoogleApi = async <T>(url: string, accessToken: string): Promise<T> => {
+export const fetchGoogleApi = async <T>(
+  url: string,
+  accessToken: string,
+): Promise<T> => {
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -8,7 +11,9 @@ export const fetchGoogleApi = async <T>(url: string, accessToken: string): Promi
   }
 
   if (response.status === 403) {
-    throw new Error("Forbidden: You don't have permission to access this resource.");
+    throw new Error(
+      "Forbidden: You don't have permission to access this resource.",
+    );
   }
 
   if (!response.ok) {

@@ -1,36 +1,38 @@
 import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
-import { listCloudRuns } from "./api";
-import { CloudRun } from "./types";
+import { listCloudRunServices } from "./api";
+import { CloudRunDeployment } from "./types";
 
-type UseCloudRunsResult =
+type UseCloudRunServicesResult =
   | {
-      runs: CloudRun[];
-      isLoading: false;
-    }
+    services: CloudRunDeployment[];
+    isLoading: false;
+  }
   | {
-      runs: undefined;
-      isLoading: true;
-    };
+    services: undefined;
+    isLoading: true;
+  };
 
-export const useCloudRuns = (projectId: string): UseCloudRunsResult => {
+export const useCloudRunServices = (
+  projectId: string,
+): UseCloudRunServicesResult => {
   const { accessToken } = useGoogleApi();
-  const [runs, setRuns] = useState<CloudRun[] | undefined>();
+  const [services, setServices] = useState<CloudRunDeployment[] | undefined>();
 
   useEffect(() => {
     (async () => {
-      const data = await listCloudRuns(projectId, accessToken);
-      setRuns(data);
+      const data = await listCloudRunServices(projectId, accessToken);
+      setServices(data);
     })();
   }, [projectId]);
 
-  return runs === undefined
+  return services === undefined
     ? {
-        runs: undefined,
-        isLoading: true,
-      }
+      services: undefined,
+      isLoading: true,
+    }
     : {
-        runs,
-        isLoading: false,
-      };
+      services,
+      isLoading: false,
+    };
 };
