@@ -10,6 +10,7 @@ import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
 import { CloudTasksRegionList } from "../cloud-tasks/CloudTasksRegionList";
 import { WorkflowList } from "../workflows/WorkflowList";
+import { CloudSchedulerRegionList } from "../cloud-scheduler/CloudSchedulerRegionList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -96,6 +97,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<WorkflowList projectId={projectId} />} />,
+            };
+          case "Cloud Scheduler":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudSchedulerRegionList projectId={projectId} />} />,
             };
           default:
             service satisfies never;
