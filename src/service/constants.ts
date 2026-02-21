@@ -52,26 +52,6 @@ export const availableServices: Service[] = [
     category: "Compute",
     url: "https://console.cloud.google.com/compute/instances",
   },
-  {
-    name: "Instance Templates",
-    category: "Compute",
-    url: "https://console.cloud.google.com/compute/instanceTemplates",
-  },
-  {
-    name: "Instance Groups",
-    category: "Compute",
-    url: "https://console.cloud.google.com/compute/instanceGroups",
-  },
-  {
-    name: "Images",
-    category: "Compute",
-    url: "https://console.cloud.google.com/compute/images",
-  },
-  {
-    name: "Snapshots",
-    category: "Compute",
-    url: "https://console.cloud.google.com/compute/snapshots",
-  },
 
   {
     name: "Kubernetes Engine",
@@ -114,21 +94,6 @@ export const availableServices: Service[] = [
     name: "VPC Networks",
     category: "Networking",
     url: "https://console.cloud.google.com/networking/networks/list",
-  },
-  {
-    name: "Subnets",
-    category: "Networking",
-    url: "https://console.cloud.google.com/networking/subnetworks/list",
-  },
-  {
-    name: "Firewall Rules",
-    category: "Networking",
-    url: "https://console.cloud.google.com/networking/firewalls/list",
-  },
-  {
-    name: "Routes",
-    category: "Networking",
-    url: "https://console.cloud.google.com/networking/routes/list",
   },
   {
     name: "Load Balancing",
