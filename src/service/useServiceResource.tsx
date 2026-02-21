@@ -7,6 +7,7 @@ import { CloudSqlInstanceList } from "../cloud-sql/CloudSqlInstanceList";
 import { CloudStorageBucketList } from "../cloud-storage/CloudStorageBucketList";
 import { CloudTasksLocationList } from "../cloud-tasks/CloudTasksLocationList";
 import { availableServices, isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./service";
+import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -79,6 +80,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<ServiceAccountList projectId={projectId} />} />,
+            };
+          case "Pub/Sub":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<PubSubSubscriptionList projectId={projectId} />} />,
             };
           default:
             service satisfies never;

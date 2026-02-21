@@ -2,7 +2,7 @@ import { fetchGoogleApi } from "../auth/api";
 import { CloudStorageBucket } from "./types";
 
 type CloudStorageBucketResponse = {
-  items: {
+  items?: {
     id: string;
     name: string;
     location: string;
@@ -20,10 +20,11 @@ export const listCloudStorageBuckets = async (
     `https://www.googleapis.com/storage/v1/b?project=${projectId}`,
     accessToken,
   );
-  return body.items.map((item) => ({
+  return body.items?.map((item) => ({
     id: item.id,
     name: item.name,
     location: item.location,
-    url: `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
-  }));
+    url:
+      `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
+  })) ?? [];
 };

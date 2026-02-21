@@ -3,7 +3,3 @@ export type SecretManagerSecret = {
   name: string;
   url: string;
 };
-
-export type SecretManagerSecretsResponse = {
-  secrets: { name: string }[];
-};

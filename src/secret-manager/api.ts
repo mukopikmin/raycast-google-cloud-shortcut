@@ -1,5 +1,9 @@
 import { fetchGoogleApi } from "../auth/api";
-import { SecretManagerSecret, SecretManagerSecretsResponse } from "./types";
+import { SecretManagerSecret } from "./types";
+
+type SecretManagerSecretsResponse = {
+  secrets?: { name: string }[];
+};
 
 /**
  * @see https://docs.cloud.google.com/secret-manager/docs/reference/rest/v1beta1/projects.secrets/list
@@ -12,7 +16,7 @@ export const listSecretManagerSecrets = async (
     `https://secretmanager.googleapis.com/v1beta1/projects/${projectId}/secrets`,
     accessToken,
   );
-  const secrets = body.secrets.map((secret) => {
+  const secrets = body.secrets?.map((secret) => {
     // projects/{project}/secrets/{secretId}
     const parts = secret.name.split("/");
     const name = parts[parts.length - 1];
@@ -20,9 +24,10 @@ export const listSecretManagerSecrets = async (
     return {
       id: secret.name,
       name: name,
-      url: `https://console.cloud.google.com/security/secret-manager/secrets/${name}?project=${projectId}`,
+      url:
+        `https://console.cloud.google.com/security/secret-manager/secrets/${name}?project=${projectId}`,
     };
-  });
+  }) ?? [];
 
   return secrets;
 };

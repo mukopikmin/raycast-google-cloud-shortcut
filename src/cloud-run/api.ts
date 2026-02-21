@@ -2,7 +2,7 @@ import { fetchGoogleApi } from "../auth/api";
 import { CloudRunDeployment, createCloudRunDeployment } from "./types";
 
 type CloudRunServicesResponse = {
-  services: {
+  services?: {
     name: string;
     description: string;
     uid: string;
@@ -52,7 +52,7 @@ export const listCloudRunServices = async (
     accessToken,
   );
 
-  return body.services.map((service) => {
+  return body.services?.map((service) => {
     const parts = service.name.split("/");
     const region = parts[parts.length - 3];
     const name = parts[parts.length - 1];
@@ -67,7 +67,7 @@ export const listCloudRunServices = async (
       url:
         `https://console.cloud.google.com/run/detail/${region}/${name}?project=${projectId}`,
     });
-  });
+  }) ?? [];
 };
 
 /**
