@@ -5,7 +5,7 @@ import { SecretManagerList } from "../secret-manager/SecretManagerList";
 import { ServiceAccountList } from "../service-account/ServiceAccountList";
 import { CloudSqlInstanceList } from "../cloud-sql/CloudSqlInstanceList";
 import { CloudStorageBucketList } from "../cloud-storage/CloudStorageBucketList";
-import { isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./service";
+import { isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./types";
 import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
 import { CloudTasksRegionList } from "../cloud-tasks/CloudTasksRegionList";
