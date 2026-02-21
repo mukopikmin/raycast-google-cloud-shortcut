@@ -7,6 +7,10 @@ type CloudRunServicesResponse = {
     description: string;
     uid: string;
     generation: string;
+    // Only exists when the service is deployes as Cloud Functions
+    buildConfig?: {
+      functionTarget: string;
+    };
   }[];
 };
 
@@ -39,7 +43,9 @@ export const listCloudRunServices = async (
       id: service.uid,
       name,
       region,
-      deployType: "services" as const,
+      deployType: service.buildConfig === undefined
+        ? "Container Services"
+        : "Function Services",
       url:
         `https://console.cloud.google.com/run/detail/${region}/${name}?project=${projectId}`,
     };
@@ -67,7 +73,7 @@ export const listCloudRunJobs = async (
       id: job.uid,
       name,
       region,
-      deployType: "jobs" as const,
+      deployType: "Jobs" as const,
       url:
         `https://console.cloud.google.com/run/jobs/detail/${region}/${name}?project=${projectId}`,
     };
