@@ -21,6 +21,7 @@ export const serchEnabledSeriviceNames = [
   "Secret Manager",
   "Service Accounts",
   "Pub/Sub",
+  "Workflows",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -64,7 +65,6 @@ export const searchDisabledServiceNames = [
   "Cloud Profiler",
   "Cloud Debugger",
   "Eventarc",
-  "Workflows",
   "Cloud Scheduler",
   "Artifact Registry",
   "Cloud Build",
