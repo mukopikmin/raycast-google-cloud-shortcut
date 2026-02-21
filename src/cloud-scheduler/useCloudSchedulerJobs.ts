@@ -13,7 +13,7 @@ type UseCloudSchedulerJobsResult =
       isLoading: true;
     };
 
-export const useCloudSchedulerJobs = (projectId: string, locationId: string) => {
+export const useCloudSchedulerJobs = (projectId: string, locationId: string): UseCloudSchedulerJobsResult => {
   const { accessToken } = useGoogleApi();
   const [scheduledJobs, setScheduledJobs] = useState<CloudSchedulerJob[] | undefined>();
 

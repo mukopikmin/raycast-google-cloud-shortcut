@@ -8,9 +8,10 @@ import { CloudStorageBucketList } from "../cloud-storage/CloudStorageBucketList"
 import { isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./types";
 import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
-import { CloudTasksRegionList } from "../cloud-tasks/CloudTasksRegionList";
 import { WorkflowList } from "../workflows/WorkflowList";
-import { CloudSchedulerRegionList } from "../cloud-scheduler/CloudSchedulerRegionList";
+import { withRegionSelect } from "../region/withRegionSelect";
+import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
+import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -68,7 +69,11 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudTasksRegionList projectId={projectId} />} />,
+              searchAction: withRegionSelect({
+                projectId,
+                title,
+                target: CloudTasksQueueList,
+              }),
             };
           case "Secret Manager":
             return {
@@ -103,7 +108,11 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudSchedulerRegionList projectId={projectId} />} />,
+              searchAction: withRegionSelect({
+                projectId,
+                title,
+                target: CloudSchedulerJobList,
+              }),
             };
           default:
             service satisfies never;
