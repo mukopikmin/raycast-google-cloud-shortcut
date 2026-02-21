@@ -1,43 +1,24 @@
 import { useEffect, useState } from "react";
-import { useGoogleApi } from "../auth/google";
-import { cacheProjects, listCachedProjects } from "./cache";
+import { listCachedProjects } from "./cache";
 import { Project } from "./types";
-import { listProjects } from "./api";
 
-type UseProjectsResult = (UpdateProjectResultLoading | UpdateProjectResultLoaded) & {
-  updateProjects: () => void;
-};
-
-type UpdateProjectResultLoading = {
-  projects: undefined;
-  isLoading: true;
-};
-
-type UpdateProjectResultLoaded = {
-  projects: Project[];
-  isLoading: false;
-};
+type UseProjectsResult =
+  | {
+      projects: undefined;
+      isLoading: true;
+    }
+  | {
+      projects: Project[];
+      isLoading: false;
+    };
 
 export const useProjects = (): UseProjectsResult => {
-  const { accessToken } = useGoogleApi();
   const [projects, setProjects] = useState<Project[] | undefined>();
-  const updateProjects = async () => {
-    setProjects(undefined);
-
-    const fetchedProjects = await listProjects(accessToken);
-    cacheProjects(fetchedProjects);
-    setProjects(fetchedProjects);
-  };
 
   useEffect(() => {
     (async () => {
       const cachedProjects = await listCachedProjects();
-
-      if (cachedProjects === undefined) {
-        updateProjects();
-      } else {
-        setProjects(cachedProjects);
-      }
+      setProjects(cachedProjects);
     })();
   }, []);
 
@@ -45,11 +26,9 @@ export const useProjects = (): UseProjectsResult => {
     ? {
         projects: undefined,
         isLoading: true,
-        updateProjects,
       }
     : {
         projects,
-        updateProjects,
         isLoading: false,
       };
 };
