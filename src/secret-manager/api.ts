@@ -16,18 +16,18 @@ export const listSecretManagerSecrets = async (
     `https://secretmanager.googleapis.com/v1beta1/projects/${projectId}/secrets`,
     accessToken,
   );
-  const secrets = body.secrets?.map((secret) => {
-    // projects/{project}/secrets/{secretId}
-    const parts = secret.name.split("/");
-    const name = parts[parts.length - 1];
+  const secrets =
+    body.secrets?.map((secret) => {
+      // projects/{project}/secrets/{secretId}
+      const parts = secret.name.split("/");
+      const name = parts[parts.length - 1];
 
-    return {
-      id: secret.name,
-      name: name,
-      url:
-        `https://console.cloud.google.com/security/secret-manager/secrets/${name}?project=${projectId}`,
-    };
-  }) ?? [];
+      return {
+        id: secret.name,
+        name: name,
+        url: `https://console.cloud.google.com/security/secret-manager/secrets/${name}?project=${projectId}`,
+      };
+    }) ?? [];
 
   return secrets;
 };

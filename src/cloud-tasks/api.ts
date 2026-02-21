@@ -18,18 +18,19 @@ export const listCloudTasksQueues = async (
     accessToken,
   );
 
-  return data.queues?.map((queue) => {
-    // projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID
-    const parts = queue.name.split("/");
-    const region = parts[parts.length - 3];
-    const name = parts[parts.length - 1];
+  return (
+    data.queues?.map((queue) => {
+      // projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID
+      const parts = queue.name.split("/");
+      const region = parts[parts.length - 3];
+      const name = parts[parts.length - 1];
 
-    return {
-      name,
-      region,
-      state: queue.state,
-      url:
-        `https://console.cloud.google.com/cloudtasks/queue/${region}/${name}?project=${projectId}`,
-    };
-  }) ?? [];
+      return {
+        name,
+        region,
+        state: queue.state,
+        url: `https://console.cloud.google.com/cloudtasks/queue/${region}/${name}?project=${projectId}`,
+      };
+    }) ?? []
+  );
 };

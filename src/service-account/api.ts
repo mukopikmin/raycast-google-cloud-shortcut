@@ -9,21 +9,20 @@ type ServiceAccountListResponse = {
   }[];
 };
 
-export const fetchServiceAccounts = async (
-  projectId: string,
-  accessToken: string,
-): Promise<ServiceAccount[]> => {
+export const fetchServiceAccounts = async (projectId: string, accessToken: string): Promise<ServiceAccount[]> => {
   const data = await fetchGoogleApi<ServiceAccountListResponse>(
     `https://iam.googleapis.com/v1/projects/${projectId}/serviceAccounts`,
     accessToken,
   );
 
-  return data.accounts?.map((account) => {
-    return createServiceAccount({
-      id: account.uniqueId,
-      name: account.displayName,
-      email: account.email,
-      projectId,
-    });
-  }) ?? [];
+  return (
+    data.accounts?.map((account) => {
+      return createServiceAccount({
+        id: account.uniqueId,
+        name: account.displayName,
+        email: account.email,
+        projectId,
+      });
+    }) ?? []
+  );
 };

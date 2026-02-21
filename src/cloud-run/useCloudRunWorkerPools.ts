@@ -4,37 +4,33 @@ import { CloudRunDeployment } from "./types";
 import { listCloudRunWorkerPools } from "./api";
 
 type UseCloudRunWorkerPoolsResult =
-    | {
-        workerPools: CloudRunDeployment[];
-        isLoading: false;
+  | {
+      workerPools: CloudRunDeployment[];
+      isLoading: false;
     }
-    | {
-        workerPools: undefined;
-        isLoading: true;
+  | {
+      workerPools: undefined;
+      isLoading: true;
     };
 
-export const useCloudRunWorkerPools = (
-    projectId: string,
-): UseCloudRunWorkerPoolsResult => {
-    const { accessToken } = useGoogleApi();
-    const [workerPools, setWorkerPools] = useState<
-        CloudRunDeployment[] | undefined
-    >();
+export const useCloudRunWorkerPools = (projectId: string): UseCloudRunWorkerPoolsResult => {
+  const { accessToken } = useGoogleApi();
+  const [workerPools, setWorkerPools] = useState<CloudRunDeployment[] | undefined>();
 
-    useEffect(() => {
-        (async () => {
-            const data = await listCloudRunWorkerPools(projectId, accessToken);
-            setWorkerPools(data);
-        })();
-    }, [projectId]);
+  useEffect(() => {
+    (async () => {
+      const data = await listCloudRunWorkerPools(projectId, accessToken);
+      setWorkerPools(data);
+    })();
+  }, [projectId]);
 
-    return workerPools === undefined
-        ? {
-            workerPools: undefined,
-            isLoading: true,
-        }
-        : {
-            workerPools,
-            isLoading: false,
-        };
+  return workerPools === undefined
+    ? {
+        workerPools: undefined,
+        isLoading: true,
+      }
+    : {
+        workerPools,
+        isLoading: false,
+      };
 };

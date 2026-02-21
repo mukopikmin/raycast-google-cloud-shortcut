@@ -20,11 +20,12 @@ export const listCloudStorageBuckets = async (
     `https://www.googleapis.com/storage/v1/b?project=${projectId}`,
     accessToken,
   );
-  return body.items?.map((item) => ({
-    id: item.id,
-    name: item.name,
-    location: item.location,
-    url:
-      `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
-  })) ?? [];
+  return (
+    body.items?.map((item) => ({
+      id: item.id,
+      name: item.name,
+      location: item.location,
+      url: `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
+    })) ?? []
+  );
 };

@@ -5,17 +5,15 @@ import { CloudRunDeployment } from "./types";
 
 type UseCloudRunServicesResult =
   | {
-    services: CloudRunDeployment[];
-    isLoading: false;
-  }
+      services: CloudRunDeployment[];
+      isLoading: false;
+    }
   | {
-    services: undefined;
-    isLoading: true;
-  };
+      services: undefined;
+      isLoading: true;
+    };
 
-export const useCloudRunServices = (
-  projectId: string,
-): UseCloudRunServicesResult => {
+export const useCloudRunServices = (projectId: string): UseCloudRunServicesResult => {
   const { accessToken } = useGoogleApi();
   const [services, setServices] = useState<CloudRunDeployment[] | undefined>();
 
@@ -28,11 +26,11 @@ export const useCloudRunServices = (
 
   return services === undefined
     ? {
-      services: undefined,
-      isLoading: true,
-    }
+        services: undefined,
+        isLoading: true,
+      }
     : {
-      services,
-      isLoading: false,
-    };
+        services,
+        isLoading: false,
+      };
 };
