@@ -215,7 +215,7 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/cloudscheduler",
   },
   {
-    name: "Tasks",
+    name: "Cloud Tasks",
     category: "Integration",
     url: "https://console.cloud.google.com/cloudtasks",
   },

@@ -17,7 +17,7 @@ export const serchEnabledSeriviceNames = [
   "Cloud SQL",
   "AlloyDB",
   "Cloud Storage",
-  "Tasks",
+  "Cloud Tasks",
   "Secret Manager",
   "Service Accounts",
   "Pub/Sub",

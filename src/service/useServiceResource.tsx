@@ -64,7 +64,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudStorageBucketList projectId={projectId} />} />,
             };
-          case "Tasks":
+          case "Cloud Tasks":
             return {
               ...service,
               keywords,
