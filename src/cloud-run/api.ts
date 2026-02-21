@@ -15,10 +15,15 @@ type CloudRunServicesResponse = {
 };
 
 type CloudRunJobsResponse = {
-  jobs: {
-    name: string;
-    uid: string;
-    generation: string;
+  items: {
+    metadata: {
+      name: string;
+      uid: string;
+      generation: string;
+      labels: {
+        "cloud.googleapis.com/location": string;
+      };
+    };
   }[];
 };
 
@@ -60,17 +65,16 @@ export const listCloudRunJobs = async (
   accessToken: string,
 ): Promise<CloudRunDeployment[]> => {
   const body = await fetchGoogleApi<CloudRunJobsResponse>(
-    `https://run.googleapis.com/v2/projects/${projectId}/locations/-/jobs`,
+    `https://run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${projectId}/jobs`,
     accessToken,
   );
 
-  return body.jobs.map((job) => {
-    const parts = job.name.split("/");
-    const region = parts[parts.length - 3];
-    const name = parts[parts.length - 1];
+  return body.items.map((job) => {
+    const name = job.metadata.name;
+    const region = job.metadata.labels["cloud.googleapis.com/location"];
 
     return {
-      id: job.uid,
+      id: job.metadata.uid,
       name,
       region,
       deployType: "Jobs" as const,

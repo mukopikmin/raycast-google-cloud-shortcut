@@ -1,26 +1,27 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudRunServices } from "./useCloudRunServices";
+import { useCloudRunDeployments } from "./useCloudRunDeployments";
 
 type Props = {
   projectId: string;
 };
 
 export const CloudRunServicesList = (props: Props) => {
-  const { services, isLoading } = useCloudRunServices(props.projectId);
+  const { deployments, isLoading } = useCloudRunDeployments(props.projectId);
 
   return (
     <List isLoading={isLoading}>
-      {services?.map((service) => {
+      {deployments?.map((deployment) => {
         return (
           <List.Item
-            key={service.id}
-            id={service.id}
+            key={deployment.id}
+            id={deployment.id}
             icon={Icon.Box}
-            title={service.name}
-            subtitle={`${service.deployType} / ${service.region}`}
+            title={deployment.name}
+            subtitle={`${deployment.deployType} / ${deployment.region}`}
             actions={
               <ActionPanel>
-                <Action.OpenInBrowser url={service.url} />
+                <Action.OpenInBrowser url={deployment.url} />
               </ActionPanel>
             }
           />
