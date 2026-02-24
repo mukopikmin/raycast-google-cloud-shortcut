@@ -25,7 +25,7 @@ export const listSecretManagerSecrets = async (
       return {
         id: secret.name,
         name: name,
-        url: `https://console.cloud.google.com/security/secret-manager/secrets/${name}?project=${projectId}`,
+        url: `https://console.cloud.google.com/security/secret-manager/secret/${name}?project=${projectId}`,
       };
     }) ?? [];
 
