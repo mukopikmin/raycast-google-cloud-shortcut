@@ -85,7 +85,7 @@ export const listCloudRunJobs = async (projectId: string, accessToken: string): 
         name,
         region,
         deployType: "Jobs" as const,
-        url: `https://console.cloud.google.com/run/jobs/detail/${region}/${name}?project=${projectId}`,
+        url: `https://console.cloud.google.com/run/jobs/details/${region}/${name}?project=${projectId}`,
       });
     }) ?? []
   );
