@@ -1,11 +1,16 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSchedulerJobs } from "./useCloudSchedulerJobs";
 import { toReadableCron } from "./cron";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = { projectId: string; locationId: string };
 
 export const CloudSchedulerJobList = ({ projectId, locationId }: Props) => {
-  const { scheduledJobs, isLoading } = useCloudSchedulerJobs(projectId, locationId);
+  const { scheduledJobs, isLoading, error } = useCloudSchedulerJobs(projectId, locationId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

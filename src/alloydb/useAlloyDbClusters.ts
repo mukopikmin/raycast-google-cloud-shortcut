@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listAlloyDbClusters } from "./api";
 import { AlloyDbCluster } from "./types";
@@ -6,31 +6,36 @@ import { AlloyDbCluster } from "./types";
 type UseAlloyDbClustersResult =
   | {
       clusters: AlloyDbCluster[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       clusters: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      clusters: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useAlloyDbClusters = (projectId: string): UseAlloyDbClustersResult => {
   const { accessToken } = useGoogleApi();
-  const [clusters, setClusters] = useState<AlloyDbCluster[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listAlloyDbClusters(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listAlloyDbClusters(projectId, accessToken);
-      setClusters(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { clusters: undefined, isLoading: false, error };
+  }
 
-  return clusters === undefined
-    ? {
-        clusters: undefined,
-        isLoading: true,
-      }
-    : {
-        clusters,
-        isLoading: false,
-      };
+  if (!data) {
+    return { clusters: undefined, isLoading: true, error: undefined };
+  }
+
+  return { clusters: data, isLoading, error: undefined };
 };

@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const CloudRunServicesList = (props: Props) => {
-  const { deployments, isLoading } = useCloudRunDeployments(props.projectId);
+  const { deployments, isLoading, error } = useCloudRunDeployments(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

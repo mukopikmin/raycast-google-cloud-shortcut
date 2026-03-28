@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudTasksQueues } from "./api";
 import { CloudTasksQueue } from "./types";
@@ -6,28 +6,36 @@ import { CloudTasksQueue } from "./types";
 type UseCloudTasksResult =
   | {
       queues: CloudTasksQueue[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
-  | { queues: undefined; isLoading: true };
+  | {
+      queues: undefined;
+      isLoading: true;
+      error: undefined;
+    }
+  | {
+      queues: undefined;
+      isLoading: false;
+      error: Error;
+    };
 
 export const useCloudTasks = (projectId: string, locationId: string): UseCloudTasksResult => {
   const { accessToken } = useGoogleApi();
-  const [queues, setTasks] = useState<CloudTasksQueue[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, locId: string, token: string) => {
+      return await listCloudTasksQueues(projId, locId, token);
+    },
+    [projectId, locationId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listCloudTasksQueues(projectId, locationId, accessToken);
-      setTasks(data);
-    })();
-  }, [projectId, locationId]);
+  if (error) {
+    return { queues: undefined, isLoading: false, error };
+  }
 
-  return queues === undefined
-    ? {
-        queues: undefined,
-        isLoading: true,
-      }
-    : {
-        queues,
-        isLoading: false,
-      };
+  if (!data) {
+    return { queues: undefined, isLoading: true, error: undefined };
+  }
+
+  return { queues: data, isLoading, error: undefined };
 };
