@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudStorageBuckets } from "./api";
 import { CloudStorageBucket } from "./types";
@@ -6,31 +6,36 @@ import { CloudStorageBucket } from "./types";
 type UseCloudStorageResult =
   | {
       buckets: CloudStorageBucket[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       buckets: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      buckets: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useCloudStorage = (projectId: string): UseCloudStorageResult => {
   const { accessToken } = useGoogleApi();
-  const [buckets, setBuckets] = useState<CloudStorageBucket[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listCloudStorageBuckets(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listCloudStorageBuckets(projectId, accessToken);
-      setBuckets(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { buckets: undefined, isLoading: false, error };
+  }
 
-  return buckets === undefined
-    ? {
-        buckets: undefined,
-        isLoading: true,
-      }
-    : {
-        buckets,
-        isLoading: false,
-      };
+  if (!data) {
+    return { buckets: undefined, isLoading: true, error: undefined };
+  }
+
+  return { buckets: data, isLoading, error: undefined };
 };

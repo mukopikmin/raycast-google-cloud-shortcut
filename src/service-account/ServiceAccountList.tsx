@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useServiceAccounts } from "./useServiceAccounts";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const ServiceAccountList = (props: Props) => {
-  const { serviceAccounts, isLoading } = useServiceAccounts(props.projectId);
+  const { serviceAccounts, isLoading, error } = useServiceAccounts(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

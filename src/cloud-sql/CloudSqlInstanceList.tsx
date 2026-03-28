@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSqlInstances } from "./useCloudSqlInstances";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const CloudSqlInstanceList = (props: Props) => {
-  const { cloudSqlInstances, isLoading } = useCloudSqlInstances(props.projectId);
+  const { cloudSqlInstances, isLoading, error } = useCloudSqlInstances(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>
