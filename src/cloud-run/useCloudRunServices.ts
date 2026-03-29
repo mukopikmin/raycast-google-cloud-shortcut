@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudRunServices } from "./api";
 import { CloudRunDeployment } from "./types";
@@ -6,31 +6,36 @@ import { CloudRunDeployment } from "./types";
 type UseCloudRunServicesResult =
   | {
       services: CloudRunDeployment[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       services: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      services: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useCloudRunServices = (projectId: string): UseCloudRunServicesResult => {
   const { accessToken } = useGoogleApi();
-  const [services, setServices] = useState<CloudRunDeployment[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listCloudRunServices(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listCloudRunServices(projectId, accessToken);
-      setServices(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { services: undefined, isLoading: false, error };
+  }
 
-  return services === undefined
-    ? {
-        services: undefined,
-        isLoading: true,
-      }
-    : {
-        services,
-        isLoading: false,
-      };
+  if (!data) {
+    return { services: undefined, isLoading: true, error: undefined };
+  }
+
+  return { services: data, isLoading, error: undefined };
 };
