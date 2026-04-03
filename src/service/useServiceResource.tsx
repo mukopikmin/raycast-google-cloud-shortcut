@@ -12,6 +12,7 @@ import { WorkflowList } from "../workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
 import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
+import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -113,6 +114,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 title,
                 target: CloudSchedulerJobList,
               }),
+            };
+          case "Error Reporting":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<ErrorReportingErrorList projectId={projectId} />} />,
             };
           default:
             service satisfies never;
