@@ -18,7 +18,7 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
       {errorGroups?.map((group) => {
         // Extract the first line of the error message for the title
         const firstLine = group.representative.message.split("\n")[0];
-        
+
         // Last seen time formatted locally + count
         const lastSeen = new Date(group.lastSeenTime).toLocaleString();
         const subtitle = `${lastSeen} • ${group.count} occurrences`;
