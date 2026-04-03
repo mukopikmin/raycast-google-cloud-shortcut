@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { ServiceAccount } from "./types";
 import { fetchServiceAccounts } from "./api";
 import { useGoogleApi } from "../auth/google";
@@ -6,31 +6,36 @@ import { useGoogleApi } from "../auth/google";
 type UseServiceAccountResult =
   | {
       serviceAccounts: ServiceAccount[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       serviceAccounts: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      serviceAccounts: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useServiceAccounts = (projectId: string): UseServiceAccountResult => {
   const { accessToken } = useGoogleApi();
-  const [serviceAccounts, setServiceAccounts] = useState<ServiceAccount[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await fetchServiceAccounts(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await fetchServiceAccounts(projectId, accessToken);
-      setServiceAccounts(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { serviceAccounts: undefined, isLoading: false, error };
+  }
 
-  return serviceAccounts === undefined
-    ? {
-        serviceAccounts: undefined,
-        isLoading: true,
-      }
-    : {
-        serviceAccounts,
-        isLoading: false,
-      };
+  if (!data) {
+    return { serviceAccounts: undefined, isLoading: true, error: undefined };
+  }
+
+  return { serviceAccounts: data, isLoading, error: undefined };
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudSqlInstances } from "./api";
 import { CloudSqlInstance } from "./types";
@@ -6,31 +6,36 @@ import { CloudSqlInstance } from "./types";
 type UseCloudSqlInstancesResult =
   | {
       cloudSqlInstances: CloudSqlInstance[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       cloudSqlInstances: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      cloudSqlInstances: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useCloudSqlInstances = (projectId: string): UseCloudSqlInstancesResult => {
   const { accessToken } = useGoogleApi();
-  const [cloudSqlInstances, setCloudSqlInstances] = useState<CloudSqlInstance[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listCloudSqlInstances(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listCloudSqlInstances(projectId, accessToken);
-      setCloudSqlInstances(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { cloudSqlInstances: undefined, isLoading: false, error };
+  }
 
-  return cloudSqlInstances === undefined
-    ? {
-        cloudSqlInstances: undefined,
-        isLoading: true,
-      }
-    : {
-        cloudSqlInstances,
-        isLoading: false,
-      };
+  if (!data) {
+    return { cloudSqlInstances: undefined, isLoading: true, error: undefined };
+  }
+
+  return { cloudSqlInstances: data, isLoading, error: undefined };
 };

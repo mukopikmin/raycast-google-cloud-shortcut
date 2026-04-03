@@ -1,41 +1,41 @@
+import { usePromise } from "@raycast/utils";
 import { listWorkflows } from "./api";
 import { Workflow } from "./types";
-import { useEffect, useState } from "react";
 import { useGoogleApi } from "../auth/google";
 
 type UseWorkflowsResult =
   | {
       workflows: Workflow[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       workflows: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      workflows: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useWorkflows = (projectId: string): UseWorkflowsResult => {
   const { accessToken } = useGoogleApi();
-  const [workflows, setWorkflows] = useState<Workflow[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listWorkflows(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    const fetchWorkflows = async () => {
-      try {
-        const workflows = await listWorkflows(projectId, accessToken);
-        setWorkflows(workflows);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchWorkflows();
-  }, []);
+  if (error) {
+    return { workflows: undefined, isLoading: false, error };
+  }
 
-  return workflows === undefined
-    ? {
-        workflows: undefined,
-        isLoading: true,
-      }
-    : {
-        workflows,
-        isLoading: false,
-      };
+  if (!data) {
+    return { workflows: undefined, isLoading: true, error: undefined };
+  }
+
+  return { workflows: data, isLoading, error: undefined };
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { CloudSchedulerJob } from "./types";
 import { listCloudSchedulerJobs } from "./api";
 import { useGoogleApi } from "../auth/google";
@@ -6,25 +6,36 @@ import { useGoogleApi } from "../auth/google";
 type UseCloudSchedulerJobsResult =
   | {
       scheduledJobs: CloudSchedulerJob[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       scheduledJobs: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      scheduledJobs: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useCloudSchedulerJobs = (projectId: string, locationId: string): UseCloudSchedulerJobsResult => {
   const { accessToken } = useGoogleApi();
-  const [scheduledJobs, setScheduledJobs] = useState<CloudSchedulerJob[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, locId: string, token: string) => {
+      return await listCloudSchedulerJobs(projId, locId, token);
+    },
+    [projectId, locationId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const jobs = await listCloudSchedulerJobs(projectId, locationId, accessToken);
-      setScheduledJobs(jobs);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { scheduledJobs: undefined, isLoading: false, error };
+  }
 
-  return scheduledJobs === undefined
-    ? { scheduledJobs: undefined, isLoading: true }
-    : { scheduledJobs, isLoading: false };
+  if (!data) {
+    return { scheduledJobs: undefined, isLoading: true, error: undefined };
+  }
+
+  return { scheduledJobs: data, isLoading, error: undefined };
 };
