@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import { createPubSubSubscription, PubSubSubscription } from "./types";
+import { createPubSubSubscription, createPubSubTopic, PubSubSubscription, PubSubTopic } from "./types";
 
 type PubSubSubscriptionsResponse = {
   subscriptions?: {
@@ -32,6 +32,32 @@ export const listPubSubSubscriptions = async (
         // projects/PROJECT_ID/topics/TOPIC_ID
         topic: subscription.topic.split("/")[3] ?? "",
         subscriptionType: subscription.pushConfig === undefined ? "Pull" : "Push",
+      });
+    }) ?? []
+  );
+};
+
+type PubSubTopicsResponse = {
+  topics?: {
+    name: string;
+  }[];
+};
+
+/**
+ * @see https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.topics/list
+ */
+export const listPubSubTopics = async (projectId: string, accessToken: string): Promise<PubSubTopic[]> => {
+  const body = await fetchGoogleApi<PubSubTopicsResponse>(
+    `https://pubsub.googleapis.com/v1/projects/${projectId}/topics`,
+    accessToken,
+  );
+
+  return (
+    body.topics?.map((topic) => {
+      return createPubSubTopic({
+        projectId,
+        // projects/PROJECT_ID/topics/TOPIC_ID
+        name: topic.name.split("/")[3] ?? "",
       });
     }) ?? []
   );
