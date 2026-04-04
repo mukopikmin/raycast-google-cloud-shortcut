@@ -1,5 +1,6 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudTasks } from "./useCloudTasks";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
@@ -7,7 +8,11 @@ type Props = {
 };
 
 export const CloudTasksQueueList = (props: Props) => {
-  const { queues, isLoading } = useCloudTasks(props.projectId, props.locationId);
+  const { queues, isLoading, error } = useCloudTasks(props.projectId, props.locationId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

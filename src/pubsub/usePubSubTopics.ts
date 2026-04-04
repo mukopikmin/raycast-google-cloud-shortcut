@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { PubSubTopic } from "./types";
 import { listPubSubTopics } from "./api";
@@ -6,31 +6,36 @@ import { listPubSubTopics } from "./api";
 type UsePubSubTopicsResult =
   | {
       topics: PubSubTopic[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       topics: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      topics: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const usePubSubTopics = (projectId: string): UsePubSubTopicsResult => {
   const { accessToken } = useGoogleApi();
-  const [topics, setTopics] = useState<PubSubTopic[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listPubSubTopics(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listPubSubTopics(projectId, accessToken);
-      setTopics(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { topics: undefined, isLoading: false, error };
+  }
 
-  return topics === undefined
-    ? {
-        topics: undefined,
-        isLoading: true,
-      }
-    : {
-        topics,
-        isLoading: false,
-      };
+  if (!data) {
+    return { topics: undefined, isLoading: true, error: undefined };
+  }
+
+  return { topics: data, isLoading, error: undefined };
 };

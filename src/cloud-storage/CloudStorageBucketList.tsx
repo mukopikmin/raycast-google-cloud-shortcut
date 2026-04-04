@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudStorage } from "./useCloudStorage";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const CloudStorageBucketList = (props: Props) => {
-  const { buckets, isLoading } = useCloudStorage(props.projectId);
+  const { buckets, isLoading, error } = useCloudStorage(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

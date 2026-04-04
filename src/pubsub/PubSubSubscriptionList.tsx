@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { usePubSubResources } from "./usePubSubResources";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const PubSubSubscriptionList = (props: Props) => {
-  const { resources, isLoading } = usePubSubResources(props.projectId);
+  const { resources, isLoading, error } = usePubSubResources(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

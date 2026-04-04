@@ -1,36 +1,41 @@
-import { useEffect, useState } from "react";
+import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
-import { CloudRunDeployment } from "./types";
 import { listCloudRunJobs } from "./api";
+import { CloudRunDeployment } from "./types";
 
 type UseCloudRunJobsResult =
   | {
       jobs: CloudRunDeployment[];
-      isLoading: false;
+      isLoading: boolean;
+      error: undefined;
     }
   | {
       jobs: undefined;
       isLoading: true;
+      error: undefined;
+    }
+  | {
+      jobs: undefined;
+      isLoading: false;
+      error: Error;
     };
 
 export const useCloudRunJobs = (projectId: string): UseCloudRunJobsResult => {
   const { accessToken } = useGoogleApi();
-  const [jobs, setJobs] = useState<CloudRunDeployment[] | undefined>();
+  const { data, isLoading, error } = usePromise(
+    async (projId: string, token: string) => {
+      return await listCloudRunJobs(projId, token);
+    },
+    [projectId, accessToken],
+  );
 
-  useEffect(() => {
-    (async () => {
-      const data = await listCloudRunJobs(projectId, accessToken);
-      setJobs(data);
-    })();
-  }, [projectId]);
+  if (error) {
+    return { jobs: undefined, isLoading: false, error };
+  }
 
-  return jobs === undefined
-    ? {
-        jobs: undefined,
-        isLoading: true,
-      }
-    : {
-        jobs,
-        isLoading: false,
-      };
+  if (!data) {
+    return { jobs: undefined, isLoading: true, error: undefined };
+  }
+
+  return { jobs: data, isLoading, error: undefined };
 };

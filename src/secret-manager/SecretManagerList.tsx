@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useSecretManager } from "./useSecretManager";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const SecretManagerList = (props: Props) => {
-  const { secrets, isLoading } = useSecretManager(props.projectId);
+  const { secrets, isLoading, error } = useSecretManager(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>

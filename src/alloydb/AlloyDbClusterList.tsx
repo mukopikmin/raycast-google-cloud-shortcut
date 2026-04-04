@@ -1,12 +1,17 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useAlloyDbClusters } from "./useAlloyDbClusters";
+import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
   projectId: string;
 };
 
 export const AlloyDbClusterList = (props: Props) => {
-  const { clusters, isLoading } = useAlloyDbClusters(props.projectId);
+  const { clusters, isLoading, error } = useAlloyDbClusters(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
 
   return (
     <List isLoading={isLoading}>
