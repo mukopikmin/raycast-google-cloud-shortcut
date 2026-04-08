@@ -1,5 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
-import { usePubSubSubscriptions } from "./usePubSubSubscriptions";
+import { usePubSubResources } from "./usePubSubResources";
 import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
 };
 
 export const PubSubSubscriptionList = (props: Props) => {
-  const { subscriptions, isLoading, error } = usePubSubSubscriptions(props.projectId);
+  const { resources, isLoading, error } = usePubSubResources(props.projectId);
 
   if (error) {
     return <ErrorDetail error={error} />;
@@ -15,16 +15,21 @@ export const PubSubSubscriptionList = (props: Props) => {
 
   return (
     <List isLoading={isLoading}>
-      {subscriptions?.map((subscription) => (
+      {resources?.map((resource) => (
         <List.Item
-          key={subscription.name}
-          id={subscription.name}
-          title={subscription.name}
-          subtitle={`Subscribing to ${subscription.topic}`}
+          key={`${resource.resourceType}/${resource.name}`}
+          id={`${resource.resourceType}/${resource.name}`}
+          title={resource.name}
+          subtitle={
+            resource.resourceType === "Subscription"
+              ? `${resource.resourceType} / ${resource.subscriptionType}`
+              : resource.resourceType
+          }
           icon={Icon.Box}
+          keywords={resource.keywords}
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser url={subscription.url} />
+              <Action.OpenInBrowser url={resource.url} />
             </ActionPanel>
           }
         />
