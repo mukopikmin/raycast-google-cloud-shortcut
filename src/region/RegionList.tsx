@@ -4,10 +4,11 @@ import { useRegion } from "./useRegion";
 type Props = {
   projectId: string;
   target: (args: { projectId: string; locationId: string }) => React.ReactNode;
+  includeMultiRegions?: boolean;
 };
 
 export const RegionList = (props: Props) => {
-  const { regions } = useRegion();
+  const { regions } = useRegion(props.includeMultiRegions);
 
   return (
     <List>

@@ -16,25 +16,26 @@ type ListRepositoriesResponse = {
  */
 export const listArtifactRegistryRepositories = async (
   projectId: string,
+  locationId: string,
   accessToken: string,
 ): Promise<ArtifactRegistryRepository[]> => {
   const body = await fetchGoogleApi<ListRepositoriesResponse>(
-    `https://artifactregistry.googleapis.com/v1/projects/${projectId}/locations/-/repositories`,
+    `https://artifactregistry.googleapis.com/v1/projects/${projectId}/locations/${locationId}/repositories`,
     accessToken,
   );
 
   return (body.repositories ?? []).map((repo) => {
     // name format: projects/{project}/locations/{location}/repositories/{repo}
     const parts = repo.name.split("/");
-    const location = parts[3];
+    const loc = parts[3];
     const repoName = parts[5];
 
     return {
       name: repoName,
-      location,
+      location: loc,
       format: repo.format,
       description: repo.description,
-      url: `https://console.cloud.google.com/artifacts/${repo.format.toLowerCase()}/${projectId}/${location}/${repoName}?project=${projectId}`,
+      url: `https://console.cloud.google.com/artifacts/${repo.format.toLowerCase()}/${projectId}/${loc}/${repoName}?project=${projectId}`,
     };
   });
 };

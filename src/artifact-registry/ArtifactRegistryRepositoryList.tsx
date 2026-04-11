@@ -4,10 +4,11 @@ import { useArtifactRegistry } from "./useArtifactRegistry";
 
 type Props = {
   projectId: string;
+  locationId: string;
 };
 
-export const ArtifactRegistryRepositoryList = ({ projectId }: Props) => {
-  const { repositories, isLoading, error } = useArtifactRegistry(projectId);
+export const ArtifactRegistryRepositoryList = ({ projectId, locationId }: Props) => {
+  const { repositories, isLoading, error } = useArtifactRegistry(projectId, locationId);
 
   if (error) {
     return <ErrorDetail error={error} />;

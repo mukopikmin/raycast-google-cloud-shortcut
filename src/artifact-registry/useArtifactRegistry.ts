@@ -20,13 +20,13 @@ type UseArtifactRegistryResult =
       error: Error;
     };
 
-export const useArtifactRegistry = (projectId: string): UseArtifactRegistryResult => {
+export const useArtifactRegistry = (projectId: string, locationId: string): UseArtifactRegistryResult => {
   const { accessToken } = useGoogleApi();
   const { data, isLoading, error } = usePromise(
-    async (projId: string, token: string) => {
-      return await listArtifactRegistryRepositories(projId, token);
+    async (projId: string, locId: string, token: string) => {
+      return await listArtifactRegistryRepositories(projId, locId, token);
     },
-    [projectId, accessToken],
+    [projectId, locationId, accessToken],
   );
 
   if (error) {

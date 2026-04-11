@@ -1,4 +1,4 @@
-export type RegionID =
+export type RegularRegionID =
   | "asia-east1"
   | "asia-east2"
   | "asia-northeast1"
@@ -21,7 +21,18 @@ export type RegionID =
   | "us-east4"
   | "us-west1";
 
-export type Region = {
-  id: RegionID;
+export type MultiRegionID = "asia" | "europe" | "us";
+
+export type RegionID = RegularRegionID | MultiRegionID;
+
+export type RegularRegion = {
+  id: RegularRegionID;
   name: string;
 };
+
+export type MultiRegion = {
+  id: MultiRegionID;
+  name: string;
+};
+
+export type Region = RegularRegion | MultiRegion;

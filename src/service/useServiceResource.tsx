@@ -120,9 +120,12 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: (
-                <Action.Push title={title} target={<ArtifactRegistryRepositoryList projectId={projectId} />} />
-              ),
+              searchAction: withRegionSelect({
+                projectId,
+                title,
+                target: ArtifactRegistryRepositoryList,
+                includeMultiRegions: true,
+              }),
             };
           default:
             service satisfies never;
