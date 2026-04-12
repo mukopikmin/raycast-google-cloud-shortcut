@@ -37,5 +37,11 @@ export const useErrorReporting = (projectId: string): UseErrorReportingResult =>
     return { errorGroups: undefined, isLoading: true, error: undefined };
   }
 
-  return { errorGroups: data, isLoading, error: undefined };
+  const filteredGroups = data.filter((stat) => {
+    const status = stat.group.resolutionStatus;
+    // Filter for OPEN and ACKNOWLEDGED. RESOLUTION_STATUS_UNSPECIFIED is treated as OPEN.
+    return !status || status === "OPEN" || status === "ACKNOWLEDGED" || status === "RESOLUTION_STATUS_UNSPECIFIED";
+  });
+
+  return { errorGroups: filteredGroups, isLoading, error: undefined };
 };
