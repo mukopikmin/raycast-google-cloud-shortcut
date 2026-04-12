@@ -1,7 +1,7 @@
 import { Color, Icon, List } from "@raycast/api";
-import { ErrorGroupStats } from "./types";
+import { ErrorGroupStats, ResolutionStatus } from "./types";
 
-export const getStatusColor = (status?: string) => {
+export const getStatusColor = (status?: ResolutionStatus) => {
   switch (status) {
     case "OPEN":
       return Color.Red;
