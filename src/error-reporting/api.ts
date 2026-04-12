@@ -1,12 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import {
-  ErrorGroupStats,
-  ServiceContext,
-  TimedCount,
-  ErrorContext,
-  TrackingIssue,
-  ResolutionStatus,
-} from "./types";
+import { ErrorGroupStats, ServiceContext, TimedCount, ErrorContext, TrackingIssue, ResolutionStatus } from "./types";
 
 type ErrorGroupStatsResponse = {
   group: {

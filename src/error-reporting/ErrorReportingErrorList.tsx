@@ -26,7 +26,9 @@ const getStatusColor = (status?: string) => {
 const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
   const firstSeen = new Date(group.firstSeenTime).toLocaleString();
   const lastSeen = new Date(group.lastSeenTime).toLocaleString();
-  const eventTime = group.representative.eventTime ? new Date(group.representative.eventTime).toLocaleString() : undefined;
+  const eventTime = group.representative.eventTime
+    ? new Date(group.representative.eventTime).toLocaleString()
+    : undefined;
   const status = group.group.resolutionStatus || "OPEN";
 
   return (
@@ -37,9 +39,9 @@ const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
           <List.Item.Detail.Metadata.TagList title="Status">
             <List.Item.Detail.Metadata.TagList.Item text={status} color={getStatusColor(status)} />
           </List.Item.Detail.Metadata.TagList>
-          
+
           <List.Item.Detail.Metadata.Separator />
-          
+
           <List.Item.Detail.Metadata.Label title="Occurrences" text={group.count} icon={Icon.Heartbeat} />
           <List.Item.Detail.Metadata.Label
             title="Affected Users"
@@ -51,9 +53,9 @@ const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
             text={String(group.numAffectedServices)}
             icon={Icon.Globe}
           />
-          
+
           <List.Item.Detail.Metadata.Separator />
-          
+
           <List.Item.Detail.Metadata.Label title="First Seen" text={firstSeen} icon={Icon.Calendar} />
           <List.Item.Detail.Metadata.Label title="Last Seen" text={lastSeen} icon={Icon.Clock} />
           {eventTime && (
@@ -73,10 +75,19 @@ const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
           {group.representative.context?.reportLocation && (
             <>
               <List.Item.Detail.Metadata.Separator />
-              <List.Item.Detail.Metadata.Label title="File" text={group.representative.context.reportLocation.filePath} />
-              <List.Item.Detail.Metadata.Label title="Line" text={String(group.representative.context.reportLocation.lineNumber)} />
+              <List.Item.Detail.Metadata.Label
+                title="File"
+                text={group.representative.context.reportLocation.filePath}
+              />
+              <List.Item.Detail.Metadata.Label
+                title="Line"
+                text={String(group.representative.context.reportLocation.lineNumber)}
+              />
               {group.representative.context.reportLocation.functionName && (
-                <List.Item.Detail.Metadata.Label title="Function" text={group.representative.context.reportLocation.functionName} />
+                <List.Item.Detail.Metadata.Label
+                  title="Function"
+                  text={group.representative.context.reportLocation.functionName}
+                />
               )}
             </>
           )}
@@ -84,13 +95,16 @@ const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
           {group.representative.context?.httpRequest && (
             <>
               <List.Item.Detail.Metadata.Separator />
-              <List.Item.Detail.Metadata.Label 
-                title="HTTP Request" 
-                text={`${group.representative.context.httpRequest.method} ${group.representative.context.httpRequest.responseStatusCode}`} 
+              <List.Item.Detail.Metadata.Label
+                title="HTTP Request"
+                text={`${group.representative.context.httpRequest.method} ${group.representative.context.httpRequest.responseStatusCode}`}
               />
               <List.Item.Detail.Metadata.Label title="URL" text={group.representative.context.httpRequest.url} />
               {group.representative.context.httpRequest.userAgent && (
-                <List.Item.Detail.Metadata.Label title="User Agent" text={group.representative.context.httpRequest.userAgent} />
+                <List.Item.Detail.Metadata.Label
+                  title="User Agent"
+                  text={group.representative.context.httpRequest.userAgent}
+                />
               )}
             </>
           )}
@@ -106,11 +120,16 @@ const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
             <>
               <List.Item.Detail.Metadata.Separator />
               {group.group.trackingIssues.map((issue, idx) => (
-                <List.Item.Detail.Metadata.Link key={`issue-${idx}`} title="Tracking Issue" text={issue.url} target={issue.url} />
+                <List.Item.Detail.Metadata.Link
+                  key={`issue-${idx}`}
+                  title="Tracking Issue"
+                  text={issue.url}
+                  target={issue.url}
+                />
               ))}
             </>
           )}
-          
+
           {group.affectedServices.length > 0 && (
             <>
               <List.Item.Detail.Metadata.Separator />
@@ -130,9 +149,7 @@ const ErrorGroupDetail = ({ group }: { group: ErrorGroupStats }) => {
               <List.Item.Detail.Metadata.Label title="Daily Counts (Last 7 Days)" icon={Icon.BarChart} />
               {group.timedCounts.slice(0, 7).map((tc, idx) => {
                 const start = new Date(tc.startTime).toLocaleDateString();
-                return (
-                  <List.Item.Detail.Metadata.Label key={`tc-${idx}`} title={`  ${start}`} text={`${tc.count}`} />
-                );
+                return <List.Item.Detail.Metadata.Label key={`tc-${idx}`} title={`  ${start}`} text={`${tc.count}`} />;
               })}
             </>
           )}
@@ -153,11 +170,7 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
   }
 
   return (
-    <List
-      isLoading={isLoading}
-      searchBarPlaceholder="Search errors..."
-      isShowingDetail={showDetail}
-    >
+    <List isLoading={isLoading} searchBarPlaceholder="Search errors..." isShowingDetail={showDetail}>
       {errorGroups?.map((group) => {
         // Extract the first line of the error message for the title
         const firstLine = group.representative.message.split("\n")[0];
@@ -172,7 +185,11 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
           ? []
           : [
               { tag: { value: status }, color: statusColor, tooltip: "Resolution Status" },
-              { tag: { value: `${group.count}`, color: Color.SecondaryText }, icon: Icon.Heartbeat, tooltip: "Occurrences" },
+              {
+                tag: { value: `${group.count}`, color: Color.SecondaryText },
+                icon: Icon.Heartbeat,
+                tooltip: "Occurrences",
+              },
               {
                 tag: { value: `${group.numAffectedServices} svc`, color: Color.SecondaryText },
                 icon: Icon.Globe,
@@ -207,4 +224,3 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
     </List>
   );
 };
-

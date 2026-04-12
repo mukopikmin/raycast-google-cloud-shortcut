@@ -34,12 +34,7 @@ export type TrackingIssue = {
   url: string;
 };
 
-export type ResolutionStatus =
-  | "RESOLUTION_STATUS_UNSPECIFIED"
-  | "OPEN"
-  | "ACKNOWLEDGED"
-  | "RESOLVED"
-  | "MUTED";
+export type ResolutionStatus = "RESOLUTION_STATUS_UNSPECIFIED" | "OPEN" | "ACKNOWLEDGED" | "RESOLVED" | "MUTED";
 
 export type ErrorGroupStats = {
   group: {
