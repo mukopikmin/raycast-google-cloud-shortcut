@@ -5,6 +5,7 @@ type Props = {
   projectId: string;
   title: string;
   target: React.ComponentType<{ projectId: string; locationId: string }>;
+  includeMultiRegions?: boolean;
 };
 
 export const withRegionSelect = (props: Props) => {
@@ -14,6 +15,7 @@ export const withRegionSelect = (props: Props) => {
       target={
         <RegionList
           projectId={props.projectId}
+          includeMultiRegions={props.includeMultiRegions}
           target={(args) => <props.target projectId={args.projectId} locationId={args.locationId} />}
         />
       }
