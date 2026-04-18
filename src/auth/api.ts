@@ -8,7 +8,7 @@ export const fetchGoogleApi = async <T>(url: string, accessToken: string): Promi
     try {
       const body = await response.json();
       errorDetail = JSON.stringify(body);
-    } catch (e) {
+    } catch {
       errorDetail = response.statusText;
     }
 
@@ -17,7 +17,9 @@ export const fetchGoogleApi = async <T>(url: string, accessToken: string): Promi
     }
 
     if (response.status === 403) {
-      throw new Error(`Forbidden (403): You don't have permission to access this resource. URL: ${url} Response: ${errorDetail}`);
+      throw new Error(
+        `Forbidden (403): You don't have permission to access this resource. URL: ${url} Response: ${errorDetail}`,
+      );
     }
 
     throw new Error(`Failed to fetch (${response.status}): ${errorDetail}. URL: ${url}`);
