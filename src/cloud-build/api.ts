@@ -24,9 +24,7 @@ export const listCloudBuilds = async (
   region: string,
 ): Promise<CloudBuild[]> => {
   const location = region === "global" ? "" : region;
-  const parent = location
-    ? `projects/${projectId}/locations/${location}`
-    : `projects/${projectId}`;
+  const parent = location ? `projects/${projectId}/locations/${location}` : `projects/${projectId}`;
 
   const url = location
     ? `https://cloudbuild.googleapis.com/v1/${parent}/builds`
