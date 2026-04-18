@@ -104,3 +104,7 @@ type Category =
   | "Machine Learning"
   | "Integration"
   | "Billing";
+
+// Assert that there is no overlap between SearchEnabledServiceName and SearchDisabledServiceName
+type Overlap = Extract<SearchEnabledServiceName, SearchDisabledServiceName>;
+const assertNoOverlap: Overlap = null as never;
