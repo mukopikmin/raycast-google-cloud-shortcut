@@ -24,7 +24,7 @@ export const useCloudBuilds = (projectId: string): UseCloudBuildsResult => {
   const { accessToken } = useGoogleApi();
   const { data, isLoading, error } = usePromise(
     async (projId: string, token: string) => {
-      return await listCloudBuilds(projId, token, "global");
+      return await listCloudBuilds(projId, token);
     },
     [projectId, accessToken],
   );
