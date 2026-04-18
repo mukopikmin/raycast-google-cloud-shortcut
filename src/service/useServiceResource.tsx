@@ -12,6 +12,7 @@ import { WorkflowList } from "../workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
 import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
+import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 
@@ -114,6 +115,18 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 projectId,
                 title,
                 target: CloudSchedulerJobList,
+              }),
+            };
+          case "Artifact Registry":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: withRegionSelect({
+                projectId,
+                title,
+                target: ArtifactRegistryRepositoryList,
+                includeMultiRegions: true,
               }),
             };
           case "Error Reporting":
