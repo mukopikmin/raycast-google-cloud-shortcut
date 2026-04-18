@@ -11,10 +11,7 @@ type AppEngineServicesResponse = {
 /**
  * @see https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services/list
  */
-export const listAppEngineServices = async (
-  projectId: string,
-  accessToken: string,
-): Promise<AppEngineService[]> => {
+export const listAppEngineServices = async (projectId: string, accessToken: string): Promise<AppEngineService[]> => {
   const body = await fetchGoogleApi<AppEngineServicesResponse>(
     `https://appengine.googleapis.com/v1/apps/${projectId}/services`,
     accessToken,

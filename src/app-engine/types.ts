@@ -5,11 +5,7 @@ export type AppEngineService = {
   keywords: string[];
 };
 
-export const createAppEngineService = (args: {
-  projectId: string;
-  id: string;
-  name: string;
-}): AppEngineService => {
+export const createAppEngineService = (args: { projectId: string; id: string; name: string }): AppEngineService => {
   return {
     id: args.id,
     name: args.name,
