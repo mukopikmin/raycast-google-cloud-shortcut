@@ -13,6 +13,7 @@ import { withRegionSelect } from "../region/withRegionSelect";
 import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
+import { CloudBuildList } from "../cloud-build/CloudBuildList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -121,6 +122,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<ErrorReportingErrorList projectId={projectId} />} />,
+            };
+          case "Cloud Build":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
             };
           default:
             service satisfies never;

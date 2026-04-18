@@ -24,6 +24,7 @@ export const serchEnabledSeriviceNames = [
   "Workflows",
   "Cloud Scheduler",
   "Error Reporting",
+  "Cloud Build",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -59,7 +60,6 @@ export const searchDisabledServiceNames = [
   "Cloud Debugger",
   "Eventarc",
   "Artifact Registry",
-  "Cloud Build",
   "Source Repositories",
   "Deployment Manager",
   "Dataproc",
