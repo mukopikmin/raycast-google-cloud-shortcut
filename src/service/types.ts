@@ -107,4 +107,5 @@ type Category =
 
 // Assert that there is no overlap between SearchEnabledServiceName and SearchDisabledServiceName
 type Overlap = Extract<SearchEnabledServiceName, SearchDisabledServiceName>;
-const assertNoOverlap: Overlap = null as never;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _: Overlap = null as never;
