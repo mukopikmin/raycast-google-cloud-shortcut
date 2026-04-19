@@ -181,7 +181,7 @@ export const availableServices: Service[] = [
   {
     name: "Cloud Trace",
     category: "Operations",
-    url: "https://console.cloud.google.com/traces",
+    url: "https://console.cloud.google.com/traces/explorer",
   },
   {
     name: "Cloud Profiler",
