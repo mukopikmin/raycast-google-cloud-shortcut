@@ -8,6 +8,6 @@ export type Workflow = {
 export const createWorkflow = (args: Omit<Workflow, "url"> & { projectId: string }): Workflow => {
   return {
     ...args,
-    url: `https://console.cloud.google.com/workflows/workflow/${args.region}/${args.name}/overview?project=${args.projectId}`,
+    url: `https://console.cloud.google.com/workflows/workflow/${args.region}/${args.name}?project=${args.projectId}`,
   };
 };
