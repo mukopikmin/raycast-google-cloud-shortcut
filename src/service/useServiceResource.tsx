@@ -14,6 +14,7 @@ import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList"
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
 import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
+import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 
 export type UserServiceResourceResult = {
@@ -135,6 +136,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<ErrorReportingErrorList projectId={projectId} />} />,
+            };
+          case "App Engine":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<AppEngineServiceList projectId={projectId} />} />,
             };
           case "Cloud Build":
             return {
