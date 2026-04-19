@@ -12,8 +12,10 @@ import { WorkflowList } from "../workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
 import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
+import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
+import { CloudBuildList } from "../cloud-build/CloudBuildList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -116,6 +118,18 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 target: CloudSchedulerJobList,
               }),
             };
+          case "Artifact Registry":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: withRegionSelect({
+                projectId,
+                title,
+                target: ArtifactRegistryRepositoryList,
+                includeMultiRegions: true,
+              }),
+            };
           case "Error Reporting":
             return {
               ...service,
@@ -129,6 +143,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<AppEngineServiceList projectId={projectId} />} />,
+            };
+          case "Cloud Build":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
             };
           default:
             service satisfies never;

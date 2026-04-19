@@ -1,7 +1,7 @@
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listErrorGroups } from "./api";
-import { ErrorGroupStats } from "./types";
+import { ErrorGroupStats, ResolutionStatus } from "./types";
 
 type UseErrorReportingResult =
   | {
@@ -37,5 +37,12 @@ export const useErrorReporting = (projectId: string): UseErrorReportingResult =>
     return { errorGroups: undefined, isLoading: true, error: undefined };
   }
 
-  return { errorGroups: data, isLoading, error: undefined };
+  const allowedStatuses: Set<ResolutionStatus> = new Set(["OPEN", "ACKNOWLEDGED", "RESOLUTION_STATUS_UNSPECIFIED"]);
+
+  const filteredGroups = data.filter((stat) => {
+    const status = stat.group.resolutionStatus;
+    return !status || allowedStatuses.has(status);
+  });
+
+  return { errorGroups: filteredGroups, isLoading, error: undefined };
 };
