@@ -4,7 +4,6 @@ import { createWorkflow, Workflow } from "./types";
 type WorkflowsResponse = {
   workflows: {
     name: string;
-    region: string;
     description: string;
   }[];
 };
@@ -21,10 +20,11 @@ export const listWorkflows = async (projectId: string, accessToken: string): Pro
     // projects/{project}/locations/{region}/workflows/{workflowId}
     const parts = workflow.name.split("/");
     const region = parts[parts.length - 3];
+    const name = parts[parts.length - 1];
 
     return createWorkflow({
       projectId,
-      name: workflow.name,
+      name,
       region,
       description: workflow.description,
     });
