@@ -25,6 +25,7 @@ export const serchEnabledSeriviceNames = [
   "Cloud Scheduler",
   "Artifact Registry",
   "Error Reporting",
+  "App Engine",
   "Cloud Build",
 ] as const;
 
@@ -39,7 +40,6 @@ export const searchDisabledServiceNames = [
   "Compute Engine",
   "Kubernetes Engine",
   "Cloud Functions",
-  "App Engine",
   "Batch",
   "Transfer Service",
   "VPC Networks",
