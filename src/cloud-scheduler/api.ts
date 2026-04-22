@@ -2,7 +2,7 @@ import { fetchGoogleApi } from "../auth/api";
 import { CloudSchedulerJob, createCloudSchedulerJob } from "./types";
 
 type CloudSchedulerJobsResponse = {
-  jobs: {
+  jobs?: {
     name: string;
     region: string;
     schedule: string;
