@@ -24,7 +24,7 @@ export const listCloudSchedulerJobs = async (
     accessToken,
   );
 
-  return data.jobs?.map((job) => {
+  return (data.jobs ?? []).map((job) => {
     // projects/PROJECT_ID/locations/LOCATION_ID/jobs/JOB_ID
     const parts = job.name.split("/");
     const region = parts[parts.length - 3];
