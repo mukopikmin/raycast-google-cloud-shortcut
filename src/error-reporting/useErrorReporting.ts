@@ -39,10 +39,16 @@ export const useErrorReporting = (projectId: string): UseErrorReportingResult =>
 
   const allowedStatuses: Set<ResolutionStatus> = new Set(["OPEN", "ACKNOWLEDGED", "RESOLUTION_STATUS_UNSPECIFIED"]);
 
-  const filteredGroups = data.filter((stat) => {
-    const status = stat.group.resolutionStatus;
-    return !status || allowedStatuses.has(status);
-  });
+  const filteredGroups = data
+    .filter((stat) => {
+      const status = stat.group.resolutionStatus;
+      return !status || allowedStatuses.has(status);
+    })
+    .sort((a, b) => {
+      const countA = Number(a.count ?? 0);
+      const countB = Number(b.count ?? 0);
+      return countB - countA;
+    });
 
   return { errorGroups: filteredGroups, isLoading, error: undefined };
 };

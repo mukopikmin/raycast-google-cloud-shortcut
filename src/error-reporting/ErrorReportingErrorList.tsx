@@ -62,7 +62,6 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
                 />
                 <Action.OpenInBrowser url={group.url} />
                 <Action.CopyToClipboard title="Copy Error Message" content={group.representative.message} />
-                <Action.CopyToClipboard title="Copy Group ID" content={group.group.groupId} />
               </ActionPanel>
             }
           />
