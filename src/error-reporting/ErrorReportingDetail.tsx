@@ -28,9 +28,12 @@ export const ErrorGroupDetail = ({ group }: Props) => {
     : undefined;
   const status = group.group.resolutionStatus || "OPEN";
 
+  const messageLines = group.representative.message.split("\n");
+  const stacktrace = messageLines.length > 20 ? messageLines.slice(0, 20).join("\n") + "\n\n... (truncated)" : group.representative.message;
+
   return (
     <List.Item.Detail
-      markdown={`### Error Message\n\`\`\`\n${group.representative.message}\n\`\`\``}
+      markdown={`### Error Message\n\`\`\`\n${stacktrace}\n\`\`\``}
       metadata={
         <List.Item.Detail.Metadata>
           <List.Item.Detail.Metadata.TagList title="Status">
@@ -110,9 +113,6 @@ export const ErrorGroupDetail = ({ group }: Props) => {
             <List.Item.Detail.Metadata.Label title="User" text={group.representative.context.user} icon={Icon.Person} />
           )}
 
-          <List.Item.Detail.Metadata.Separator />
-          <List.Item.Detail.Metadata.Label title="Group ID" text={group.group.groupId} />
-
           {group.group.trackingIssues && group.group.trackingIssues.length > 0 && (
             <>
               <List.Item.Detail.Metadata.Separator />
@@ -150,8 +150,6 @@ export const ErrorGroupDetail = ({ group }: Props) => {
               })}
             </>
           )}
-          <List.Item.Detail.Metadata.Separator />
-          <List.Item.Detail.Metadata.Link title="Open in Console" text="View Error Group" target={group.url} />
         </List.Item.Detail.Metadata>
       }
     />
