@@ -20,13 +20,16 @@ export const PubSubSubscriptionList = (props: Props) => {
           key={`${resource.resourceType}/${resource.name}`}
           id={`${resource.resourceType}/${resource.name}`}
           title={resource.name}
-          subtitle={
-            resource.resourceType === "Subscription"
-              ? `${resource.resourceType} / ${resource.subscriptionType}`
-              : resource.resourceType
-          }
           icon={Icon.Box}
           keywords={resource.keywords}
+          accessories={[
+            {
+              text:
+                resource.resourceType === "Subscription"
+                  ? `${resource.resourceType} / ${resource.subscriptionType}`
+                  : resource.resourceType,
+            },
+          ]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={resource.url} />

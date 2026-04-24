@@ -20,8 +20,8 @@ export const CloudStorageBucketList = (props: Props) => {
           key={bucket.id}
           id={bucket.id}
           title={bucket.name}
-          subtitle={bucket.location}
           icon={Icon.Box}
+          accessories={[{ text: bucket.location }]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={bucket.url} />
