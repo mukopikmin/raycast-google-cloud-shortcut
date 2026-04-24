@@ -41,7 +41,6 @@ export const CloudBuildList = ({ projectId }: Props) => {
       {builds?.map((build) => {
         const createdAt = new Date(build.createTime).toLocaleString();
         const title = build.triggerName ?? build.id;
-        const subtitle = `${build.status} • ${createdAt}`;
 
         return (
           <List.Item
@@ -49,8 +48,8 @@ export const CloudBuildList = ({ projectId }: Props) => {
             id={build.id}
             icon={statusIcon(build.status)}
             title={title}
-            subtitle={subtitle}
             keywords={build.keywords}
+            accessories={[{ text: build.status }, { text: createdAt }]}
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={build.url} />

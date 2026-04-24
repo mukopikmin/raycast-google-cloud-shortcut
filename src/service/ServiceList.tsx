@@ -15,10 +15,9 @@ export const ServiceList = (props: Props) => {
         <List.Item
           key={service.name}
           title={service.name}
-          subtitle={service.category}
           keywords={service.keywords}
           icon={Icon.ComputerChip}
-          accessories={service.isSearchEnabled ? searchAccessory : []}
+          accessories={[{ text: service.category }, ...(service.isSearchEnabled ? searchAccessory : [])]}
           actions={
             <ActionPanel>
               {service.isSearchEnabled && service.searchAction}
