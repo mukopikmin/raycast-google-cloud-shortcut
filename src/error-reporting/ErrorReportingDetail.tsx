@@ -29,7 +29,10 @@ export const ErrorGroupDetail = ({ group }: Props) => {
   const status = group.group.resolutionStatus || "OPEN";
 
   const messageLines = group.representative.message.split("\n");
-  const stacktrace = messageLines.length > 20 ? messageLines.slice(0, 20).join("\n") + "\n\n... (truncated)" : group.representative.message;
+  const stacktrace =
+    messageLines.length > 20
+      ? messageLines.slice(0, 20).join("\n") + "\n\n... (truncated)"
+      : group.representative.message;
 
   return (
     <List.Item.Detail
