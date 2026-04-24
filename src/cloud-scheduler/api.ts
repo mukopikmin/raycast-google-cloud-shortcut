@@ -19,7 +19,9 @@ const listCloudSchedulerJobsByType = async (
   accessToken: string,
   legacyAppEngineCron = false,
 ): Promise<CloudSchedulerJobResponse[]> => {
-  const url = new URL(`https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations/${locationId}/jobs`);
+  const url = new URL(
+    `https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations/${locationId}/jobs`,
+  );
   if (legacyAppEngineCron) {
     url.searchParams.set("legacyAppEngineCron", "true");
   }
@@ -67,8 +69,5 @@ export const listCloudSchedulerJobs = async (
     jobsByResourceName.set(job.name, job);
   }
 
-  return createCloudSchedulerJobs(
-    projectId,
-    Array.from(jobsByResourceName.values()),
-  );
+  return createCloudSchedulerJobs(projectId, Array.from(jobsByResourceName.values()));
 };
