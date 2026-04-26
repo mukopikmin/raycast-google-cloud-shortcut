@@ -16,6 +16,7 @@ import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactReg
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
+import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -67,6 +68,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudStorageBucketList projectId={projectId} />} />,
+            };
+          case "Cloud Functions":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudFunctionList projectId={projectId} />} />,
             };
           case "Cloud Tasks":
             return {
