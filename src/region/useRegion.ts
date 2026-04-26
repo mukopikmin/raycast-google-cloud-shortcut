@@ -1,10 +1,10 @@
-import { Region } from "./types";
+import { MultiRegion, RegularRegion, Region } from "./types";
 
 type UseRegionResult = {
   regions: Region[];
 };
 
-const regions: Region[] = [
+const regions: RegularRegion[] = [
   { id: "asia-east1", name: "Asia East 1 (Taiwan)" },
   { id: "asia-east2", name: "Asia East 2 (Hong Kong)" },
   { id: "asia-northeast1", name: "Asia Northeast 1 (Tokyo)" },
@@ -31,8 +31,14 @@ const regions: Region[] = [
   { id: "us-west1", name: "US West 1 (Oregon)" },
 ];
 
-export const useRegion = (): UseRegionResult => {
+const multiRegions: MultiRegion[] = [
+  { id: "asia", name: "Asia (Multi-region)" },
+  { id: "europe", name: "Europe (Multi-region)" },
+  { id: "us", name: "United States (Multi-region)" },
+];
+
+export const useRegion = (includeMultiRegions = false): UseRegionResult => {
   return {
-    regions,
+    regions: includeMultiRegions ? [...multiRegions, ...regions] : regions,
   };
 };

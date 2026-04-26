@@ -4,7 +4,7 @@ import { createServiceAccount, ServiceAccount } from "./types";
 type ServiceAccountListResponse = {
   accounts?: {
     uniqueId: string;
-    displayName: string;
+    displayName?: string;
     email: string;
   }[];
 };
@@ -19,7 +19,7 @@ export const fetchServiceAccounts = async (projectId: string, accessToken: strin
     data.accounts?.map((account) => {
       return createServiceAccount({
         id: account.uniqueId,
-        name: account.displayName,
+        name: account.displayName || account.email,
         email: account.email,
         projectId,
       });

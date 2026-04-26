@@ -4,7 +4,6 @@ import { createWorkflow, Workflow } from "./types";
 type WorkflowsResponse = {
   workflows: {
     name: string;
-    region: string;
     description: string;
   }[];
 };

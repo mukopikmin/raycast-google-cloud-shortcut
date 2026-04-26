@@ -23,7 +23,10 @@ export const serchEnabledSeriviceNames = [
   "Pub/Sub",
   "Workflows",
   "Cloud Scheduler",
+  "Artifact Registry",
   "Error Reporting",
+  "App Engine",
+  "Cloud Build",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -37,7 +40,6 @@ export const searchDisabledServiceNames = [
   "Compute Engine",
   "Kubernetes Engine",
   "Cloud Functions",
-  "App Engine",
   "Batch",
   "Transfer Service",
   "VPC Networks",
@@ -58,8 +60,6 @@ export const searchDisabledServiceNames = [
   "Cloud Profiler",
   "Cloud Debugger",
   "Eventarc",
-  "Artifact Registry",
-  "Cloud Build",
   "Source Repositories",
   "Deployment Manager",
   "Dataproc",
@@ -104,3 +104,8 @@ type Category =
   | "Machine Learning"
   | "Integration"
   | "Billing";
+
+// Assert that there is no overlap between SearchEnabledServiceName and SearchDisabledServiceName
+type Overlap = Extract<SearchEnabledServiceName, SearchDisabledServiceName>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _: Overlap = null as never;
