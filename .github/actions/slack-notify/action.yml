@@ -1,0 +1,45 @@
+name: Slack Notification
+description: "Send CI result to Slack using the official Slack GitHub Action"
+
+inputs:
+  status:
+    description: "Job status"
+    required: true
+  webhook_url:
+    description: "Slack Webhook URL"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Slack Notification
+      uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
+      with:
+        payload: |
+          {
+            "attachments": [
+              {
+                "color": "${{ inputs.status == 'success' ? '#36a64f' : '#ef5350' }}",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*CI Result: ${{ inputs.status == 'success' ? '✅ Success' : '❌ Failure' }}*"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      { "type": "mrkdwn", "text": "*Workflow:*\n${{ github.workflow }}" },
+                      { "type": "mrkdwn", "text": "*Repo:*\n${{ github.repository }}" },
+                      { "type": "mrkdwn", "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" },
+                      { "type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.webhook_url }}

@@ -21,3 +21,12 @@ jobs:
         run: npm ci
       - name: Run type-check
         run: npm run type-check
+      - uses: ./.github/actions/slack-notify
+        if: |
+          always() && (
+            (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+            (github.event_name == 'pull_request' && job.status != 'success')
+          )
+        with:
+          status: ${{ job.status }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
