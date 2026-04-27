@@ -21,8 +21,8 @@ export const CloudFunctionList = ({ projectId }: Props) => {
           id={cloudFunction.id}
           title={cloudFunction.name}
           icon={Icon.Box}
-          subtitle={[cloudFunction.region, cloudFunction.runtime, cloudFunction.status].filter(Boolean).join(" / ")}
           keywords={cloudFunction.keywords}
+          accessories={[{ text: cloudFunction.region }, { text: cloudFunction.runtime }, { text: cloudFunction.status }].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={cloudFunction.url} />
