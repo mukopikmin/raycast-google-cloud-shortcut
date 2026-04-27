@@ -1,4 +1,4 @@
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { useCloudFunctions } from "./useCloudFunctions";
 
@@ -20,7 +20,8 @@ export const CloudFunctionList = ({ projectId }: Props) => {
           key={cloudFunction.id}
           id={cloudFunction.id}
           title={cloudFunction.name}
-          subtitle={[cloudFunction.region, cloudFunction.runtime, cloudFunction.status].filter(Boolean).join(" • ")}
+          icon={Icon.Box}
+          subtitle={[cloudFunction.region, cloudFunction.runtime, cloudFunction.status].filter(Boolean).join(" / ")}
           keywords={cloudFunction.keywords}
           actions={
             <ActionPanel>
