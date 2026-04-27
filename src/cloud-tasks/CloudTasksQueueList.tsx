@@ -21,8 +21,8 @@ export const CloudTasksQueueList = (props: Props) => {
           key={queue.name}
           id={queue.name}
           title={queue.name}
-          subtitle={queue.region}
           icon={Icon.Box}
+          accessories={[{ text: queue.region }]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={queue.url} />
