@@ -21,7 +21,11 @@ export const AlloyDbClusterList = (props: Props) => {
           id={cluster.id}
           icon={Icon.Box}
           title={cluster.name}
-          subtitle={`${cluster.region} ${cluster.state}`}
+          accessories={[
+            { text: cluster.clusterId, tooltip: "Cluster ID" },
+            { text: cluster.region, tooltip: "Region" },
+            { text: cluster.state, tooltip: "State" },
+          ]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={cluster.url} />
