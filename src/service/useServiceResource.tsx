@@ -10,7 +10,7 @@ import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
 import { WorkflowList } from "../workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
-import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
+import { CloudSchedulerRegionList } from "../cloud-scheduler/CloudSchedulerRegionList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
 import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
@@ -111,11 +111,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: withRegionSelect({
-                projectId,
-                title,
-                target: CloudSchedulerJobList,
-              }),
+              searchAction: <Action.Push title={title} target={<CloudSchedulerRegionList projectId={projectId} />} />,
             };
           case "Artifact Registry":
             return {

@@ -12,6 +12,17 @@ type CloudSchedulerJobsResponse = {
 };
 
 type CloudSchedulerJobResponse = NonNullable<CloudSchedulerJobsResponse["jobs"]>[number];
+type CloudSchedulerLocationsResponse = {
+  locations?: {
+    locationId: string;
+    displayName: string;
+  }[];
+};
+
+export type CloudSchedulerLocation = {
+  id: string;
+  name: string;
+};
 
 const listCloudSchedulerJobsByType = async (
   projectId: string,
@@ -47,6 +58,26 @@ const createCloudSchedulerJobs = (projectId: string, jobs: CloudSchedulerJobResp
       description: job.description,
     });
   });
+};
+
+/**
+ * @see https://docs.cloud.google.com/scheduler/docs/reference/rest/v1beta1/projects.locations/list
+ */
+export const listCloudSchedulerLocations = async (
+  projectId: string,
+  accessToken: string,
+): Promise<CloudSchedulerLocation[]> => {
+  const data = await fetchGoogleApi<CloudSchedulerLocationsResponse>(
+    `https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations`,
+    accessToken,
+  );
+
+  return (data.locations ?? [])
+    .map((location) => ({
+      id: location.locationId,
+      name: location.displayName,
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
 };
 
 /**
