@@ -14,8 +14,6 @@ export const listWorkflows = async (projectId: string, accessToken: string): Pro
     accessToken,
   );
 
-  console.log(body);
-
   return body.workflows?.map((workflow) => {
     const parts = workflow.name.split("/");
     const region = parts[parts.length - 3];
