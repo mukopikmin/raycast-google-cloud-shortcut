@@ -9,13 +9,14 @@ type CloudSchedulerJobsResponse = {
     timeZone: string;
     description: string;
   }[];
+  nextPageToken?: string;
 };
 
 type CloudSchedulerJobResponse = NonNullable<CloudSchedulerJobsResponse["jobs"]>[number];
 type CloudSchedulerLocationsResponse = {
   locations?: {
     locationId: string;
-    displayName: string;
+    displayName?: string;
   }[];
 };
 
@@ -30,16 +31,22 @@ const listCloudSchedulerJobsByType = async (
   accessToken: string,
   legacyAppEngineCron = false,
 ): Promise<CloudSchedulerJobResponse[]> => {
-  const url = new URL(
-    `https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations/${locationId}/jobs`,
-  );
-  if (legacyAppEngineCron) {
-    url.searchParams.set("legacyAppEngineCron", "true");
-  }
+  const apiVersion = legacyAppEngineCron ? "v1beta1" : "v1";
+  const baseUrl = `https://cloudscheduler.googleapis.com/${apiVersion}/projects/${projectId}/locations/${locationId}/jobs`;
+  const allJobs: CloudSchedulerJobResponse[] = [];
+  let pageToken: string | undefined;
 
-  const data = await fetchGoogleApi<CloudSchedulerJobsResponse>(url.toString(), accessToken);
+  do {
+    const url = new URL(baseUrl);
+    if (legacyAppEngineCron) url.searchParams.set("legacyAppEngineCron", "true");
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
 
-  return data.jobs ?? [];
+    const data = await fetchGoogleApi<CloudSchedulerJobsResponse>(url.toString(), accessToken);
+    if (data.jobs) allJobs.push(...data.jobs);
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  return allJobs;
 };
 
 const createCloudSchedulerJobs = (projectId: string, jobs: CloudSchedulerJobResponse[]): CloudSchedulerJob[] => {
@@ -75,7 +82,7 @@ export const listCloudSchedulerLocations = async (
   return (data.locations ?? [])
     .map((location) => ({
       id: location.locationId,
-      name: location.displayName,
+      name: location.displayName || location.locationId,
     }))
     .sort((a, b) => a.id.localeCompare(b.id));
 };
@@ -88,10 +95,18 @@ export const listCloudSchedulerJobs = async (
   locationId: string,
   accessToken: string,
 ): Promise<CloudSchedulerJob[]> => {
-  const [defaultJobs, legacyJobs] = await Promise.all([
-    listCloudSchedulerJobsByType(projectId, locationId, accessToken),
-    listCloudSchedulerJobsByType(projectId, locationId, accessToken, true),
-  ]);
+  const defaultJobsPromise = listCloudSchedulerJobsByType(projectId, locationId, accessToken);
+  const legacyJobsPromise = listCloudSchedulerJobsByType(projectId, locationId, accessToken, true);
+
+  const defaultJobs = await defaultJobsPromise;
+  let legacyJobs: CloudSchedulerJobResponse[] = [];
+  try {
+    legacyJobs = await legacyJobsPromise;
+  } catch (error) {
+    if (defaultJobs.length === 0) {
+      throw error;
+    }
+  }
 
   const mergedJobs = [...defaultJobs, ...legacyJobs];
   const jobsByResourceName = new Map<string, CloudSchedulerJobResponse>();
