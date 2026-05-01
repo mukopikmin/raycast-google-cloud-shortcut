@@ -14,7 +14,9 @@ import { CloudSchedulerRegionList } from "../cloud-scheduler/CloudSchedulerRegio
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
 import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
+import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
+import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -66,6 +68,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudStorageBucketList projectId={projectId} />} />,
+            };
+          case "Cloud Functions":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudFunctionList projectId={projectId} />} />,
             };
           case "Cloud Tasks":
             return {
@@ -131,6 +140,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<ErrorReportingErrorList projectId={projectId} />} />,
+            };
+          case "App Engine":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<AppEngineServiceList projectId={projectId} />} />,
             };
           case "Cloud Build":
             return {

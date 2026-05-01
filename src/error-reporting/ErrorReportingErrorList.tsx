@@ -26,11 +26,11 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
 
         // Last seen time formatted locally + count
         const lastSeen = new Date(group.lastSeenTime).toLocaleString();
-        const subtitle = showDetail ? undefined : `${lastSeen}`;
 
         const accessories = showDetail
           ? []
           : [
+              { text: lastSeen },
               { tag: { value: status }, color: statusColor, tooltip: "Resolution Status" },
               {
                 tag: { value: `${group.count}`, color: Color.SecondaryText },
@@ -49,7 +49,6 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
             key={group.group.groupId}
             id={group.group.groupId}
             title={firstLine}
-            subtitle={subtitle}
             icon={{ source: Icon.ExclamationMark, tintColor: statusColor }}
             accessories={accessories}
             detail={<ErrorGroupDetail group={group} />}

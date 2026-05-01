@@ -20,8 +20,8 @@ export const WorkflowList = ({ projectId }: Props) => {
           key={workflow.name}
           id={workflow.name}
           title={workflow.name}
-          subtitle={workflow.region}
           icon={Icon.Box}
+          accessories={[{ text: workflow.region }]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={workflow.url} />
