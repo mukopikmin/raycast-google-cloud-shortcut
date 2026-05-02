@@ -16,6 +16,7 @@ import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactReg
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
+import { VpcNetworkList } from "../vpc/VpcNetworkList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 
 export type UserServiceResourceResult = {
@@ -158,6 +159,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
+            };
+          case "VPC Networks":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<VpcNetworkList projectId={projectId} />} />,
             };
           default:
             service satisfies never;
