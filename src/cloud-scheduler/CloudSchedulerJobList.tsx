@@ -20,7 +20,8 @@ export const CloudSchedulerJobList = ({ projectId, locationId }: Props) => {
           id={schedulerJob.name}
           icon={Icon.Box}
           title={schedulerJob.name}
-          subtitle={`${toReadableCron(schedulerJob.schedule)} (${schedulerJob.timeZone})`}
+          subtitle={toReadableCron(schedulerJob.schedule)}
+          accessories={[{ text: schedulerJob.timeZone }]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={schedulerJob.url} />

@@ -21,7 +21,7 @@ export const CloudSqlInstanceList = (props: Props) => {
           id={instance.id}
           icon={Icon.Box}
           title={instance.id}
-          subtitle={`${instance.region} ${instance.state}`}
+          accessories={[{ text: instance.region }, { text: instance.state }]}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={instance.url} />

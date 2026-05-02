@@ -12,11 +12,12 @@ export type SearchDisabledService = {
   url: string;
 };
 
-export const serchEnabledSeriviceNames = [
+export const searchEnabledServiceNames = [
   "Cloud Run",
   "Cloud SQL",
   "AlloyDB",
   "Cloud Storage",
+  "Cloud Functions",
   "Cloud Tasks",
   "Secret Manager",
   "Service Accounts",
@@ -40,7 +41,6 @@ export const searchDisabledServiceNames = [
   "Memorystore",
   "Compute Engine",
   "Kubernetes Engine",
-  "Cloud Functions",
   "Batch",
   "Transfer Service",
   "Load Balancing",
@@ -80,14 +80,14 @@ export const searchDisabledServiceNames = [
 
 export type ServiceName = SearchEnabledServiceName | SearchDisabledServiceName;
 
-export type SearchEnabledServiceName = (typeof serchEnabledSeriviceNames)[number];
+export type SearchEnabledServiceName = (typeof searchEnabledServiceNames)[number];
 
 export const isSearchEnabledService = (value: Service): value is SearchEnabledService => {
-  return serchEnabledSeriviceNames.includes(value.name as SearchEnabledServiceName);
+  return searchEnabledServiceNames.includes(value.name as SearchEnabledServiceName);
 };
 
 export const isSearchEnabledServiceName = (value: ServiceName): value is SearchEnabledServiceName => {
-  return serchEnabledSeriviceNames.includes(value as SearchEnabledServiceName);
+  return searchEnabledServiceNames.includes(value as SearchEnabledServiceName);
 };
 
 export type SearchDisabledServiceName = (typeof searchDisabledServiceNames)[number];

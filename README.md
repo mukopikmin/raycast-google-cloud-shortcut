@@ -39,7 +39,7 @@ This extension supports quick navigation to Google Cloud services. For some serv
 | Compute Engine | Compute | - |
 | Kubernetes Engine | Compute | - |
 | Cloud Run | Compute | Services |
-| Cloud Functions | Compute | - |
+| Cloud Functions | Compute | Functions (gen1) |
 | App Engine | Compute | Services |
 | Batch | Compute | - |
 | Cloud Storage | Storage | Buckets |

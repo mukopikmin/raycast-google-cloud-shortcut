@@ -14,17 +14,14 @@ export const listWorkflows = async (projectId: string, accessToken: string): Pro
     accessToken,
   );
 
-  console.log(body);
-
   return body.workflows?.map((workflow) => {
-    // projects/{project}/locations/{region}/workflows/{workflowId}
     const parts = workflow.name.split("/");
     const region = parts[parts.length - 3];
-    const name = parts[parts.length - 1];
+    const shortName = parts[parts.length - 1];
 
     return createWorkflow({
       projectId,
-      name,
+      name: shortName,
       region,
       description: workflow.description,
     });

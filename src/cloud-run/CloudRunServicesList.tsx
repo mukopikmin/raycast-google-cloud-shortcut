@@ -22,8 +22,8 @@ export const CloudRunServicesList = (props: Props) => {
             id={deployment.id}
             icon={Icon.Box}
             title={deployment.name}
-            subtitle={`${deployment.deployType} / ${deployment.region}`}
             keywords={deployment.keywords}
+            accessories={[{ text: deployment.deployType }, { text: deployment.region }]}
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={deployment.url} />
