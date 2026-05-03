@@ -1,6 +1,7 @@
-export const fetchGoogleApi = async <T>(url: string, accessToken: string): Promise<T> => {
+export const fetchGoogleApi = async <T>(url: string, accessToken: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    ...init,
+    headers: { Authorization: `Bearer ${accessToken}`, ...init?.headers },
   });
 
   if (!response.ok) {
