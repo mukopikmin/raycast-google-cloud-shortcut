@@ -20,22 +20,8 @@ type Props = {
   group: ErrorGroupStats;
 };
 
-const MAX_STACKTRACE_LINES = 12;
-const MAX_STACKTRACE_CHARS = 1600;
 const MAX_AFFECTED_SERVICES = 3;
 const MAX_DAILY_COUNTS = 3;
-
-const truncateStacktrace = (message: string) => {
-  const lines = message.split("\n");
-  const truncatedByLineCount = lines.length > MAX_STACKTRACE_LINES;
-  const lineLimitedMessage = truncatedByLineCount ? lines.slice(0, MAX_STACKTRACE_LINES).join("\n") : message;
-  const truncatedByCharCount = lineLimitedMessage.length > MAX_STACKTRACE_CHARS;
-  const limitedMessage = truncatedByCharCount
-    ? `${lineLimitedMessage.slice(0, MAX_STACKTRACE_CHARS).trimEnd()}\n\n... (truncated)`
-    : lineLimitedMessage;
-
-  return truncatedByLineCount && !truncatedByCharCount ? `${limitedMessage}\n\n... (truncated)` : limitedMessage;
-};
 
 export const ErrorGroupDetail = ({ group }: Props) => {
   const firstSeen = new Date(group.firstSeenTime).toLocaleString();
@@ -44,15 +30,16 @@ export const ErrorGroupDetail = ({ group }: Props) => {
     ? new Date(group.representative.eventTime).toLocaleString()
     : undefined;
   const status = group.group.resolutionStatus || "OPEN";
-  const stacktrace = truncateStacktrace(group.representative.message);
   const displayedAffectedServices = group.affectedServices.slice(0, MAX_AFFECTED_SERVICES);
   const hiddenAffectedServicesCount = group.affectedServices.length - displayedAffectedServices.length;
-  const displayedTimedCounts = group.timedCounts.slice(0, MAX_DAILY_COUNTS);
+  const displayedTimedCounts = [...group.timedCounts]
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+    .slice(0, MAX_DAILY_COUNTS);
   const hiddenTimedCountsCount = group.timedCounts.length - displayedTimedCounts.length;
 
   return (
     <List.Item.Detail
-      markdown={`### ${status}\n\`\`\`\n${stacktrace}\n\`\`\``}
+      markdown={`### ${status}\n\`\`\`\n${group.representative.message}\n\`\`\``}
       metadata={
         <List.Item.Detail.Metadata>
           <List.Item.Detail.Metadata.Label title="Last Seen" text={lastSeen} icon={Icon.Clock} />
@@ -165,7 +152,9 @@ export const ErrorGroupDetail = ({ group }: Props) => {
               <List.Item.Detail.Metadata.Label title="Daily Counts" icon={Icon.BarChart} />
               {displayedTimedCounts.map((tc, idx) => {
                 const start = new Date(tc.startTime).toLocaleDateString();
-                return <List.Item.Detail.Metadata.Label key={`tc-${idx}`} title={`  ${start}`} text={`${tc.count}`} />;
+                return (
+                  <List.Item.Detail.Metadata.Label key={`tc-${idx}`} title={`  ${start}`} text={`${tc.count || "0"}`} />
+                );
               })}
               {hiddenTimedCountsCount > 0 && (
                 <List.Item.Detail.Metadata.Label title="  More" text={`${hiddenTimedCountsCount} older days`} />
