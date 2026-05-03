@@ -12,6 +12,17 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Set Status Context
+      shell: bash
+      run: |
+        if [ "${{ inputs.status }}" = "success" ]; then
+          echo "COLOR=#36a64f" >> $GITHUB_ENV
+          echo "RESULT_TEXT=✅ Success" >> $GITHUB_ENV
+        else
+          echo "COLOR=#ef5350" >> $GITHUB_ENV
+          echo "RESULT_TEXT=❌ Failure" >> $GITHUB_ENV
+        fi
+
     - name: Send Slack Notification
       uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
       with:
@@ -19,13 +30,13 @@ runs:
           {
             "attachments": [
               {
-                "color": "${{ inputs.status == 'success' ? '#36a64f' : '#ef5350' }}",
+                "color": "${{ env.COLOR }}",
                 "blocks": [
                   {
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "*CI Result: ${{ inputs.status == 'success' ? '✅ Success' : '❌ Failure' }}*"
+                      "text": "*CI Result: ${{ env.RESULT_TEXT }}*"
                     }
                   },
                   {
