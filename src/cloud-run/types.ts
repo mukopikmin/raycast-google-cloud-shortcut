@@ -4,6 +4,7 @@ export type CloudRunDeployment = {
   region: string;
   deployType: CloudRunDeployType;
   url: string;
+  uri?: string;
   keywords: string[];
 };
 
@@ -15,6 +16,7 @@ export const createCloudRunDeployment = (args: {
   region: string;
   deployType: CloudRunDeployType;
   url: string;
+  uri?: string;
 }): CloudRunDeployment => {
   return {
     id: args.id,
@@ -22,6 +24,7 @@ export const createCloudRunDeployment = (args: {
     region: args.region,
     deployType: args.deployType,
     url: args.url,
+    uri: args.uri,
     keywords: [args.name, args.region, args.deployType],
   };
 };
