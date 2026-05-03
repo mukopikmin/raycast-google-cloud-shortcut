@@ -22,6 +22,7 @@ runs:
           echo "COLOR=#ef5350" >> $GITHUB_ENV
           echo "RESULT_TEXT=❌ Failure" >> $GITHUB_ENV
         fi
+        echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
     - name: Send Slack Notification
       uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
@@ -45,7 +46,7 @@ runs:
                     "fields": [
                       { "type": "mrkdwn", "text": "*Workflow:*\n${{ github.workflow }}" },
                       { "type": "mrkdwn", "text": "*Repo:*\n${{ github.repository }}" },
-                      { "type": "mrkdwn", "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>" },
+                      { "type": "mrkdwn", "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ env.SHORT_SHA }}>" },
                       { "type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}" }
                     ]
                   }
