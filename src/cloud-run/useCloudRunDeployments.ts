@@ -36,9 +36,13 @@ export const useCloudRunDeployments = (projectId: string): UseCloudRunDeployment
 
   const isLoading = isLoadingServices || isLoadingJobs || isLoadingWorkerPools;
 
-  if (isLoading || !services || !jobs || !workerPools) {
+  if (isLoading && !services && !jobs && !workerPools) {
     return { deployments: undefined, isLoading: true, error: undefined };
   }
 
-  return { deployments: [...services, ...jobs, ...workerPools], isLoading: false, error: undefined };
+  return {
+    deployments: [...(services ?? []), ...(jobs ?? []), ...(workerPools ?? [])],
+    isLoading,
+    error: undefined,
+  };
 };
