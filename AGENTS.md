@@ -42,3 +42,4 @@ These are technical guidelines to be applied consistently across this entire pro
 
 ## 6. Communication
 - **GitHub Interactions**: Always write Pull Request descriptions, Issue comments, and commit messages in **English**.
+- **Automatic Issue Closing**: When creating a Pull Request to resolve an issue, always include "closes #<issue_number>" or similar keywords in the PR description to ensure the issue is automatically closed when the PR is merged.
