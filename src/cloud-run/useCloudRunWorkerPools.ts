@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudRunWorkerPools } from "./api";
 import { CloudRunDeployment } from "./types";
 
-type UseCloudRunWorkerPoolsResult =
-  | {
-      workerPools: CloudRunDeployment[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      workerPools: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      workerPools: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  workerPools: CloudRunDeployment[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  workerPools: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  workerPools: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudRunWorkerPoolsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunWorkerPools = (projectId: string): UseCloudRunWorkerPoolsResult => {
   const { accessToken } = useGoogleApi();

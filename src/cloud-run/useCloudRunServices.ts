@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudRunServices } from "./api";
 import { CloudRunDeployment } from "./types";
 
-type UseCloudRunServicesResult =
-  | {
-      services: CloudRunDeployment[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      services: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      services: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  services: CloudRunDeployment[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  services: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  services: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudRunServicesResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunServices = (projectId: string): UseCloudRunServicesResult => {
   const { accessToken } = useGoogleApi();

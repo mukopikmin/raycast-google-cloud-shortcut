@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listErrorGroups } from "./api";
 import { ErrorGroupStats, ResolutionStatus } from "./types";
 
-type UseErrorReportingResult =
-  | {
-      errorGroups: ErrorGroupStats[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      errorGroups: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      errorGroups: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  errorGroups: ErrorGroupStats[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  errorGroups: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  errorGroups: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseErrorReportingResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useErrorReporting = (projectId: string): UseErrorReportingResult => {
   const { accessToken } = useGoogleApi();

@@ -2,22 +2,25 @@ import { PubSubResource } from "./types";
 import { usePubSubSubscriptions } from "./usePubSubSubscriptions";
 import { usePubSubTopics } from "./usePubSubTopics";
 
-type UsePubSubResourcesResult =
-  | {
-      resources: PubSubResource[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      resources: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      resources: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  resources: PubSubResource[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  resources: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  resources: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UsePubSubResourcesResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const usePubSubResources = (projectId: string): UsePubSubResourcesResult => {
   const {

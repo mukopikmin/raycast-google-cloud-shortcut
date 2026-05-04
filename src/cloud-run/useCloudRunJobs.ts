@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudRunJobs } from "./api";
 import { CloudRunDeployment } from "./types";
 
-type UseCloudRunJobsResult =
-  | {
-      jobs: CloudRunDeployment[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      jobs: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      jobs: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  jobs: CloudRunDeployment[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  jobs: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  jobs: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudRunJobsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunJobs = (projectId: string): UseCloudRunJobsResult => {
   const { accessToken } = useGoogleApi();

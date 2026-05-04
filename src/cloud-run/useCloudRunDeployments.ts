@@ -3,22 +3,25 @@ import { useCloudRunJobs } from "./useCloudRunJobs";
 import { useCloudRunServices } from "./useCloudRunServices";
 import { useCloudRunWorkerPools } from "./useCloudRunWorkerPools";
 
-type UseCloudRunDeploymentsResult =
-  | {
-      deployments: CloudRunDeployment[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      deployments: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      deployments: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  deployments: CloudRunDeployment[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  deployments: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  deployments: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudRunDeploymentsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunDeployments = (projectId: string): UseCloudRunDeploymentsResult => {
   const { services, isLoading: isLoadingServices, error: errorServices } = useCloudRunServices(projectId);

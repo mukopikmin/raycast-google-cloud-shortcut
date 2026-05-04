@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudSqlInstances } from "./api";
 import { CloudSqlInstance } from "./types";
 
-type UseCloudSqlInstancesResult =
-  | {
-      cloudSqlInstances: CloudSqlInstance[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      cloudSqlInstances: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      cloudSqlInstances: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  cloudSqlInstances: CloudSqlInstance[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  cloudSqlInstances: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  cloudSqlInstances: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudSqlInstancesResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudSqlInstances = (projectId: string): UseCloudSqlInstancesResult => {
   const { accessToken } = useGoogleApi();
