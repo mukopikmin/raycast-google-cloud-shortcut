@@ -9,6 +9,9 @@ updates:
       semver-minor-days: 7
       semver-patch-days: 3
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "@types/react"
+      - dependency-name: "@types/node"
     groups:
       npm-dependencies:
         patterns:

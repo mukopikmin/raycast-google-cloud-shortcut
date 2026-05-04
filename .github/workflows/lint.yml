@@ -23,7 +23,7 @@ jobs:
         run: npm run lint
       - uses: ./.github/actions/slack-notify
         if: |
-          always() && (
+          secrets.SLACK_WEBHOOK != '' && always() && (
             (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
             (github.event_name == 'pull_request' && job.status != 'success')
           )
