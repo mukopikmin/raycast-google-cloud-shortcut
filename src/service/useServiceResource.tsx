@@ -17,6 +17,7 @@ import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorL
 import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
+import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -158,6 +159,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
+            };
+          case "Load Balancing":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<LoadBalancerList projectId={projectId} />} />,
             };
           default:
             service satisfies never;

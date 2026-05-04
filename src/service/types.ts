@@ -28,6 +28,7 @@ export const searchEnabledServiceNames = [
   "Error Reporting",
   "App Engine",
   "Cloud Build",
+  "Load Balancing",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -43,7 +44,6 @@ export const searchDisabledServiceNames = [
   "Batch",
   "Transfer Service",
   "VPC Networks",
-  "Load Balancing",
   "Cloud NAT",
   "Cloud DNS",
   "Network Intelligence Center",
