@@ -1,5 +1,5 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
-import { useForwardingRules } from "./useForwardingRules";
+import { useLoadBalancers } from "./useLoadBalancers";
 import { ErrorDetail } from "../components/ErrorDetail";
 
 type Props = {
@@ -7,27 +7,36 @@ type Props = {
 };
 
 export const LoadBalancerList = ({ projectId }: Props) => {
-  const { forwardingRules, isLoading, error } = useForwardingRules(projectId);
+  const { resources, isLoading, error } = useLoadBalancers(projectId);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <List isLoading={isLoading} searchBarPlaceholder="Search load balancers...">
-      {forwardingRules?.map((rule) => (
+    <List isLoading={isLoading} searchBarPlaceholder="Search load balancers and global addresses...">
+      {resources?.map((resource) => (
         <List.Item
-          key={rule.id}
-          title={rule.name}
-          subtitle={rule.IPAddress}
-          icon={Icon.Network}
-          accessories={[{ text: rule.region }, { text: rule.IPProtocol }, { text: rule.loadBalancingScheme }].filter(
-            (a) => a.text,
-          )}
+          key={resource.id}
+          title={resource.name}
+          subtitle={resource.type === "forwardingRule" ? resource.IPAddress : resource.address}
+          icon={Icon.Box}
+          accessories={
+            resource.type === "forwardingRule"
+              ? [
+                  { text: resource.region },
+                  { text: resource.IPProtocol },
+                  { text: resource.loadBalancingScheme },
+                ].filter((a) => a.text)
+              : [{ text: "Global Address" }]
+          }
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser url={rule.url} />
-              <Action.CopyToClipboard title="Copy IP Address" content={rule.IPAddress} />
+              <Action.OpenInBrowser url={resource.url} />
+              <Action.CopyToClipboard
+                title="Copy IP Address"
+                content={resource.type === "forwardingRule" ? resource.IPAddress : resource.address}
+              />
             </ActionPanel>
           }
         />

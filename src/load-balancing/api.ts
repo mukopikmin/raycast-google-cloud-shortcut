@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import { ForwardingRule } from "./types";
+import { ForwardingRule, GlobalAddress, LoadBalancerResource } from "./types";
 
 type AggregatedForwardingRulesResponse = {
   items?: {
@@ -20,10 +20,25 @@ type AggregatedForwardingRulesResponse = {
   };
 };
 
-/**
- * @see https://cloud.google.com/compute/docs/reference/rest/v1/forwardingRules/aggregatedList
- */
-export const listForwardingRules = async (projectId: string, accessToken: string): Promise<ForwardingRule[]> => {
+type GlobalAddressesResponse = {
+  items?: {
+    id: string;
+    name: string;
+    address: string;
+    selfLink: string;
+  }[];
+};
+
+export const listLoadBalancers = async (projectId: string, accessToken: string): Promise<LoadBalancerResource[]> => {
+  const [forwardingRules, globalAddresses] = await Promise.all([
+    listForwardingRules(projectId, accessToken),
+    listGlobalAddresses(projectId, accessToken),
+  ]);
+
+  return [...forwardingRules, ...globalAddresses];
+};
+
+const listForwardingRules = async (projectId: string, accessToken: string): Promise<ForwardingRule[]> => {
   const body = await fetchGoogleApi<AggregatedForwardingRulesResponse>(
     `https://compute.googleapis.com/compute/v1/projects/${projectId}/aggregated/forwardingRules`,
     accessToken,
@@ -36,9 +51,10 @@ export const listForwardingRules = async (projectId: string, accessToken: string
       const regionData = body.items[regionKey];
       if (regionData.forwardingRules) {
         for (const rule of regionData.forwardingRules) {
-          const region = rule.region ? rule.region.split("/").pop() : "global";
+          const region = regionKey.split("/").pop() ?? "global";
 
           rules.push({
+            type: "forwardingRule",
             id: rule.id,
             name: rule.name,
             IPAddress: rule.IPAddress,
@@ -48,7 +64,10 @@ export const listForwardingRules = async (projectId: string, accessToken: string
             target: rule.target,
             region: region,
             loadBalancingScheme: rule.loadBalancingScheme,
-            url: `https://console.cloud.google.com/net-services/loadbalancing/details/${region === "global" ? "global" : "regional"}/${region}/${rule.name}?project=${projectId}`,
+            url:
+              region === "global"
+                ? `https://console.cloud.google.com/net-services/loadbalancing/details/global/${rule.name}?project=${projectId}`
+                : `https://console.cloud.google.com/net-services/loadbalancing/details/regional/${region}/${rule.name}?project=${projectId}`,
           });
         }
       }
@@ -56,4 +75,22 @@ export const listForwardingRules = async (projectId: string, accessToken: string
   }
 
   return rules;
+};
+
+const listGlobalAddresses = async (projectId: string, accessToken: string): Promise<GlobalAddress[]> => {
+  const body = await fetchGoogleApi<GlobalAddressesResponse>(
+    `https://compute.googleapis.com/compute/v1/projects/${projectId}/global/addresses`,
+    accessToken,
+  );
+
+  return (
+    body.items?.map((item) => ({
+      type: "address",
+      id: item.id,
+      name: item.name,
+      address: item.address,
+      region: "global",
+      url: `https://console.cloud.google.com/networking/addresses/details/global/${item.name}?project=${projectId}`,
+    })) ?? []
+  );
 };
