@@ -20,13 +20,14 @@ export const IamList = (props: Props) => {
           key={item.id}
           id={item.id}
           icon={Icon.Person}
-          title={item.member}
+          title={item.name}
           subtitle={item.role}
+          accessories={[{ text: item.type }]}
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser url={item.url} />
               <Action.CopyToClipboard title="Copy Member" content={item.member} />
               <Action.CopyToClipboard title="Copy Role" content={item.role} />
+              <Action.OpenInBrowser title="Open in Google Cloud Console" url={item.url} />
             </ActionPanel>
           }
         />

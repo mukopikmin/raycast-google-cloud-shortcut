@@ -12,6 +12,8 @@ export type IamPolicy = {
 export type IamMemberRole = {
   id: string;
   member: string;
+  name: string;
+  type: string;
   role: string;
   url: string;
 };
