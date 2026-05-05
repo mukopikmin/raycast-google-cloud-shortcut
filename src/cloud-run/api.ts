@@ -26,7 +26,7 @@ type CloudRunJobsResponse = {
       };
     };
   }[];
-  metadata: {
+  metadata?: {
     continue?: string;
   };
 };
@@ -42,7 +42,7 @@ type CloudRunWorkerPoolsResponse = {
       };
     };
   }[];
-  metadata: {
+  metadata?: {
     continue?: string;
   };
 };
@@ -134,7 +134,7 @@ export const listCloudRunJobs = async (
     allJobs.push(...jobs);
     onPageFetched?.(allJobs);
 
-    continueToken = body.metadata.continue;
+    continueToken = body.metadata?.continue;
   } while (continueToken);
 
   return allJobs;
@@ -177,7 +177,7 @@ export const listCloudRunWorkerPools = async (
     allWorkerPools.push(...workerPools);
     onPageFetched?.(allWorkerPools);
 
-    continueToken = body.metadata.continue;
+    continueToken = body.metadata?.continue;
   } while (continueToken);
 
   return allWorkerPools;
