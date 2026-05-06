@@ -22,11 +22,7 @@ jobs:
       - name: Run type-check
         run: npm run type-check
       - uses: ./.github/actions/slack-notify
-        if: |
-          always() && (
-            (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
-            (github.event_name == 'pull_request' && job.status != 'success')
-          )
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && job.status != 'success'
         continue-on-error: true
         with:
           status: ${{ job.status }}
