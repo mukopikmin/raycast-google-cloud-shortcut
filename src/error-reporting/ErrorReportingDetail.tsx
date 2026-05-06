@@ -39,9 +39,15 @@ export const ErrorGroupDetail = ({ group }: Props) => {
 
   return (
     <List.Item.Detail
-      markdown={`### ${status}\n\`\`\`\n${group.representative.message}\n\`\`\``}
+      markdown={`\`\`\`\n${group.representative.message}\n\`\`\``}
       metadata={
         <List.Item.Detail.Metadata>
+          <List.Item.Detail.Metadata.TagList title="Status">
+            <List.Item.Detail.Metadata.TagList.Item text={status} color={getStatusColor(status)} />
+          </List.Item.Detail.Metadata.TagList>
+
+          <List.Item.Detail.Metadata.Separator />
+
           <List.Item.Detail.Metadata.Label title="Last Seen" text={lastSeen} icon={Icon.Clock} />
           <List.Item.Detail.Metadata.Label title="Occurrences" text={group.count} icon={Icon.Heartbeat} />
           <List.Item.Detail.Metadata.Label
