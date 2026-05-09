@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudRunWorkerPools } from "./api";
@@ -25,9 +26,14 @@ type UseCloudRunWorkerPoolsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunWorkerPools = (projectId: string): UseCloudRunWorkerPoolsResult => {
   const { accessToken } = useGoogleApi();
-  const { data, isLoading, error } = usePromise(
+  const [progressiveWorkerPools, setProgressiveWorkerPools] = useState<CloudRunDeployment[]>([]);
+
+  const { isLoading, error } = usePromise(
     async (projId: string, token: string) => {
-      return await listCloudRunWorkerPools(projId, token);
+      setProgressiveWorkerPools([]);
+      return await listCloudRunWorkerPools(projId, token, (workerPools) => {
+        setProgressiveWorkerPools([...workerPools]);
+      });
     },
     [projectId, accessToken],
   );
@@ -36,9 +42,9 @@ export const useCloudRunWorkerPools = (projectId: string): UseCloudRunWorkerPool
     return { workerPools: undefined, isLoading: false, error };
   }
 
-  if (!data) {
+  if (isLoading && progressiveWorkerPools.length === 0) {
     return { workerPools: undefined, isLoading: true, error: undefined };
   }
 
-  return { workerPools: data, isLoading, error: undefined };
+  return { workerPools: progressiveWorkerPools, isLoading, error: undefined };
 };
