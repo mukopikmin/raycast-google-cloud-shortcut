@@ -9,6 +9,16 @@ export type CloudRunDeployment = {
 
 export type CloudRunDeployType = "Function Services" | "Container Services" | "Jobs" | "Worker Pools";
 
+const cloudRunLoggingKindByDeployType: Record<
+  CloudRunDeployType,
+  Extract<CloudLoggingTarget, { kind: "cloud-run-job" | "cloud-run-service" | "cloud-run-worker-pool" }>["kind"]
+> = {
+  "Function Services": "cloud-run-service",
+  "Container Services": "cloud-run-service",
+  Jobs: "cloud-run-job",
+  "Worker Pools": "cloud-run-worker-pool",
+};
+
 export const createCloudRunDeployment = (args: {
   id: string;
   name: string;
@@ -17,16 +27,9 @@ export const createCloudRunDeployment = (args: {
   projectId: string;
   url: string;
 }): CloudRunDeployment => {
-  const kind =
-    args.deployType === "Jobs"
-      ? "cloud-run-job"
-      : args.deployType === "Worker Pools"
-        ? "cloud-run-worker-pool"
-        : "cloud-run-service";
-
   return {
     id: args.id,
-    kind,
+    kind: cloudRunLoggingKindByDeployType[args.deployType],
     projectId: args.projectId,
     name: args.name,
     region: args.region,
