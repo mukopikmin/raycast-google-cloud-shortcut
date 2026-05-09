@@ -78,6 +78,7 @@ export const listCloudRunServices = async (
 
         return createCloudRunDeployment({
           id: service.uid,
+          projectId,
           name,
           region,
           deployType: service.buildConfig === undefined ? "Container Services" : "Function Services",
@@ -124,6 +125,7 @@ export const listCloudRunJobs = async (
 
         return createCloudRunDeployment({
           id: job.metadata.uid,
+          projectId,
           name,
           region,
           deployType: "Jobs" as const,
@@ -167,6 +169,7 @@ export const listCloudRunWorkerPools = async (
 
         return createCloudRunDeployment({
           id: workerPool.metadata.uid,
+          projectId,
           name,
           region,
           deployType: "Worker Pools" as const,

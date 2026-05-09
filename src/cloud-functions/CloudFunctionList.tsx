@@ -1,4 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudLoggingAction } from "../actions/cloud-logging/OpenCloudLoggingAction";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { useCloudFunctions } from "./useCloudFunctions";
 
@@ -29,6 +30,7 @@ export const CloudFunctionList = ({ projectId }: Props) => {
           ].filter((a) => a.text)}
           actions={
             <ActionPanel>
+              <OpenCloudLoggingAction target={cloudFunction} />
               <Action.OpenInBrowser url={cloudFunction.url} />
             </ActionPanel>
           }

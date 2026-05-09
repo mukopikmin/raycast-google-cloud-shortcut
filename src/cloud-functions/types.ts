@@ -1,12 +1,12 @@
+import { CloudLoggingTarget } from "../actions/cloud-logging/types";
+
 export type CloudFunction = {
   id: string;
-  name: string;
-  region: string;
   status?: string;
   runtime?: string;
   url: string;
   keywords: string[];
-};
+} & Extract<CloudLoggingTarget, { kind: "cloud-function-gen1" }>;
 
 export const createCloudFunction = (args: {
   projectId: string;
@@ -18,6 +18,8 @@ export const createCloudFunction = (args: {
 }): CloudFunction => {
   return {
     id: args.id,
+    kind: "cloud-function-gen1",
+    projectId: args.projectId,
     name: args.name,
     region: args.region,
     status: args.status,
