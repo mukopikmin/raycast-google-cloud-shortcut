@@ -27,63 +27,63 @@ This extension supports quick navigation to Google Cloud services. For some serv
 
 | Service Name | Category | Resource Search |
 |---|---|---|
-| AlloyDB | Database | Clusters |
-| BigQuery | Data Analytics | - |
-| BigQuery Data Transfer | Data Analytics | - |
-| Bigtable | Database | - |
-| Cloud SQL | Database | Instances |
-| Cloud Spanner | Database | - |
-| Firestore | Database | - |
-| Datastore | Database | - |
-| Memorystore | Database | - |
-| Compute Engine | Compute | Instances |
-| Kubernetes Engine | Compute | - |
-| Cloud Run | Compute | Services |
-| Cloud Functions | Compute | Functions (gen1) |
-| App Engine | Compute | Services |
-| Batch | Compute | - |
-| Cloud Storage | Storage | Buckets |
-| Transfer Service | Storage | - |
-| VPC Networks | Networking | - |
-| Load Balancing | Networking | - |
-| Cloud NAT | Networking | - |
-| Cloud DNS | Networking | - |
-| Network Intelligence Center | Networking | - |
-| IAM & Admin | Security | - |
-| Service Accounts | Security | Service Accounts |
-| Workload Identity Federation | Security | - |
-| Organization Policies | Security | - |
-| Secret Manager | Security | Secrets |
-| Cloud KMS | Security | - |
-| Certificate Manager | Security | - |
-| Security Command Center | Security | - |
-| Web Security Scanner | Security | - |
-| Cloud Logging | Operations | - |
-| Cloud Monitoring | Operations | - |
-| Error Reporting | Operations | Errors |
-| Cloud Trace | Operations | - |
-| Cloud Profiler | Operations | - |
-| Cloud Debugger | Operations | - |
-| Pub/Sub | Integration | Topics & Subscriptions |
-| Eventarc | Integration | - |
-| Workflows | Integration | Workflows |
-| Cloud Scheduler | Integration | Jobs |
-| Cloud Tasks | Integration | Queues |
-| Artifact Registry | DevOps | Repositories |
-| Cloud Build | DevOps | Builds |
-| Source Repositories | DevOps | - |
-| Deployment Manager | DevOps | - |
-| Dataproc | Data Analytics | - |
-| Dataflow | Data Analytics | - |
-| Composer | Data Analytics | - |
-| Data Fusion | Data Analytics | - |
-| Dataplex | Data Analytics | - |
-| Vertex AI | Machine Learning | - |
-| Vertex AI Workbench | Machine Learning | - |
-| AutoML | Machine Learning | - |
 | API & Services | Billing | - |
 | API Library | Billing | - |
-| Credentials | Billing | - |
 | Billing | Billing | - |
-| Quotas | Billing | - |
 | Budgets & Alerts | Billing | - |
+| Credentials | Billing | - |
+| Quotas | Billing | - |
+| App Engine | Compute | Services |
+| Batch | Compute | - |
+| Cloud Functions | Compute | Functions (gen1) |
+| Cloud Run | Compute | Services |
+| Compute Engine | Compute | Instances |
+| Kubernetes Engine | Compute | - |
+| BigQuery | Data Analytics | - |
+| BigQuery Data Transfer | Data Analytics | - |
+| Composer | Data Analytics | - |
+| Data Fusion | Data Analytics | - |
+| Dataflow | Data Analytics | - |
+| Dataplex | Data Analytics | - |
+| Dataproc | Data Analytics | - |
+| AlloyDB | Database | Clusters |
+| Bigtable | Database | - |
+| Cloud Spanner | Database | - |
+| Cloud SQL | Database | Instances |
+| Datastore | Database | - |
+| Firestore | Database | - |
+| Memorystore | Database | - |
+| Artifact Registry | DevOps | Repositories |
+| Cloud Build | DevOps | Builds |
+| Deployment Manager | DevOps | - |
+| Source Repositories | DevOps | - |
+| Cloud Scheduler | Integration | Jobs |
+| Cloud Tasks | Integration | Queues |
+| Eventarc | Integration | - |
+| Pub/Sub | Integration | Topics & Subscriptions |
+| Workflows | Integration | Workflows |
+| AutoML | Machine Learning | - |
+| Vertex AI | Machine Learning | - |
+| Vertex AI Workbench | Machine Learning | - |
+| Cloud DNS | Networking | - |
+| Cloud NAT | Networking | - |
+| Load Balancing | Networking | - |
+| Network Intelligence Center | Networking | - |
+| VPC Networks | Networking | - |
+| Cloud Debugger | Operations | - |
+| Cloud Logging | Operations | - |
+| Cloud Monitoring | Operations | - |
+| Cloud Profiler | Operations | - |
+| Cloud Trace | Operations | - |
+| Error Reporting | Operations | Errors |
+| Certificate Manager | Security | - |
+| Cloud KMS | Security | - |
+| IAM & Admin | Security | - |
+| Organization Policies | Security | - |
+| Secret Manager | Security | Secrets |
+| Security Command Center | Security | - |
+| Service Accounts | Security | Service Accounts |
+| Web Security Scanner | Security | - |
+| Workload Identity Federation | Security | - |
+| Cloud Storage | Storage | Buckets |
+| Transfer Service | Storage | - |
