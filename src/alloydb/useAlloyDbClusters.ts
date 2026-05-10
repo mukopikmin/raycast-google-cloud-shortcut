@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listAlloyDbClusters } from "./api";
 import { AlloyDbCluster } from "./types";
 
-type UseAlloyDbClustersResult =
-  | {
-      clusters: AlloyDbCluster[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      clusters: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      clusters: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  clusters: AlloyDbCluster[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  clusters: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  clusters: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseAlloyDbClustersResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useAlloyDbClusters = (projectId: string): UseAlloyDbClustersResult => {
   const { accessToken } = useGoogleApi();

@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudFunctions } from "./api";
 import { CloudFunction } from "./types";
 
-type UseCloudFunctionsResult =
-  | {
-      functions: CloudFunction[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      functions: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      functions: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  functions: CloudFunction[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  functions: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  functions: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudFunctionsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudFunctions = (projectId: string): UseCloudFunctionsResult => {
   const { accessToken } = useGoogleApi();

@@ -3,22 +3,25 @@ import { listWorkflows } from "./api";
 import { Workflow } from "./types";
 import { useGoogleApi } from "../auth/google";
 
-type UseWorkflowsResult =
-  | {
-      workflows: Workflow[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      workflows: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      workflows: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  workflows: Workflow[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  workflows: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  workflows: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseWorkflowsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useWorkflows = (projectId: string): UseWorkflowsResult => {
   const { accessToken } = useGoogleApi();

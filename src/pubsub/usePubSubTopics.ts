@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { PubSubTopic } from "./types";
 import { listPubSubTopics } from "./api";
 
-type UsePubSubTopicsResult =
-  | {
-      topics: PubSubTopic[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      topics: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      topics: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  topics: PubSubTopic[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  topics: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  topics: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UsePubSubTopicsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const usePubSubTopics = (projectId: string): UsePubSubTopicsResult => {
   const { accessToken } = useGoogleApi();

@@ -1,30 +1,39 @@
+import { useState } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudRunWorkerPools } from "./api";
 import { CloudRunDeployment } from "./types";
 
-type UseCloudRunWorkerPoolsResult =
-  | {
-      workerPools: CloudRunDeployment[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      workerPools: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      workerPools: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  workerPools: CloudRunDeployment[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  workerPools: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  workerPools: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudRunWorkerPoolsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunWorkerPools = (projectId: string): UseCloudRunWorkerPoolsResult => {
   const { accessToken } = useGoogleApi();
-  const { data, isLoading, error } = usePromise(
+  const [progressiveWorkerPools, setProgressiveWorkerPools] = useState<CloudRunDeployment[]>([]);
+
+  const { isLoading, error } = usePromise(
     async (projId: string, token: string) => {
-      return await listCloudRunWorkerPools(projId, token);
+      setProgressiveWorkerPools([]);
+      return await listCloudRunWorkerPools(projId, token, (workerPools) => {
+        setProgressiveWorkerPools([...workerPools]);
+      });
     },
     [projectId, accessToken],
   );
@@ -33,9 +42,9 @@ export const useCloudRunWorkerPools = (projectId: string): UseCloudRunWorkerPool
     return { workerPools: undefined, isLoading: false, error };
   }
 
-  if (!data) {
+  if (isLoading && progressiveWorkerPools.length === 0) {
     return { workerPools: undefined, isLoading: true, error: undefined };
   }
 
-  return { workerPools: data, isLoading, error: undefined };
+  return { workerPools: progressiveWorkerPools, isLoading, error: undefined };
 };

@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listErrorGroups } from "./api";
 import { ErrorGroupStats, ResolutionStatus } from "./types";
 
-type UseErrorReportingResult =
-  | {
-      errorGroups: ErrorGroupStats[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      errorGroups: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      errorGroups: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  errorGroups: ErrorGroupStats[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  errorGroups: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  errorGroups: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseErrorReportingResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useErrorReporting = (projectId: string): UseErrorReportingResult => {
   const { accessToken } = useGoogleApi();
@@ -38,11 +41,17 @@ export const useErrorReporting = (projectId: string): UseErrorReportingResult =>
   }
 
   const allowedStatuses: Set<ResolutionStatus> = new Set(["OPEN", "ACKNOWLEDGED", "RESOLUTION_STATUS_UNSPECIFIED"]);
+  const toCount = (count?: string) => {
+    const value = Number(count);
+    return Number.isFinite(value) ? value : 0;
+  };
 
-  const filteredGroups = data.filter((stat) => {
-    const status = stat.group.resolutionStatus;
-    return !status || allowedStatuses.has(status);
-  });
+  const filteredGroups = data
+    .filter((stat) => {
+      const status = stat.group.resolutionStatus;
+      return !status || allowedStatuses.has(status);
+    })
+    .sort((a, b) => toCount(b.count) - toCount(a.count));
 
   return { errorGroups: filteredGroups, isLoading, error: undefined };
 };
