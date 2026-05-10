@@ -27,6 +27,21 @@ export const CloudRunServicesList = (props: Props) => {
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={deployment.url} />
+                {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
+                {(deployment.deployType === "Container Services" || deployment.deployType === "Function Services") && (
+                  <Action.OpenInBrowser
+                    title="Open Revisions in Browser"
+                    url={`https://console.cloud.google.com/run/detail/${deployment.region}/${deployment.name}/revisions?project=${props.projectId}`}
+                    icon={Icon.ChevronRight}
+                  />
+                )}
+                {deployment.deployType === "Jobs" && (
+                  <Action.OpenInBrowser
+                    title="Open Executions in Browser"
+                    url={`https://console.cloud.google.com/run/jobs/details/${deployment.region}/${deployment.name}/executions?project=${props.projectId}`}
+                    icon={Icon.ChevronRight}
+                  />
+                )}
               </ActionPanel>
             }
           />
