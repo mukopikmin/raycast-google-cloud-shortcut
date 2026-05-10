@@ -28,6 +28,7 @@ export const searchEnabledServiceNames = [
   "Error Reporting",
   "App Engine",
   "Cloud Build",
+  "Compute Engine",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -38,7 +39,6 @@ export const searchDisabledServiceNames = [
   "Firestore",
   "Datastore",
   "Memorystore",
-  "Compute Engine",
   "Kubernetes Engine",
   "Batch",
   "Transfer Service",
