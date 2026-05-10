@@ -36,7 +36,7 @@ This extension supports quick navigation to Google Cloud services. For some serv
 | Firestore | Database | - |
 | Datastore | Database | - |
 | Memorystore | Database | - |
-| Compute Engine | Compute | - |
+| Compute Engine | Compute | Instances |
 | Kubernetes Engine | Compute | - |
 | Cloud Run | Compute | Services |
 | Cloud Functions | Compute | Functions (gen1) |
