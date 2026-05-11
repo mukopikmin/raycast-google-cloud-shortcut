@@ -10,9 +10,12 @@ import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
 import { WorkflowList } from "../workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
-import { CloudSchedulerRegionList } from "../cloud-scheduler/CloudSchedulerRegionList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
+import { listCloudTasksLocations } from "../cloud-tasks/api";
 import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
+import { listArtifactRegistryLocations } from "../artifact-registry/api";
+import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
+import { listCloudSchedulerLocations } from "../cloud-scheduler/api";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
@@ -85,6 +88,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 projectId,
                 title,
                 target: CloudTasksQueueList,
+                fetchLocations: listCloudTasksLocations,
               }),
             };
           case "Secret Manager":
@@ -120,7 +124,12 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudSchedulerRegionList projectId={projectId} />} />,
+              searchAction: withRegionSelect({
+                projectId,
+                title,
+                target: CloudSchedulerJobList,
+                fetchLocations: listCloudSchedulerLocations,
+              }),
             };
           case "Artifact Registry":
             return {
@@ -131,7 +140,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 projectId,
                 title,
                 target: ArtifactRegistryRepositoryList,
-                includeMultiRegions: true,
+                fetchLocations: listArtifactRegistryLocations,
               }),
             };
           case "Error Reporting":
