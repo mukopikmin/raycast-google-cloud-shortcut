@@ -1,4 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudLoggingAction } from "../actions/cloud-logging/OpenCloudLoggingAction";
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
 import { ErrorDetail } from "../components/ErrorDetail";
 
@@ -26,6 +27,7 @@ export const CloudRunServicesList = (props: Props) => {
             accessories={[{ text: deployment.deployType }, { text: deployment.region }]}
             actions={
               <ActionPanel>
+                <OpenCloudLoggingAction target={deployment} />
                 <Action.OpenInBrowser url={deployment.url} />
                 {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
                 {(deployment.deployType === "Container Services" || deployment.deployType === "Function Services") && (
