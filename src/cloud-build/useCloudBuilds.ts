@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudBuilds } from "./api";
 import { CloudBuild } from "./types";
 
-type UseCloudBuildsResult =
-  | {
-      builds: CloudBuild[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      builds: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      builds: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  builds: CloudBuild[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  builds: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  builds: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudBuildsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudBuilds = (projectId: string): UseCloudBuildsResult => {
   const { accessToken } = useGoogleApi();

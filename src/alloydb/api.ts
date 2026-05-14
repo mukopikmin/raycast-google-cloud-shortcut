@@ -22,14 +22,17 @@ export const listAlloyDbClusters = async (projectId: string, accessToken: string
     body.clusters?.map((cluster) => {
       // projects/{project}/locations/{region}/clusters/{clusterId}
       const parts = cluster.name.split("/");
+      const clusterId = parts[parts.length - 1];
       const region = parts[parts.length - 3];
 
       return {
         id: cluster.uid,
-        name: cluster.displayName,
+        clusterId,
+        name: cluster.displayName || clusterId,
+        displayName: cluster.displayName,
         region,
         state: cluster.state,
-        url: `https://console.cloud.google.com/alloydb/clusters/${region}/${cluster.displayName}?project=${projectId}`,
+        url: `https://console.cloud.google.com/alloydb/clusters/${region}/${clusterId}?project=${projectId}`,
       };
     }) ?? [];
 

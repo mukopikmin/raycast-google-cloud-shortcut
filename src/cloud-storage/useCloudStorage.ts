@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listCloudStorageBuckets } from "./api";
 import { CloudStorageBucket } from "./types";
 
-type UseCloudStorageResult =
-  | {
-      buckets: CloudStorageBucket[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      buckets: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      buckets: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  buckets: CloudStorageBucket[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  buckets: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  buckets: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudStorageResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudStorage = (projectId: string): UseCloudStorageResult => {
   const { accessToken } = useGoogleApi();

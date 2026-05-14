@@ -3,22 +3,25 @@ import { ServiceAccount } from "./types";
 import { fetchServiceAccounts } from "./api";
 import { useGoogleApi } from "../auth/google";
 
-type UseServiceAccountResult =
-  | {
-      serviceAccounts: ServiceAccount[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      serviceAccounts: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      serviceAccounts: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  serviceAccounts: ServiceAccount[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  serviceAccounts: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  serviceAccounts: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseServiceAccountResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useServiceAccounts = (projectId: string): UseServiceAccountResult => {
   const { accessToken } = useGoogleApi();

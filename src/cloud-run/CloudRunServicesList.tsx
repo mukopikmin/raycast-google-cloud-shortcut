@@ -1,4 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudLoggingAction } from "../actions/cloud-logging/OpenCloudLoggingAction";
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
 import { ErrorDetail } from "../components/ErrorDetail";
 
@@ -26,7 +27,23 @@ export const CloudRunServicesList = (props: Props) => {
             accessories={[{ text: deployment.deployType }, { text: deployment.region }]}
             actions={
               <ActionPanel>
+                <OpenCloudLoggingAction target={deployment} />
                 <Action.OpenInBrowser url={deployment.url} />
+                {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
+                {(deployment.deployType === "Container Services" || deployment.deployType === "Function Services") && (
+                  <Action.OpenInBrowser
+                    title="Open Revisions in Browser"
+                    url={`https://console.cloud.google.com/run/detail/${deployment.region}/${deployment.name}/revisions?project=${props.projectId}`}
+                    icon={Icon.ChevronRight}
+                  />
+                )}
+                {deployment.deployType === "Jobs" && (
+                  <Action.OpenInBrowser
+                    title="Open Executions in Browser"
+                    url={`https://console.cloud.google.com/run/jobs/details/${deployment.region}/${deployment.name}/executions?project=${props.projectId}`}
+                    icon={Icon.ChevronRight}
+                  />
+                )}
               </ActionPanel>
             }
           />

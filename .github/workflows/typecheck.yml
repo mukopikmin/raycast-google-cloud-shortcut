@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "**/*.md"
+      - "assets/**"
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "assets/**"
 
 jobs:
   typecheck:
@@ -21,3 +27,9 @@ jobs:
         run: npm ci
       - name: Run type-check
         run: npm run type-check
+      - uses: ./.github/actions/slack-notify
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && job.status != 'success'
+        continue-on-error: true
+        with:
+          status: ${{ job.status }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

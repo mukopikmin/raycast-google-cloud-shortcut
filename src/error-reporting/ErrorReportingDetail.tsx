@@ -20,6 +20,9 @@ type Props = {
   group: ErrorGroupStats;
 };
 
+const MAX_AFFECTED_SERVICES = 3;
+const MAX_DAILY_COUNTS = 3;
+
 export const ErrorGroupDetail = ({ group }: Props) => {
   const firstSeen = new Date(group.firstSeenTime).toLocaleString();
   const lastSeen = new Date(group.lastSeenTime).toLocaleString();
@@ -27,10 +30,16 @@ export const ErrorGroupDetail = ({ group }: Props) => {
     ? new Date(group.representative.eventTime).toLocaleString()
     : undefined;
   const status = group.group.resolutionStatus || "OPEN";
+  const displayedAffectedServices = group.affectedServices.slice(0, MAX_AFFECTED_SERVICES);
+  const hiddenAffectedServicesCount = group.affectedServices.length - displayedAffectedServices.length;
+  const displayedTimedCounts = [...group.timedCounts]
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+    .slice(0, MAX_DAILY_COUNTS);
+  const hiddenTimedCountsCount = group.timedCounts.length - displayedTimedCounts.length;
 
   return (
     <List.Item.Detail
-      markdown={`### Error Message\n\`\`\`\n${group.representative.message}\n\`\`\``}
+      markdown={`\`\`\`\n${group.representative.message}\n\`\`\``}
       metadata={
         <List.Item.Detail.Metadata>
           <List.Item.Detail.Metadata.TagList title="Status">
@@ -39,6 +48,7 @@ export const ErrorGroupDetail = ({ group }: Props) => {
 
           <List.Item.Detail.Metadata.Separator />
 
+          <List.Item.Detail.Metadata.Label title="Last Seen" text={lastSeen} icon={Icon.Clock} />
           <List.Item.Detail.Metadata.Label title="Occurrences" text={group.count} icon={Icon.Heartbeat} />
           <List.Item.Detail.Metadata.Label
             title="Affected Users"
@@ -54,7 +64,6 @@ export const ErrorGroupDetail = ({ group }: Props) => {
           <List.Item.Detail.Metadata.Separator />
 
           <List.Item.Detail.Metadata.Label title="First Seen" text={firstSeen} icon={Icon.Calendar} />
-          <List.Item.Detail.Metadata.Label title="Last Seen" text={lastSeen} icon={Icon.Clock} />
           {eventTime && (
             <List.Item.Detail.Metadata.Label title="Representative Event" text={eventTime} icon={Icon.Bug} />
           )}
@@ -110,9 +119,6 @@ export const ErrorGroupDetail = ({ group }: Props) => {
             <List.Item.Detail.Metadata.Label title="User" text={group.representative.context.user} icon={Icon.Person} />
           )}
 
-          <List.Item.Detail.Metadata.Separator />
-          <List.Item.Detail.Metadata.Label title="Group ID" text={group.group.groupId} />
-
           {group.group.trackingIssues && group.group.trackingIssues.length > 0 && (
             <>
               <List.Item.Detail.Metadata.Separator />
@@ -131,27 +137,36 @@ export const ErrorGroupDetail = ({ group }: Props) => {
             <>
               <List.Item.Detail.Metadata.Separator />
               <List.Item.Detail.Metadata.Label title="Affected Services List" icon={Icon.List} />
-              {group.affectedServices.map((svc, idx) => (
+              {displayedAffectedServices.map((svc, idx) => (
                 <List.Item.Detail.Metadata.Label
                   key={`${svc.service}-${idx}`}
                   title={`  ${svc.service}`}
                   text={svc.version || "—"}
                 />
               ))}
+              {hiddenAffectedServicesCount > 0 && (
+                <List.Item.Detail.Metadata.Label
+                  title="  More"
+                  text={`${hiddenAffectedServicesCount} additional services`}
+                />
+              )}
             </>
           )}
           {group.timedCounts.length > 0 && (
             <>
               <List.Item.Detail.Metadata.Separator />
-              <List.Item.Detail.Metadata.Label title="Daily Counts (Last 7 Days)" icon={Icon.BarChart} />
-              {group.timedCounts.slice(0, 7).map((tc, idx) => {
+              <List.Item.Detail.Metadata.Label title="Daily Counts" icon={Icon.BarChart} />
+              {displayedTimedCounts.map((tc, idx) => {
                 const start = new Date(tc.startTime).toLocaleDateString();
-                return <List.Item.Detail.Metadata.Label key={`tc-${idx}`} title={`  ${start}`} text={`${tc.count}`} />;
+                return (
+                  <List.Item.Detail.Metadata.Label key={`tc-${idx}`} title={`  ${start}`} text={`${tc.count || "0"}`} />
+                );
               })}
+              {hiddenTimedCountsCount > 0 && (
+                <List.Item.Detail.Metadata.Label title="  More" text={`${hiddenTimedCountsCount} older days`} />
+              )}
             </>
           )}
-          <List.Item.Detail.Metadata.Separator />
-          <List.Item.Detail.Metadata.Link title="Open in Console" text="View Error Group" target={group.url} />
         </List.Item.Detail.Metadata>
       }
     />

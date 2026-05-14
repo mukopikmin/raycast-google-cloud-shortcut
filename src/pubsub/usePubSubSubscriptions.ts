@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { PubSubSubscription } from "./types";
 import { listPubSubSubscriptions } from "./api";
 
-type UsePubSubSubscriptionResult =
-  | {
-      subscriptions: PubSubSubscription[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      subscriptions: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      subscriptions: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  subscriptions: PubSubSubscription[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  subscriptions: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  subscriptions: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UsePubSubSubscriptionResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const usePubSubSubscriptions = (projectId: string): UsePubSubSubscriptionResult => {
   const { accessToken } = useGoogleApi();
