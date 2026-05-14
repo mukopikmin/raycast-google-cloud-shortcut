@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { listCachedProjects } from "./cache";
 import { Project } from "./types";
 
-type UseProjectsResult =
-  | {
-      projects: undefined;
-      isLoading: true;
-    }
-  | {
-      projects: Project[];
-      isLoading: false;
-    };
+type LoadingResult = {
+  projects: undefined;
+  isLoading: true;
+};
+
+type SuccessResult = {
+  projects: Project[];
+  isLoading: false;
+};
+
+type UseProjectsResult = LoadingResult | SuccessResult;
 
 export const useProjects = (): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();

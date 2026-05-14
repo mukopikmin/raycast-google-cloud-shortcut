@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listAppEngineServices } from "./api";
 import { AppEngineService } from "./types";
 
-type UseAppEngineServicesResult =
-  | {
-      services: AppEngineService[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      services: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      services: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  services: AppEngineService[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  services: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  services: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseAppEngineServicesResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useAppEngineServices = (projectId: string): UseAppEngineServicesResult => {
   const { accessToken } = useGoogleApi();

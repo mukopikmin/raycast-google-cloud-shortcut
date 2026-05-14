@@ -3,22 +3,25 @@ import { useGoogleApi } from "../auth/google";
 import { listArtifactRegistryRepositories } from "./api";
 import { ArtifactRegistryRepository } from "./types";
 
-type UseArtifactRegistryResult =
-  | {
-      repositories: ArtifactRegistryRepository[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      repositories: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      repositories: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  repositories: ArtifactRegistryRepository[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  repositories: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  repositories: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseArtifactRegistryResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useArtifactRegistry = (projectId: string, locationId: string): UseArtifactRegistryResult => {
   const { accessToken } = useGoogleApi();

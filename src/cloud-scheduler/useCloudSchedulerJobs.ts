@@ -3,22 +3,25 @@ import { CloudSchedulerJob } from "./types";
 import { listCloudSchedulerJobs } from "./api";
 import { useGoogleApi } from "../auth/google";
 
-type UseCloudSchedulerJobsResult =
-  | {
-      scheduledJobs: CloudSchedulerJob[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      scheduledJobs: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      scheduledJobs: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  scheduledJobs: CloudSchedulerJob[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  scheduledJobs: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  scheduledJobs: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseCloudSchedulerJobsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudSchedulerJobs = (projectId: string, locationId: string): UseCloudSchedulerJobsResult => {
   const { accessToken } = useGoogleApi();

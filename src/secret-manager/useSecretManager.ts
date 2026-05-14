@@ -1,30 +1,39 @@
+import { useState } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listSecretManagerSecrets } from "./api";
 import { SecretManagerSecret } from "./types";
 
-type UseSecretManagerResult =
-  | {
-      secrets: SecretManagerSecret[];
-      isLoading: boolean;
-      error: undefined;
-    }
-  | {
-      secrets: undefined;
-      isLoading: true;
-      error: undefined;
-    }
-  | {
-      secrets: undefined;
-      isLoading: false;
-      error: Error;
-    };
+type SuccessResult = {
+  secrets: SecretManagerSecret[];
+  isLoading: boolean;
+  error: undefined;
+};
+
+type LoadingResult = {
+  secrets: undefined;
+  isLoading: true;
+  error: undefined;
+};
+
+type ErrorResult = {
+  secrets: undefined;
+  isLoading: false;
+  error: Error;
+};
+
+type UseSecretManagerResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useSecretManager = (projectId: string): UseSecretManagerResult => {
   const { accessToken } = useGoogleApi();
-  const { data, isLoading, error } = usePromise(
+  const [progressiveSecrets, setProgressiveSecrets] = useState<SecretManagerSecret[]>([]);
+
+  const { isLoading, error } = usePromise(
     async (projId: string, token: string) => {
-      return await listSecretManagerSecrets(projId, token);
+      setProgressiveSecrets([]);
+      return await listSecretManagerSecrets(projId, token, (secrets) => {
+        setProgressiveSecrets([...secrets]);
+      });
     },
     [projectId, accessToken],
   );
@@ -33,9 +42,9 @@ export const useSecretManager = (projectId: string): UseSecretManagerResult => {
     return { secrets: undefined, isLoading: false, error };
   }
 
-  if (!data) {
+  if (isLoading && progressiveSecrets.length === 0) {
     return { secrets: undefined, isLoading: true, error: undefined };
   }
 
-  return { secrets: data, isLoading, error: undefined };
+  return { secrets: progressiveSecrets, isLoading, error: undefined };
 };
