@@ -51,7 +51,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud NAT | Networking | - | - |
 | Cloud DNS | Networking | - | - |
 | Network Intelligence Center | Networking | - | - |
-| IAM & Admin | Security | - | - |
+| IAM & Admin | Security | Members & Roles | - |
 | Service Accounts | Security | Service Accounts | - |
 | Workload Identity Federation | Security | - | - |
 | Organization Policies | Security | - | - |

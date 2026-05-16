@@ -21,7 +21,7 @@ export const WorkflowList = ({ projectId }: Props) => {
           id={workflow.name}
           title={workflow.name}
           icon={Icon.Box}
-          accessories={[{ text: workflow.region }]}
+          accessories={[{ text: workflow.region }].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={workflow.url} />

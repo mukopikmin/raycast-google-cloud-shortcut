@@ -22,7 +22,7 @@ export const IamList = (props: Props) => {
           icon={Icon.Person}
           title={item.name}
           subtitle={item.role}
-          accessories={[{ text: item.type }]}
+          accessories={[{ text: item.type }].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.CopyToClipboard title="Copy Member" content={item.member} />
