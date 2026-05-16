@@ -14,12 +14,16 @@ const regions: RegularRegion[] = [
   { id: "asia-southeast1", name: "Asia Southeast 1 (Singapore)" },
   { id: "asia-southeast2", name: "Asia Southeast 2 (Jakarta)" },
   { id: "australia-southeast1", name: "Australia Southeast 1 (Sydney)" },
+  { id: "europe-central2", name: "Europe Central 2 (Warsaw)" },
   { id: "europe-north1", name: "Europe North 1 (Finland)" },
   { id: "europe-west1", name: "Europe West 1 (Belgium)" },
   { id: "europe-west2", name: "Europe West 2 (London)" },
   { id: "europe-west3", name: "Europe West 3 (Frankfurt)" },
   { id: "europe-west4", name: "Europe West 4 (Netherlands)" },
   { id: "europe-west6", name: "Europe West 6 (Zurich)" },
+  { id: "me-central1", name: "Middle East Central 1 (Doha)" },
+  { id: "me-central2", name: "Middle East Central 2 (Dammam)" },
+  { id: "me-west1", name: "Middle East West 1 (Tel Aviv)" },
   {
     id: "northamerica-northeast1",
     name: "North America Northeast 1 (Montreal)",
@@ -29,6 +33,9 @@ const regions: RegularRegion[] = [
   { id: "us-east1", name: "US East 1 (South Carolina)" },
   { id: "us-east4", name: "US East 4 (Northern Virginia)" },
   { id: "us-west1", name: "US West 1 (Oregon)" },
+  { id: "us-west2", name: "US West 2 (Los Angeles)" },
+  { id: "us-west3", name: "US West 3 (Salt Lake City)" },
+  { id: "us-west4", name: "US West 4 (Las Vegas)" },
 ];
 
 const multiRegions: MultiRegion[] = [

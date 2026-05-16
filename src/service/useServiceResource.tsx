@@ -10,7 +10,7 @@ import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
 import { WorkflowList } from "../workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
-import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
+import { CloudSchedulerRegionList } from "../cloud-scheduler/CloudSchedulerRegionList";
 import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
 import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
@@ -18,6 +18,7 @@ import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
+import { IamList } from "../iam/IamList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -121,11 +122,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: withRegionSelect({
-                projectId,
-                title,
-                target: CloudSchedulerJobList,
-              }),
+              searchAction: <Action.Push title={title} target={<CloudSchedulerRegionList projectId={projectId} />} />,
             };
           case "Artifact Registry":
             return {
@@ -161,11 +158,17 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
             };
           case "Load Balancing":
+          case "IAM & Admin":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<LoadBalancerList projectId={projectId} />} />,
+              searchAction:
+                service.name === "Load Balancing" ? (
+                  <Action.Push title={title} target={<LoadBalancerList projectId={projectId} />} />
+                ) : (
+                  <Action.Push title={title} target={<IamList projectId={projectId} />} />
+                ),
             };
           default:
             service satisfies never;
