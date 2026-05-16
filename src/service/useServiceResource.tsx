@@ -18,6 +18,7 @@ import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 import { VpcNetworkList } from "../vpc/VpcNetworkList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
+import { IamList } from "../iam/IamList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -157,11 +158,17 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
             };
           case "VPC Networks":
+          case "IAM & Admin":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<VpcNetworkList projectId={projectId} />} />,
+              searchAction:
+                service.name === "VPC Networks" ? (
+                  <Action.Push title={title} target={<VpcNetworkList projectId={projectId} />} />
+                ) : (
+                  <Action.Push title={title} target={<IamList projectId={projectId} />} />
+                ),
             };
           default:
             service satisfies never;

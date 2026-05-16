@@ -29,6 +29,7 @@ export const searchEnabledServiceNames = [
   "App Engine",
   "Cloud Build",
   "VPC Networks",
+  "IAM & Admin",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -47,7 +48,6 @@ export const searchDisabledServiceNames = [
   "Cloud NAT",
   "Cloud DNS",
   "Network Intelligence Center",
-  "IAM & Admin",
   "Workload Identity Federation",
   "Organization Policies",
   "Cloud KMS",
