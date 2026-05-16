@@ -18,6 +18,7 @@ import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 import { ComputeEngineInstanceList } from "../compute-engine/ComputeEngineInstanceList";
+import { IamList } from "../iam/IamList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -157,11 +158,17 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
             };
           case "Compute Engine":
+          case "IAM & Admin":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />,
+              searchAction:
+                service.name === "Compute Engine" ? (
+                  <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />
+                ) : (
+                  <Action.Push title={title} target={<IamList projectId={projectId} />} />
+                ),
             };
           default:
             service satisfies never;
