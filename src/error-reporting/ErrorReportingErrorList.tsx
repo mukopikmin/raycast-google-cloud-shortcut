@@ -49,7 +49,7 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
             key={group.group.groupId}
             id={group.group.groupId}
             title={firstLine}
-            icon={{ source: Icon.ExclamationMark, tintColor: statusColor }}
+            icon={{ source: Icon.Box, tintColor: statusColor }}
             accessories={accessories}
             detail={<ErrorGroupDetail group={group} />}
             actions={

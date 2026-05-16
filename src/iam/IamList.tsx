@@ -19,7 +19,7 @@ export const IamList = (props: Props) => {
         <List.Item
           key={item.id}
           id={item.id}
-          icon={Icon.Person}
+          icon={Icon.Box}
           title={item.name}
           subtitle={item.role}
           accessories={[{ text: item.type }].filter((a) => a.text)}
