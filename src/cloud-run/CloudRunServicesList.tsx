@@ -8,14 +8,32 @@ type Props = {
 };
 
 export const CloudRunServicesList = (props: Props) => {
-  const { deployments, isLoading, error } = useCloudRunDeployments(props.projectId);
+  const { deployments, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudRunDeployments(
+    props.projectId,
+  );
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
+  const loadMoreAction = hasMore ? (
+    <Action title="Load More Deployments" icon={Icon.ArrowDown} onAction={loadMore} />
+  ) : null;
+
   return (
-    <List isLoading={isLoading}>
+    <List isLoading={isLoading || isLoadingMore} searchBarPlaceholder="Search loaded deployments...">
+      <List.EmptyView
+        icon={Icon.MagnifyingGlass}
+        title={hasMore ? "No loaded deployments match this search" : "No deployments found"}
+        description={
+          hasMore
+            ? "More deployments may exist. Load more deployments to expand the searchable set."
+            : isTruncated
+              ? "The deployment list is truncated to keep memory usage bounded."
+              : undefined
+        }
+        actions={loadMoreAction ? <ActionPanel>{loadMoreAction}</ActionPanel> : undefined}
+      />
       {deployments?.map((deployment) => {
         return (
           <List.Item
@@ -44,11 +62,29 @@ export const CloudRunServicesList = (props: Props) => {
                     icon={Icon.ChevronRight}
                   />
                 )}
+                {loadMoreAction}
               </ActionPanel>
             }
           />
         );
       })}
+      {hasMore && (
+        <List.Item
+          id="load-more-cloud-run-deployments"
+          title="Load More Deployments"
+          icon={Icon.ArrowDown}
+          accessories={[{ text: `${deployments?.length ?? 0} loaded` }]}
+          actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
+        />
+      )}
+      {isTruncated && (
+        <List.Item
+          id="cloud-run-deployments-truncated"
+          title="Deployment List Truncated"
+          icon={Icon.ExclamationMark}
+          accessories={[{ text: `${deployments?.length ?? 0} loaded` }]}
+        />
+      )}
     </List>
   );
 };
