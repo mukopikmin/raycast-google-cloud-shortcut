@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../auth/google";
 import { listCloudRunJobs } from "./api";
@@ -25,9 +26,14 @@ type UseCloudRunJobsResult = SuccessResult | LoadingResult | ErrorResult;
 
 export const useCloudRunJobs = (projectId: string): UseCloudRunJobsResult => {
   const { accessToken } = useGoogleApi();
-  const { data, isLoading, error } = usePromise(
+  const [progressiveJobs, setProgressiveJobs] = useState<CloudRunDeployment[]>([]);
+
+  const { isLoading, error } = usePromise(
     async (projId: string, token: string) => {
-      return await listCloudRunJobs(projId, token);
+      setProgressiveJobs([]);
+      return await listCloudRunJobs(projId, token, (jobs) => {
+        setProgressiveJobs([...jobs]);
+      });
     },
     [projectId, accessToken],
   );
@@ -36,9 +42,9 @@ export const useCloudRunJobs = (projectId: string): UseCloudRunJobsResult => {
     return { jobs: undefined, isLoading: false, error };
   }
 
-  if (!data) {
+  if (isLoading && progressiveJobs.length === 0) {
     return { jobs: undefined, isLoading: true, error: undefined };
   }
 
-  return { jobs: data, isLoading, error: undefined };
+  return { jobs: progressiveJobs, isLoading, error: undefined };
 };
