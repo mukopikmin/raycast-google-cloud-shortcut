@@ -7,25 +7,43 @@ type CloudStorageBucketResponse = {
     name: string;
     location: string;
   }[];
+  nextPageToken?: string;
+};
+
+export type CloudStorageBucketPage = {
+  buckets: CloudStorageBucket[];
+  nextPageToken?: string;
 };
 
 /**
  * @see https://docs.cloud.google.com/storage/docs/json_api/v1/buckets/list
  */
-export const listCloudStorageBuckets = async (
+export const listCloudStorageBucketsPage = async (
   projectId: string,
   accessToken: string,
-): Promise<CloudStorageBucket[]> => {
+  options: { pageSize: number; pageToken?: string },
+): Promise<CloudStorageBucketPage> => {
+  const query = new URLSearchParams({
+    project: projectId,
+    maxResults: options.pageSize.toString(),
+  });
+  if (options.pageToken) {
+    query.set("pageToken", options.pageToken);
+  }
+
   const body = await fetchGoogleApi<CloudStorageBucketResponse>(
-    `https://www.googleapis.com/storage/v1/b?project=${projectId}`,
+    `https://www.googleapis.com/storage/v1/b?${query.toString()}`,
     accessToken,
   );
-  return (
-    body.items?.map((item) => ({
-      id: item.id,
-      name: item.name,
-      location: item.location,
-      url: `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
-    })) ?? []
-  );
+
+  return {
+    buckets:
+      body.items?.map((item) => ({
+        id: item.id,
+        name: item.name,
+        location: item.location,
+        url: `https://console.cloud.google.com/storage/browser/${item.name}?project=${projectId}`,
+      })) ?? [],
+    nextPageToken: body.nextPageToken,
+  };
 };
