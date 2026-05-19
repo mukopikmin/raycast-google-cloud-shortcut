@@ -29,6 +29,7 @@ export const searchEnabledServiceNames = [
   "App Engine",
   "Cloud Build",
   "Compute Engine",
+  "VPC Networks",
   "IAM & Admin",
 ] as const;
 
@@ -43,7 +44,6 @@ export const searchDisabledServiceNames = [
   "Kubernetes Engine",
   "Batch",
   "Transfer Service",
-  "VPC Networks",
   "Load Balancing",
   "Cloud NAT",
   "Cloud DNS",
