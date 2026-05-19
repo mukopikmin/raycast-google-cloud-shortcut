@@ -21,14 +21,6 @@
       "description": "Open the Google Cloud service console quickly.",
       "mode": "view",
       "keywords": ["gcp", "gc"]
-    },
-    {
-      "name": "update-google-cloud-projects",
-      "title": "Update Google Cloud Projects",
-      "subtitle": "Google Cloud Shortcut",
-      "description": "Update Google Cloud projects.",
-      "mode": "no-view",
-      "keywords": ["gcp", "gc"]
     }
   ],
   "dependencies": {
