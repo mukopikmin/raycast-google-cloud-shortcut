@@ -7,5 +7,11 @@ type Props = {
 };
 
 export const OpenCloudLoggingAction = ({ target }: Props) => {
-  return <Action.OpenInBrowser title="Open Logs" url={createCloudLoggingUrl(target)} />;
+  return (
+    <Action.OpenInBrowser
+      title="Open Logs"
+      url={createCloudLoggingUrl(target)}
+      shortcut={{ modifiers: ["cmd"], key: "l" }}
+    />
+  );
 };

@@ -27,8 +27,8 @@ export const CloudRunServicesList = (props: Props) => {
             accessories={[{ text: deployment.deployType }, { text: deployment.region }].filter((a) => a.text)}
             actions={
               <ActionPanel>
-                <OpenCloudLoggingAction target={deployment} />
                 <Action.OpenInBrowser url={deployment.url} />
+                <OpenCloudLoggingAction target={deployment} />
                 {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
                 {(deployment.deployType === "Container Services" || deployment.deployType === "Function Services") && (
                   <Action.OpenInBrowser
