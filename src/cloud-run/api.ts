@@ -7,6 +7,7 @@ type CloudRunServicesResponse = {
     description: string;
     uid: string;
     generation: string;
+    uri?: string;
     // Only exists when the service is deployes as Cloud Functions
     buildConfig?: {
       functionTarget: string;
@@ -78,10 +79,12 @@ export const listCloudRunServices = async (
 
         return createCloudRunDeployment({
           id: service.uid,
+          projectId,
           name,
           region,
           deployType: service.buildConfig === undefined ? "Container Services" : "Function Services",
           url: `https://console.cloud.google.com/run/detail/${region}/${name}?project=${projectId}`,
+          uri: service.uri,
         });
       }) ?? [];
 
@@ -124,6 +127,7 @@ export const listCloudRunJobs = async (
 
         return createCloudRunDeployment({
           id: job.metadata.uid,
+          projectId,
           name,
           region,
           deployType: "Jobs" as const,
@@ -167,6 +171,7 @@ export const listCloudRunWorkerPools = async (
 
         return createCloudRunDeployment({
           id: workerPool.metadata.uid,
+          projectId,
           name,
           region,
           deployType: "Worker Pools" as const,
