@@ -163,9 +163,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: (
-                <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />
-              ),
+              searchAction: <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />,
             };
           case "VPC Networks":
           case "IAM & Admin":
