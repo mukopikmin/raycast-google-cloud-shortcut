@@ -16,8 +16,10 @@ import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactReg
 import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
 import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
+import { VpcNetworkList } from "../vpc/VpcNetworkList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 import { KubernetesEngineClusterList } from "../kubernetes-engine/KubernetesEngineClusterList";
+import { IamList } from "../iam/IamList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -164,6 +166,19 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               searchAction: (
                 <Action.Push title={title} target={<KubernetesEngineClusterList projectId={projectId} />} />
               ),
+            };
+          case "VPC Networks":
+          case "IAM & Admin":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction:
+                service.name === "VPC Networks" ? (
+                  <Action.Push title={title} target={<VpcNetworkList projectId={projectId} />} />
+                ) : (
+                  <Action.Push title={title} target={<IamList projectId={projectId} />} />
+                ),
             };
           default:
             service satisfies never;

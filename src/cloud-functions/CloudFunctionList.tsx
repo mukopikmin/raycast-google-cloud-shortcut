@@ -30,8 +30,8 @@ export const CloudFunctionList = ({ projectId }: Props) => {
           ].filter((a) => a.text)}
           actions={
             <ActionPanel>
-              <OpenCloudLoggingAction target={cloudFunction} />
               <Action.OpenInBrowser url={cloudFunction.url} />
+              <OpenCloudLoggingAction target={cloudFunction} />
             </ActionPanel>
           }
         />

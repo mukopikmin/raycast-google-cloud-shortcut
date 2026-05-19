@@ -46,7 +46,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Batch | Compute | - | - |
 | Cloud Storage | Storage | Buckets | - |
 | Transfer Service | Storage | - | - |
-| VPC Networks | Networking | - | - |
+| VPC Networks | Networking | Networks | - |
 | Load Balancing | Networking | - | - |
 | Cloud NAT | Networking | - | - |
 | Cloud DNS | Networking | - | - |
