@@ -49,7 +49,7 @@ export const CloudBuildList = ({ projectId }: Props) => {
             icon={statusIcon(build.status)}
             title={title}
             keywords={build.keywords}
-            accessories={[{ text: build.status }, { text: createdAt }]}
+            accessories={[{ text: build.status }, { text: createdAt }].filter((a) => a.text)}
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={build.url} />
