@@ -45,7 +45,7 @@ export const CloudStorageBucketList = (props: Props) => {
           id={bucket.id}
           title={bucket.name}
           icon={Icon.Box}
-          accessories={[{ text: bucket.location }]}
+          accessories={[{ text: bucket.location }].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={bucket.url} />
@@ -59,7 +59,7 @@ export const CloudStorageBucketList = (props: Props) => {
           id="load-more-cloud-storage-buckets"
           title="Load More Buckets"
           icon={Icon.ArrowDown}
-          accessories={[{ text: `${buckets?.length ?? 0} loaded` }]}
+          accessories={[{ text: `${buckets?.length ?? 0} loaded` }].filter((a) => a.text)}
           actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
         />
       )}
@@ -68,7 +68,7 @@ export const CloudStorageBucketList = (props: Props) => {
           id="cloud-storage-buckets-truncated"
           title="Bucket List Truncated"
           icon={Icon.ExclamationMark}
-          accessories={[{ text: `${buckets?.length ?? 0} loaded` }]}
+          accessories={[{ text: `${buckets?.length ?? 0} loaded` }].filter((a) => a.text)}
         />
       )}
     </List>
