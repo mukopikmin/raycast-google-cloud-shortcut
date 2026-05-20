@@ -26,32 +26,34 @@ type ComputeEngineInstancesResponse = {
   nextPageToken?: string;
 };
 
+export type ComputeEngineInstancesPage = {
+  instances: ComputeEngineInstance[];
+  nextPageToken?: string;
+};
+
 /**
  * @see https://cloud.google.com/compute/docs/reference/rest/v1/instances/aggregatedList
  */
-export const listComputeEngineInstances = async (
+export const listComputeEngineInstancesPage = async (
   projectId: string,
   accessToken: string,
-  onPageFetched?: (instances: ComputeEngineInstance[]) => void,
-): Promise<ComputeEngineInstance[]> => {
-  const allInstances: ComputeEngineInstance[] = [];
-  let pageToken: string | undefined;
+  options: { pageSize: number; pageToken?: string },
+): Promise<ComputeEngineInstancesPage> => {
+  const query = new URLSearchParams({
+    maxResults: options.pageSize.toString(),
+    returnPartialSuccess: "true",
+  });
+  if (options.pageToken) {
+    query.set("pageToken", options.pageToken);
+  }
 
-  do {
-    const query = new URLSearchParams();
-    if (pageToken) {
-      query.set("pageToken", pageToken);
-    }
-    // Recommended to set returnPartialSuccess=true for aggregatedList
-    query.set("returnPartialSuccess", "true");
+  const body = await fetchGoogleApi<ComputeEngineInstancesResponse>(
+    `https://compute.googleapis.com/compute/v1/projects/${projectId}/aggregated/instances?${query.toString()}`,
+    accessToken,
+  );
 
-    const suffix = query.toString();
-    const body = await fetchGoogleApi<ComputeEngineInstancesResponse>(
-      `https://compute.googleapis.com/compute/v1/projects/${projectId}/aggregated/instances${suffix ? `?${suffix}` : ""}`,
-      accessToken,
-    );
-
-    const instances = Object.values(body.items || {})
+  return {
+    instances: Object.values(body.items || {})
       .flatMap((item) => item.instances || [])
       .map((instance) => {
         const zone = instance.zone.split("/").pop() || "";
@@ -69,13 +71,7 @@ export const listComputeEngineInstances = async (
           externalIp,
           url: `https://console.cloud.google.com/compute/instancesDetail/zones/${zone}/instances/${instance.name}?project=${projectId}`,
         };
-      });
-
-    allInstances.push(...instances);
-    onPageFetched?.(allInstances);
-
-    pageToken = body.nextPageToken;
-  } while (pageToken);
-
-  return allInstances;
+      }),
+    nextPageToken: body.nextPageToken,
+  };
 };
