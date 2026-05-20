@@ -1,30 +1,33 @@
 import { fetchGoogleApi } from "../auth/api";
 import { KubernetesEngineCluster, KubernetesEngineClustersResponse } from "./types";
 
+export type KubernetesEngineClustersPage = {
+  clusters: KubernetesEngineCluster[];
+  nextPageToken?: string;
+};
+
 /**
  * @see https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.locations.clusters/list
  */
-export const listKubernetesEngineClusters = async (
+export const listKubernetesEngineClustersPage = async (
   projectId: string,
   accessToken: string,
-  onPageFetched?: (clusters: KubernetesEngineCluster[]) => void,
-): Promise<KubernetesEngineCluster[]> => {
-  const allClusters: KubernetesEngineCluster[] = [];
-  let pageToken: string | undefined;
+  options: { pageSize: number; pageToken?: string },
+): Promise<KubernetesEngineClustersPage> => {
+  const query = new URLSearchParams({
+    pageSize: options.pageSize.toString(),
+  });
+  if (options.pageToken) {
+    query.set("pageToken", options.pageToken);
+  }
 
-  do {
-    const query = new URLSearchParams();
-    if (pageToken) {
-      query.set("pageToken", pageToken);
-    }
+  const body = await fetchGoogleApi<KubernetesEngineClustersResponse>(
+    `https://container.googleapis.com/v1/projects/${projectId}/locations/-/clusters?${query.toString()}`,
+    accessToken,
+  );
 
-    const suffix = query.toString();
-    const body = await fetchGoogleApi<KubernetesEngineClustersResponse>(
-      `https://container.googleapis.com/v1/projects/${projectId}/locations/-/clusters${suffix ? `?${suffix}` : ""}`,
-      accessToken,
-    );
-
-    const clusters =
+  return {
+    clusters:
       body.clusters?.map((cluster) => ({
         id: cluster.id,
         name: cluster.name,
@@ -34,13 +37,7 @@ export const listKubernetesEngineClusters = async (
         version: cluster.currentMasterVersion,
         nodeCount: cluster.currentNodeCount,
         projectId,
-      })) ?? [];
-
-    allClusters.push(...clusters);
-    onPageFetched?.(allClusters);
-
-    pageToken = body.nextPageToken;
-  } while (pageToken);
-
-  return allClusters;
+      })) ?? [],
+    nextPageToken: body.nextPageToken,
+  };
 };
