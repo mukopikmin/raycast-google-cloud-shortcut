@@ -29,7 +29,7 @@ export const PubSubSubscriptionList = (props: Props) => {
                   ? `${resource.resourceType} / ${resource.subscriptionType}`
                   : resource.resourceType,
             },
-          ]}
+          ].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={resource.url} />
