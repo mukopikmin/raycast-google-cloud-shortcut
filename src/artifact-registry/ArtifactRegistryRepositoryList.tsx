@@ -23,7 +23,7 @@ export const ArtifactRegistryRepositoryList = ({ projectId, locationId }: Props)
           title={repo.name}
           subtitle={repo.description || undefined}
           icon={Icon.Box}
-          accessories={[{ text: repo.location }, { text: repo.format }]}
+          accessories={[{ text: repo.location }, { text: repo.format }].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={repo.url} />

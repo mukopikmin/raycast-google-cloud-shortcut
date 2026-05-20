@@ -22,7 +22,7 @@ export const CloudTasksQueueList = (props: Props) => {
           id={queue.name}
           title={queue.name}
           icon={Icon.Box}
-          accessories={[{ text: queue.region }]}
+          accessories={[{ text: queue.region }].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={queue.url} />
