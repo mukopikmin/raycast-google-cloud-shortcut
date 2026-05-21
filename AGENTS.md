@@ -39,6 +39,16 @@ These are technical guidelines to be applied consistently across this entire pro
 ## 5. Common Implementation Patterns
 - **Data Fetching**: Follow the established pattern using `usePromise` in `src/service/` or existing custom hooks.
 - **Type Definitions**: Organize resource-related types in a `types.ts` file within each feature directory.
+- **Bounded Pagination**:
+  - Avoid eager all-page fetching for resource list APIs. Initial loads should fetch only the first page.
+  - API helpers should expose page-level functions that return both the resources and the pagination token, e.g. `{ resources, nextPageToken }`.
+  - Hooks should own pagination state, including loaded resources, `nextPageToken`, `isLoadingMore`, `hasMore`, `isTruncated`, `loadMore`, and `error`.
+  - Add explicit load-more behavior in the list UI instead of automatically following every page token.
+  - Enforce a hard cap on retained resources, currently 500 items per resource list, to keep memory usage bounded.
+  - If an API has multiple pagination streams for one list, keep each token explicit in hook state and merge/deduplicate loaded resources deterministically.
+  - Search only the resources that have already been loaded. Search placeholders and empty states must make this clear when more results may exist.
+  - When results are truncated by the hard cap, show an explicit truncated state in the UI.
+  - Preserve existing partial-success behavior when converting progressive pagination to bounded pagination.
 
 ## 6. Communication
 - **GitHub Interactions**: Always write Pull Request descriptions, Issue comments, and commit messages in **English**.
@@ -46,4 +56,3 @@ These are technical guidelines to be applied consistently across this entire pro
 
 ## 7. Tool Usage
 - **Command-Line First**: Prioritize using terminal commands for all operations (e.g., repository management, information gathering, and verification). Use the browser tool only when a task cannot be accomplished via the command line or when visual confirmation is explicitly required.
-
