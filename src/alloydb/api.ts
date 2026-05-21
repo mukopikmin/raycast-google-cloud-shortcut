@@ -32,7 +32,7 @@ export const listAlloyDbClusters = async (projectId: string, accessToken: string
         displayName: cluster.displayName,
         region,
         state: cluster.state,
-        url: `https://console.cloud.google.com/alloydb/clusters/${region}/${clusterId}?project=${projectId}`,
+        url: `https://console.cloud.google.com/alloydb/locations/${region}/clusters/${clusterId}?project=${projectId}`,
       };
     }) ?? [];
 
