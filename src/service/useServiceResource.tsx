@@ -164,7 +164,9 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<KubernetesEngineClusterList projectId={projectId} />} />,
+              searchAction: (
+                <Action.Push title={title} target={<KubernetesEngineClusterList projectId={projectId} />} />
+              ),
             };
           case "Load Balancing":
             return {
