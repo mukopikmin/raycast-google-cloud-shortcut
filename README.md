@@ -1,42 +1,58 @@
-# Google Cloud Shortcut (Raycast Extension)
+# Google Cloud Shortcut
 
-Open the Google Cloud service console quickly.
+Open Google Cloud Console pages from Raycast without switching to a browser tab first.
 
-## Installation
+Use this extension to pick a Google Cloud project, search supported Google Cloud services, and open service pages or individual resources in Google Cloud Console.
 
-### From Raycast Store
+## Setup
 
-TBD
+1. Open Raycast and run **Search Google Cloud Resources**.
+2. Sign in with the Google account that has access to your Google Cloud projects.
+3. Review the Google permission request and approve it.
+4. Select a project from the project list.
+5. Select a Google Cloud service or a searchable resource to open it in Google Cloud Console.
 
-### Local Development
+The extension stores your project list in Raycast local storage so it can show projects faster the next time you open the command.
 
-1. Clone this repository.
-2. Run `npm install` to install dependencies.
-3. Run `npm run dev` to build the extension and install it in your local Raycast.
+## Refreshing Projects
+
+If a project is missing, renamed, or no longer available, refresh the cached project list:
+
+1. Run **Search Google Cloud Resources**.
+2. Open the action menu on the project list.
+3. Choose **Refresh Projects**.
+
+The refresh action fetches your current Google Cloud projects again and updates the local cache.
+
+## Permissions
+
+Google Cloud Shortcut asks Google for the `https://www.googleapis.com/auth/cloud-platform` OAuth scope.
+
+The extension uses this permission to:
+
+- List the Google Cloud projects available to your Google account.
+- List metadata for supported resources such as Cloud Run services, Cloud SQL instances, Cloud Storage buckets, Pub/Sub topics, and other resources shown in the command.
+- Open the matching Google Cloud Console page for the selected project, service, or resource.
+
+The extension only calls Google Cloud APIs to read project and resource metadata. It does not create, update, or delete Google Cloud resources.
 
 ## Usage
 
-This extension provides the following commands:
+Run **Search Google Cloud Resources** from Raycast.
 
-- **Search Google Cloud Resources**: Quickly search and navigate to your Google Cloud projects and services.
-
-You can refresh the cached project list from the project list actions.
-
-## Authorization
-
-This extension uses Google OAuth with the `cloud-platform` scope. Search results depend on the Google Cloud projects, APIs, and resource permissions available to the signed-in account.
+The command first shows your Google Cloud projects. After selecting a project, it shows supported Google Cloud services. Services with resource search support include a search action for their resources; every service can be opened directly in Google Cloud Console for the selected project.
 
 ## Supported Services
 
-This extension supports quick navigation to Google Cloud services. For some services, you can also search and navigate directly to their resources (like instances, buckets, or clusters).
+This extension supports quick navigation to Google Cloud services. For some services, you can also search and navigate directly to resources such as instances, buckets, clusters, jobs, or queues.
 
-Cloud Logging shortcuts are rolled out incrementally. The table below shows the current support status for both resource search and Cloud Logging shortcuts.
+Cloud Logging shortcuts are available for selected resource types. The table below shows the current support status for both resource search and Cloud Logging shortcuts.
 
 | Service Name | Category | Resource Search | Cloud Logging Shortcut |
 |---|---|---|---|
 | Compute Engine | Compute | - | - |
 | Kubernetes Engine | Compute | - | - |
-| Cloud Run | Compute | Services | Yes |
+| Cloud Run | Compute | Services, Jobs, Worker Pools | Yes |
 | Cloud Functions | Compute | Functions (gen1) | Yes |
 | App Engine | Compute | Services | - |
 | Batch | Compute | - | - |
@@ -69,7 +85,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud Trace | Operations | - | - |
 | Cloud Profiler | Operations | - | - |
 | Cloud Debugger | Operations | - | - |
-| Pub/Sub | Integration | Topics & Subscriptions | - |
+| Pub/Sub | Integration | Topics, Subscriptions | - |
 | Eventarc | Integration | - | - |
 | Workflows | Integration | Workflows | - |
 | Cloud Scheduler | Integration | Jobs | - |
@@ -94,3 +110,9 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Billing | Billing | - | - |
 | Quotas | Billing | - | - |
 | Budgets & Alerts | Billing | - | - |
+
+## Local Development
+
+1. Clone this repository.
+2. Run `npm install` to install dependencies.
+3. Run `npm run dev` to build the extension and install it in your local Raycast.
