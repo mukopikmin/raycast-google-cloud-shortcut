@@ -19,6 +19,7 @@ import { CloudBuildList } from "../cloud-build/CloudBuildList";
 import { VpcNetworkList } from "../vpc/VpcNetworkList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
 import { ComputeEngineInstanceList } from "../compute-engine/ComputeEngineInstanceList";
+import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
 import { IamList } from "../iam/IamList";
 
 export type UserServiceResourceResult = {
@@ -164,6 +165,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />,
+            };
+          case "Load Balancing":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<LoadBalancerList projectId={projectId} />} />,
             };
           case "VPC Networks":
           case "IAM & Admin":
