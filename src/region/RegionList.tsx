@@ -35,6 +35,7 @@ export const RegionList = (props: Props) => {
           id={region.id}
           title={region.name}
           subtitle={region.id}
+          keywords={Array.from(new Set([region.id, region.name].filter(Boolean)))}
           icon={Icon.Map}
           actions={
             <ActionPanel>
