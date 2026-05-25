@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import { Location } from "../region/types";
+import { createLocation, Location } from "../region/types";
 import { CloudTasksQueue } from "./types";
 
 type CloudTasksQueuesResponse = {
@@ -53,9 +53,6 @@ export const listCloudTasksLocations = async (projectId: string, accessToken: st
   );
 
   return (data.locations ?? [])
-    .map((loc) => ({
-      id: loc.locationId,
-      name: loc.displayName || loc.locationId,
-    }))
+    .map((loc) => createLocation(loc.locationId, loc.displayName))
     .sort((a, b) => a.id.localeCompare(b.id));
 };

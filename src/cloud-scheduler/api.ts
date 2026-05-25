@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import { Location } from "../region/types";
+import { createLocation, Location } from "../region/types";
 import { CloudSchedulerJob, createCloudSchedulerJob } from "./types";
 
 type CloudSchedulerJobsResponse = {
@@ -73,10 +73,7 @@ export const listCloudSchedulerLocations = async (projectId: string, accessToken
   );
 
   return (data.locations ?? [])
-    .map((location) => ({
-      id: location.locationId,
-      name: location.displayName || location.locationId,
-    }))
+    .map((location) => createLocation(location.locationId, location.displayName))
     .sort((a, b) => a.id.localeCompare(b.id));
 };
 

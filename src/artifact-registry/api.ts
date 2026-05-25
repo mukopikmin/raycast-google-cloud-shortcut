@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
-import { Location } from "../region/types";
+import { createLocation, Location } from "../region/types";
 import { ArtifactRegistryRepository } from "./types";
 
 type RepositoryResponse = {
@@ -58,9 +58,6 @@ export const listArtifactRegistryLocations = async (projectId: string, accessTok
   );
 
   return (data.locations ?? [])
-    .map((loc) => ({
-      id: loc.locationId,
-      name: loc.displayName || loc.locationId,
-    }))
+    .map((loc) => createLocation(loc.locationId, loc.displayName))
     .sort((a, b) => a.id.localeCompare(b.id));
 };
