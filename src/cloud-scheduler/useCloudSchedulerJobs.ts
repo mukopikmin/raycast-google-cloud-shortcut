@@ -119,7 +119,7 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
 
   const noopLoadMore = useCallback(async () => undefined, []);
 
-  const { isLoading, error } = usePromise(
+  const { data, isLoading, error } = usePromise(
     async (projId: string, locId: string, token: string) => {
       setScheduledJobs([]);
       setPaginationTokens({});
@@ -143,7 +143,8 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
       }
 
       const jobs = mergeJobs([], [...defaultPage.jobs, ...legacyPage.jobs]);
-      setScheduledJobs(jobs.slice(0, CLOUD_SCHEDULER_JOB_LIMIT));
+      const initialJobs = jobs.slice(0, CLOUD_SCHEDULER_JOB_LIMIT);
+      setScheduledJobs(initialJobs);
       setPaginationTokens(
         jobs.length >= CLOUD_SCHEDULER_JOB_LIMIT
           ? {}
@@ -158,6 +159,8 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
             Boolean(legacyPage.nextPageToken) ||
             jobs.length > CLOUD_SCHEDULER_JOB_LIMIT),
       );
+
+      return initialJobs;
     },
     [projectId, locationId, accessToken],
   );
@@ -176,7 +179,9 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
     };
   }
 
-  if (isLoading && scheduledJobs.length === 0) {
+  const loadedJobs = scheduledJobs.length > 0 ? scheduledJobs : (data ?? []);
+
+  if (isLoading && loadedJobs.length === 0) {
     return {
       scheduledJobs: undefined,
       isLoading: true,
@@ -189,7 +194,7 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
   }
 
   return {
-    scheduledJobs,
+    scheduledJobs: loadedJobs,
     isLoading,
     isLoadingMore,
     hasMore: Boolean(paginationTokens.defaultNextPageToken || paginationTokens.legacyNextPageToken),
