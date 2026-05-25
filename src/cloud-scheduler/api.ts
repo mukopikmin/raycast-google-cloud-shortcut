@@ -1,4 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
+import { createLocation, Location } from "../region/types";
 import { CloudSchedulerJob, createCloudSchedulerJob } from "./types";
 
 type CloudSchedulerJobsResponse = {
@@ -18,11 +19,6 @@ type CloudSchedulerLocationsResponse = {
     locationId: string;
     displayName?: string;
   }[];
-};
-
-export type CloudSchedulerLocation = {
-  id: string;
-  name: string;
 };
 
 const listCloudSchedulerJobsByType = async (
@@ -70,20 +66,14 @@ const createCloudSchedulerJobs = (projectId: string, jobs: CloudSchedulerJobResp
 /**
  * @see https://docs.cloud.google.com/scheduler/docs/reference/rest/v1beta1/projects.locations/list
  */
-export const listCloudSchedulerLocations = async (
-  projectId: string,
-  accessToken: string,
-): Promise<CloudSchedulerLocation[]> => {
+export const listCloudSchedulerLocations = async (projectId: string, accessToken: string): Promise<Location[]> => {
   const data = await fetchGoogleApi<CloudSchedulerLocationsResponse>(
     `https://cloudscheduler.googleapis.com/v1beta1/projects/${projectId}/locations`,
     accessToken,
   );
 
   return (data.locations ?? [])
-    .map((location) => ({
-      id: location.locationId,
-      name: location.displayName || location.locationId,
-    }))
+    .map((location) => createLocation(location.locationId, location.displayName))
     .sort((a, b) => a.id.localeCompare(b.id));
 };
 

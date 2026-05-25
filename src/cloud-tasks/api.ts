@@ -1,4 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
+import { createLocation, Location } from "../region/types";
 import { CloudTasksQueue } from "./types";
 
 type CloudTasksQueuesResponse = {
@@ -33,4 +34,25 @@ export const listCloudTasksQueues = async (
       };
     }) ?? []
   );
+};
+
+type CloudTasksLocationsResponse = {
+  locations?: {
+    locationId: string;
+    displayName?: string;
+  }[];
+};
+
+/**
+ * @see https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations/list
+ */
+export const listCloudTasksLocations = async (projectId: string, accessToken: string): Promise<Location[]> => {
+  const data = await fetchGoogleApi<CloudTasksLocationsResponse>(
+    `https://cloudtasks.googleapis.com/v2/projects/${projectId}/locations`,
+    accessToken,
+  );
+
+  return (data.locations ?? [])
+    .map((loc) => createLocation(loc.locationId, loc.displayName))
+    .sort((a, b) => a.id.localeCompare(b.id));
 };
