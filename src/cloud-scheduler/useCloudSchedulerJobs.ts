@@ -4,8 +4,8 @@ import { CloudSchedulerJob } from "./types";
 import { listCloudSchedulerJobsPage } from "./api";
 import { useGoogleApi } from "../auth/google";
 
-const CLOUD_SCHEDULER_JOB_PAGE_SIZE = 50;
 const CLOUD_SCHEDULER_JOB_LIMIT = 500;
+const CLOUD_SCHEDULER_JOB_PAGE_SIZE = CLOUD_SCHEDULER_JOB_LIMIT;
 
 type SuccessResult = {
   scheduledJobs: CloudSchedulerJob[];
