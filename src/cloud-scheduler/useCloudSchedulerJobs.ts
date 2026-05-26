@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { usePromise } from "@raycast/utils";
 import { CloudSchedulerJob } from "./types";
-import { listCloudSchedulerJobsPage } from "./api";
+import { CloudSchedulerJobsPage, listCloudSchedulerJobsPage } from "./api";
 import { useGoogleApi } from "../auth/google";
 
 const CLOUD_SCHEDULER_JOB_LIMIT = 500;
@@ -52,6 +52,30 @@ const mergeJobs = (jobs: CloudSchedulerJob[], nextJobs: CloudSchedulerJob[]): Cl
   return Array.from(jobsByName.values());
 };
 
+const listFirstNonEmptyCloudSchedulerJobsPage = async (
+  projectId: string,
+  locationId: string,
+  accessToken: string,
+  options: { pageSize: number; pageToken?: string; legacyAppEngineCron?: boolean },
+): Promise<CloudSchedulerJobsPage> => {
+  let pageToken = options.pageToken;
+  const seenPageTokens = new Set<string>();
+
+  for (;;) {
+    const page = await listCloudSchedulerJobsPage(projectId, locationId, accessToken, {
+      ...options,
+      pageToken,
+    });
+
+    if (page.jobs.length > 0 || !page.nextPageToken || seenPageTokens.has(page.nextPageToken)) {
+      return page;
+    }
+
+    seenPageTokens.add(page.nextPageToken);
+    pageToken = page.nextPageToken;
+  }
+};
+
 export const useCloudSchedulerJobs = (projectId: string, locationId: string): UseCloudSchedulerJobsResult => {
   const { accessToken } = useGoogleApi();
   const [scheduledJobs, setScheduledJobs] = useState<CloudSchedulerJob[]>([]);
@@ -73,7 +97,7 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
     setLoadMoreError(undefined);
     try {
       const defaultPage = paginationTokens.defaultNextPageToken
-        ? await listCloudSchedulerJobsPage(projectId, locationId, accessToken, {
+        ? await listFirstNonEmptyCloudSchedulerJobsPage(projectId, locationId, accessToken, {
             pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
             pageToken: paginationTokens.defaultNextPageToken,
           })
@@ -82,7 +106,7 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
       let legacyPage: { jobs: CloudSchedulerJob[]; nextPageToken?: string } = { jobs: [] };
       if (paginationTokens.legacyNextPageToken) {
         try {
-          legacyPage = await listCloudSchedulerJobsPage(projectId, locationId, accessToken, {
+          legacyPage = await listFirstNonEmptyCloudSchedulerJobsPage(projectId, locationId, accessToken, {
             pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
             pageToken: paginationTokens.legacyNextPageToken,
             legacyAppEngineCron: true,
@@ -126,13 +150,13 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
       setIsTruncated(false);
       setLoadMoreError(undefined);
 
-      const defaultPage = await listCloudSchedulerJobsPage(projId, locId, token, {
+      const defaultPage = await listFirstNonEmptyCloudSchedulerJobsPage(projId, locId, token, {
         pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
       });
 
       let legacyPage: { jobs: CloudSchedulerJob[]; nextPageToken?: string } = { jobs: [] };
       try {
-        legacyPage = await listCloudSchedulerJobsPage(projId, locId, token, {
+        legacyPage = await listFirstNonEmptyCloudSchedulerJobsPage(projId, locId, token, {
           pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
           legacyAppEngineCron: true,
         });
