@@ -11,6 +11,12 @@ const createCloudLoggingQueryFromFilters = (filters: CloudLoggingFilter[]): stri
 
 const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
   switch (target.kind) {
+    case "alloydb-cluster":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "alloydb.googleapis.com/Cluster" },
+        { key: "resource.labels.cluster_id", value: target.clusterId },
+        { key: "resource.labels.location", value: target.region },
+      ]);
     case "cloud-function-gen1":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "cloud_function" },
