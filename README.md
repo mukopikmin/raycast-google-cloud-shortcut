@@ -42,7 +42,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Batch | Compute | - | - |
 | Cloud Storage | Storage | Buckets | - |
 | Transfer Service | Storage | - | - |
-| AlloyDB | Database | Clusters | - |
+| AlloyDB | Database | Clusters | Yes |
 | Bigtable | Database | - | - |
 | Cloud SQL | Database | Instances | - |
 | Cloud Spanner | Database | - | - |
