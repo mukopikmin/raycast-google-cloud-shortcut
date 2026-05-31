@@ -11,6 +11,13 @@ const createCloudLoggingQueryFromFilters = (filters: CloudLoggingFilter[]): stri
 
 const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
   switch (target.kind) {
+    case "workflow":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "workflows.googleapis.com/Workflow" },
+        { key: "resource.labels.resource_container", value: target.projectId },
+        { key: "resource.labels.location", value: target.region },
+        { key: "resource.labels.workflow_id", value: target.name },
+      ]);
     case "cloud-function-gen1":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "cloud_function" },

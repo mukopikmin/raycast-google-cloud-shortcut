@@ -71,7 +71,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud Debugger | Operations | - | - |
 | Pub/Sub | Integration | Topics & Subscriptions | - |
 | Eventarc | Integration | - | - |
-| Workflows | Integration | Workflows | - |
+| Workflows | Integration | Workflows | Yes |
 | Cloud Scheduler | Integration | Jobs | - |
 | Cloud Tasks | Integration | Queues | - |
 | Artifact Registry | DevOps | Repositories | - |
