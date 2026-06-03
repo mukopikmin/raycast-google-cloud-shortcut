@@ -25,6 +25,17 @@ export const SecretManagerList = (props: Props) => {
   return (
     <List
       isLoading={isLoading || isLoadingMore}
+      pagination={
+        canLoadMore
+          ? {
+              pageSize: 50,
+              hasMore: canLoadMore,
+              onLoadMore: () => {
+                void loadMore();
+              },
+            }
+          : undefined
+      }
       filtering
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search loaded secrets..."

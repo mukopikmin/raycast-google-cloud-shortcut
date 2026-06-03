@@ -25,6 +25,17 @@ export const CloudSchedulerJobList = ({ projectId, locationId }: Props) => {
   return (
     <List
       isLoading={isLoading || isLoadingMore}
+      pagination={
+        canLoadMore
+          ? {
+              pageSize: 500,
+              hasMore: canLoadMore,
+              onLoadMore: () => {
+                void loadMore();
+              },
+            }
+          : undefined
+      }
       filtering
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search loaded Cloud Scheduler jobs..."

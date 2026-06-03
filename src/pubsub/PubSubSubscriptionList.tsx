@@ -16,10 +16,24 @@ export const PubSubSubscriptionList = (props: Props) => {
   }
 
   const canLoadMore = hasMore && !isTruncated;
+  const loadMoreAction = canLoadMore ? (
+    <Action title="Load More Pub/Sub Resources" icon={Icon.ArrowDown} onAction={loadMore} />
+  ) : undefined;
 
   return (
     <List
       isLoading={isLoading || isLoadingMore}
+      pagination={
+        canLoadMore
+          ? {
+              pageSize: 50,
+              hasMore: canLoadMore,
+              onLoadMore: () => {
+                void loadMore();
+              },
+            }
+          : undefined
+      }
       searchBarPlaceholder={
         canLoadMore
           ? "Search loaded topics/subscriptions. More resources are available via Load More."
@@ -44,7 +58,7 @@ export const PubSubSubscriptionList = (props: Props) => {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={resource.url} />
-              {canLoadMore && <Action title="Load More Pub/Sub Resources" icon={Icon.ArrowDown} onAction={loadMore} />}
+              {loadMoreAction}
             </ActionPanel>
           }
         />
@@ -54,11 +68,7 @@ export const PubSubSubscriptionList = (props: Props) => {
           key="load-more-pubsub"
           title="Load More Pub/Sub Resources"
           icon={Icon.ArrowDown}
-          actions={
-            <ActionPanel>
-              <Action title="Load More Pub/Sub Resources" icon={Icon.ArrowDown} onAction={loadMore} />
-            </ActionPanel>
-          }
+          actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
         />
       )}
       {isTruncated && (
