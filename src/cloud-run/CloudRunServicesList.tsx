@@ -16,12 +16,27 @@ export const CloudRunServicesList = (props: Props) => {
     return <ErrorDetail error={error} />;
   }
 
-  const loadMoreAction = hasMore ? (
+  const canLoadMore = hasMore && !isTruncated;
+  const loadMoreAction = canLoadMore ? (
     <Action title="Load More Deployments" icon={Icon.ArrowDown} onAction={loadMore} />
   ) : null;
 
   return (
-    <List isLoading={isLoading || isLoadingMore} searchBarPlaceholder="Search loaded deployments...">
+    <List
+      isLoading={isLoading || isLoadingMore}
+      pagination={
+        canLoadMore
+          ? {
+              pageSize: 50,
+              hasMore: canLoadMore,
+              onLoadMore: () => {
+                void loadMore();
+              },
+            }
+          : undefined
+      }
+      searchBarPlaceholder="Search loaded deployments..."
+    >
       <List.EmptyView
         icon={Icon.MagnifyingGlass}
         title={hasMore ? "No loaded deployments match this search" : "No deployments found"}
@@ -68,7 +83,7 @@ export const CloudRunServicesList = (props: Props) => {
           />
         );
       })}
-      {hasMore && (
+      {canLoadMore && (
         <List.Item
           id="load-more-cloud-run-deployments"
           title="Load More Deployments"
