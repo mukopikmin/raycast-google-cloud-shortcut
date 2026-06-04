@@ -3,6 +3,7 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSchedulerJobs } from "./useCloudSchedulerJobs";
 import { toReadableCron } from "./cron";
 import { ErrorDetail } from "../components/ErrorDetail";
+import { useLoadMoreOnSearch } from "../hooks/useLoadMoreOnSearch";
 
 type Props = { projectId: string; locationId: string };
 
@@ -13,11 +14,13 @@ export const CloudSchedulerJobList = ({ projectId, locationId }: Props) => {
     locationId,
   );
 
+  const canLoadMore = hasMore && !isTruncated;
+  useLoadMoreOnSearch({ searchText, canLoadMore, isLoading, isLoadingMore, loadMore });
+
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
-  const canLoadMore = hasMore && !isTruncated;
   const loadMoreAction = canLoadMore ? (
     <Action title="Load More Jobs" icon={Icon.ArrowDown} onAction={loadMore} />
   ) : undefined;

@@ -1,21 +1,26 @@
+import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { usePubSubResources } from "./usePubSubResources";
 import { ErrorDetail } from "../components/ErrorDetail";
+import { useLoadMoreOnSearch } from "../hooks/useLoadMoreOnSearch";
 
 type Props = {
   projectId: string;
 };
 
 export const PubSubSubscriptionList = (props: Props) => {
+  const [searchText, setSearchText] = useState("");
   const { resources, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = usePubSubResources(
     props.projectId,
   );
+
+  const canLoadMore = hasMore && !isTruncated;
+  useLoadMoreOnSearch({ searchText, canLoadMore, isLoading, isLoadingMore, loadMore });
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
-  const canLoadMore = hasMore && !isTruncated;
   const loadMoreAction = canLoadMore ? (
     <Action title="Load More Pub/Sub Resources" icon={Icon.ArrowDown} onAction={loadMore} />
   ) : undefined;
@@ -34,6 +39,8 @@ export const PubSubSubscriptionList = (props: Props) => {
             }
           : undefined
       }
+      filtering
+      onSearchTextChange={setSearchText}
       searchBarPlaceholder={
         canLoadMore
           ? "Search loaded topics/subscriptions. More resources are available via Load More."
