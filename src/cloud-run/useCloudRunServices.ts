@@ -9,6 +9,25 @@ const CLOUD_RUN_SERVICE_LIMIT = 500;
 
 type PaginationTokens = Record<string, string>;
 
+const isNotFoundError = (error: unknown) => error instanceof Error && error.message.includes("Failed to fetch (404)");
+
+const listCloudRunServicesPageOrEmpty = async (
+  projectId: string,
+  locationId: string,
+  accessToken: string,
+  options: { pageSize: number; pageToken?: string },
+) => {
+  try {
+    return await listCloudRunServicesPage(projectId, locationId, accessToken, options);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return { deployments: [], nextPageToken: undefined };
+    }
+
+    throw error;
+  }
+};
+
 type SuccessResult = {
   services: CloudRunDeployment[];
   isLoading: boolean;
@@ -61,7 +80,7 @@ export const useCloudRunServices = (projectId: string): UseCloudRunServicesResul
       const pages = await Promise.all(
         regions.map(async (region) => ({
           region,
-          page: await listCloudRunServicesPage(projectId, region, accessToken, {
+          page: await listCloudRunServicesPageOrEmpty(projectId, region, accessToken, {
             pageSize: CLOUD_RUN_SERVICE_PAGE_SIZE,
             pageToken: paginationTokens[region],
           }),
@@ -103,7 +122,7 @@ export const useCloudRunServices = (projectId: string): UseCloudRunServicesResul
       const pages = await Promise.all(
         locations.map(async (location) => ({
           region: location.id,
-          page: await listCloudRunServicesPage(projId, location.id, token, {
+          page: await listCloudRunServicesPageOrEmpty(projId, location.id, token, {
             pageSize: CLOUD_RUN_SERVICE_PAGE_SIZE,
           }),
         })),

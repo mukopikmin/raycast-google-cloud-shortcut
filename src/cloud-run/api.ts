@@ -105,7 +105,7 @@ export const listCloudRunServicesPage = async (
 
 export const listCloudRunLocations = async (projectId: string, accessToken: string): Promise<Location[]> => {
   const body = await fetchGoogleApi<CloudRunLocationsResponse>(
-    `https://run.googleapis.com/v2/projects/${projectId}/locations`,
+    `https://run.googleapis.com/v1/projects/${projectId}/locations`,
     accessToken,
   );
 
