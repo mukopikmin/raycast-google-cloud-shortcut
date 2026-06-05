@@ -1,4 +1,5 @@
 import { fetchGoogleApi } from "../auth/api";
+import { createLocation, Location } from "../region/types";
 import { CloudRunDeployment, createCloudRunDeployment } from "./types";
 
 type CloudRunServicesResponse = {
@@ -14,6 +15,13 @@ type CloudRunServicesResponse = {
     };
   }[];
   nextPageToken?: string;
+};
+
+type CloudRunLocationsResponse = {
+  locations?: {
+    locationId: string;
+    displayName?: string;
+  }[];
 };
 
 type CloudRunJobsResponse = {
@@ -58,6 +66,7 @@ export type CloudRunDeploymentPage = {
  */
 export const listCloudRunServicesPage = async (
   projectId: string,
+  locationId: string,
   accessToken: string,
   options: { pageSize: number; pageToken?: string },
 ): Promise<CloudRunDeploymentPage> => {
@@ -70,7 +79,7 @@ export const listCloudRunServicesPage = async (
 
   const suffix = query.toString();
   const body = await fetchGoogleApi<CloudRunServicesResponse>(
-    `https://run.googleapis.com/v2/projects/${projectId}/locations/-/services${suffix ? `?${suffix}` : ""}`,
+    `https://run.googleapis.com/v2/projects/${projectId}/locations/${locationId}/services${suffix ? `?${suffix}` : ""}`,
     accessToken,
   );
 
@@ -92,6 +101,17 @@ export const listCloudRunServicesPage = async (
     }) ?? [];
 
   return { deployments: services, nextPageToken: body.nextPageToken };
+};
+
+export const listCloudRunLocations = async (projectId: string, accessToken: string): Promise<Location[]> => {
+  const body = await fetchGoogleApi<CloudRunLocationsResponse>(
+    `https://run.googleapis.com/v2/projects/${projectId}/locations`,
+    accessToken,
+  );
+
+  return (body.locations ?? [])
+    .map((location) => createLocation(location.locationId, location.displayName))
+    .sort((a, b) => a.id.localeCompare(b.id));
 };
 
 /**
