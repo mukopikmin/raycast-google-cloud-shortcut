@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useSecretManager } from "./useSecretManager";
 import { ErrorDetail } from "../components/ErrorDetail";
+import { useLoadMoreOnSearch } from "../hooks/useLoadMoreOnSearch";
 
 type Props = {
   projectId: string;
@@ -13,11 +14,13 @@ export const SecretManagerList = (props: Props) => {
     props.projectId,
   );
 
+  const canLoadMore = hasMore && !isTruncated;
+  useLoadMoreOnSearch({ searchText, canLoadMore, isLoading, isLoadingMore, loadMore });
+
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
-  const canLoadMore = hasMore && !isTruncated;
   const loadMoreAction = canLoadMore ? (
     <Action title="Load More Secrets" icon={Icon.ArrowDown} onAction={loadMore} />
   ) : undefined;
@@ -25,6 +28,17 @@ export const SecretManagerList = (props: Props) => {
   return (
     <List
       isLoading={isLoading || isLoadingMore}
+      pagination={
+        canLoadMore
+          ? {
+              pageSize: 50,
+              hasMore: canLoadMore,
+              onLoadMore: () => {
+                void loadMore();
+              },
+            }
+          : undefined
+      }
       filtering
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search loaded secrets..."
