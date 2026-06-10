@@ -1,45 +1,45 @@
-export type RegularRegionID =
-  | "asia-east1"
-  | "asia-east2"
-  | "asia-northeast1"
-  | "asia-northeast2"
-  | "asia-northeast3"
-  | "asia-south1"
-  | "asia-southeast1"
-  | "asia-southeast2"
-  | "australia-southeast1"
-  | "europe-central2"
-  | "europe-north1"
-  | "europe-west1"
-  | "europe-west2"
-  | "europe-west3"
-  | "europe-west4"
-  | "europe-west6"
-  | "me-central1"
-  | "me-central2"
-  | "me-west1"
-  | "northamerica-northeast1"
-  | "southamerica-east1"
-  | "us-central1"
-  | "us-east1"
-  | "us-east4"
-  | "us-west1"
-  | "us-west2"
-  | "us-west3"
-  | "us-west4";
-
-export type MultiRegionID = "asia" | "europe" | "us";
-
-export type RegionID = RegularRegionID | MultiRegionID;
-
-export type RegularRegion = {
-  id: RegularRegionID;
+export type Location = {
+  id: string;
   name: string;
 };
 
-export type MultiRegion = {
-  id: MultiRegionID;
-  name: string;
+const locationDisplayNames: Record<string, string> = {
+  "asia-east1": "Taiwan",
+  "asia-east2": "Hong Kong",
+  "asia-northeast1": "Tokyo",
+  "asia-northeast2": "Osaka",
+  "asia-northeast3": "Seoul",
+  "asia-south1": "Mumbai",
+  "asia-southeast1": "Singapore",
+  "asia-southeast2": "Jakarta",
+  "australia-southeast1": "Sydney",
+  "europe-central2": "Warsaw",
+  "europe-north1": "Finland",
+  "europe-west1": "Belgium",
+  "europe-west2": "London",
+  "europe-west3": "Frankfurt",
+  "europe-west4": "Netherlands",
+  "europe-west6": "Zurich",
+  "me-central1": "Doha",
+  "me-central2": "Dammam",
+  "me-west1": "Tel Aviv",
+  "northamerica-northeast1": "Montreal",
+  "southamerica-east1": "Sao Paulo",
+  "us-central1": "Iowa",
+  "us-east1": "South Carolina",
+  "us-east4": "Northern Virginia",
+  "us-west1": "Oregon",
+  "us-west2": "Los Angeles",
+  "us-west3": "Salt Lake City",
+  "us-west4": "Las Vegas",
+  asia: "Asia",
+  europe: "Europe",
+  us: "United States",
 };
 
-export type Region = RegularRegion | MultiRegion;
+export const createLocation = (locationId: string, displayName?: string): Location => {
+  return {
+    id: locationId,
+    name: displayName && displayName !== locationId ? displayName : (locationDisplayNames[locationId] ?? locationId),
+  };
+};

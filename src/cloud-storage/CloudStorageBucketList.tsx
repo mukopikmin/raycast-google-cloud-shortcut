@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudStorage } from "./useCloudStorage";
 import { ErrorDetail } from "../components/ErrorDetail";
+import { useLoadMoreOnSearch } from "../hooks/useLoadMoreOnSearch";
 
 type Props = {
   projectId: string;
@@ -11,11 +12,13 @@ export const CloudStorageBucketList = (props: Props) => {
   const [searchText, setSearchText] = useState("");
   const { buckets, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudStorage(props.projectId);
 
+  const canLoadMore = hasMore && !isTruncated;
+  useLoadMoreOnSearch({ searchText, canLoadMore, isLoading, isLoadingMore, loadMore });
+
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
-  const canLoadMore = hasMore && !isTruncated;
   const loadMoreAction = canLoadMore ? (
     <Action title="Load More Buckets" icon={Icon.ArrowDown} onAction={loadMore} />
   ) : undefined;
@@ -23,6 +26,17 @@ export const CloudStorageBucketList = (props: Props) => {
   return (
     <List
       isLoading={isLoading || isLoadingMore}
+      pagination={
+        canLoadMore
+          ? {
+              pageSize: 50,
+              hasMore: canLoadMore,
+              onLoadMore: () => {
+                void loadMore();
+              },
+            }
+          : undefined
+      }
       filtering
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search loaded buckets..."
