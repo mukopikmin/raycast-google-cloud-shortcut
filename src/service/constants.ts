@@ -2,52 +2,6 @@ import { Service } from "./types";
 
 export const availableServices: Service[] = [
   {
-    name: "AlloyDB",
-    category: "Database",
-    url: "https://console.cloud.google.com/alloydb/clusters",
-  },
-  {
-    name: "BigQuery",
-    category: "Data Analytics",
-    url: "https://console.cloud.google.com/bigquery",
-  },
-  {
-    name: "BigQuery Data Transfer",
-    category: "Data Analytics",
-    url: "https://console.cloud.google.com/bigquery/transfers",
-  },
-  {
-    name: "Bigtable",
-    category: "Database",
-    url: "https://console.cloud.google.com/bigtable/instances",
-  },
-  {
-    name: "Cloud SQL",
-    category: "Database",
-    url: "https://console.cloud.google.com/sql/instances",
-  },
-  {
-    name: "Cloud Spanner",
-    category: "Database",
-    url: "https://console.cloud.google.com/spanner/instances",
-  },
-  {
-    name: "Firestore",
-    category: "Database",
-    url: "https://console.cloud.google.com/firestore",
-  },
-  {
-    name: "Datastore",
-    category: "Database",
-    url: "https://console.cloud.google.com/datastore",
-  },
-  {
-    name: "Memorystore",
-    category: "Database",
-    url: "https://console.cloud.google.com/memorystore",
-  },
-
-  {
     name: "Compute Engine",
     category: "Compute",
     url: "https://console.cloud.google.com/compute/instances",
@@ -88,6 +42,42 @@ export const availableServices: Service[] = [
     name: "Transfer Service",
     category: "Storage",
     url: "https://console.cloud.google.com/transfer",
+  },
+
+  {
+    name: "AlloyDB",
+    category: "Database",
+    url: "https://console.cloud.google.com/alloydb/clusters",
+  },
+  {
+    name: "Bigtable",
+    category: "Database",
+    url: "https://console.cloud.google.com/bigtable/instances",
+  },
+  {
+    name: "Cloud SQL",
+    category: "Database",
+    url: "https://console.cloud.google.com/sql/instances",
+  },
+  {
+    name: "Cloud Spanner",
+    category: "Database",
+    url: "https://console.cloud.google.com/spanner/instances",
+  },
+  {
+    name: "Firestore",
+    category: "Database",
+    url: "https://console.cloud.google.com/firestore",
+  },
+  {
+    name: "Datastore",
+    category: "Database",
+    url: "https://console.cloud.google.com/datastore",
+  },
+  {
+    name: "Memorystore",
+    category: "Database",
+    url: "https://console.cloud.google.com/memorystore",
   },
 
   {
@@ -241,6 +231,16 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/dm/deployments",
   },
 
+  {
+    name: "BigQuery",
+    category: "Data Analytics",
+    url: "https://console.cloud.google.com/bigquery",
+  },
+  {
+    name: "BigQuery Data Transfer",
+    category: "Data Analytics",
+    url: "https://console.cloud.google.com/bigquery/transfers",
+  },
   {
     name: "Dataproc",
     category: "Data Analytics",
