@@ -1,4 +1,4 @@
-name: Type Check
+name: Test
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
       - "assets/**"
 
 jobs:
-  typecheck:
-    name: TypeScript Check
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -25,8 +25,14 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm ci
+      - name: Run lint
+        run: npm run lint
+      - name: Run test
+        run: npm run test
       - name: Run type-check
         run: npm run type-check
+      - name: Run build
+        run: npm run build
       - uses: ./.github/actions/slack-notify
         if: github.ref == 'refs/heads/main' && github.event_name == 'push' && job.status != 'success'
         continue-on-error: true
