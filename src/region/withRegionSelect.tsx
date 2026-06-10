@@ -1,11 +1,12 @@
 import { RegionList } from "./RegionList";
 import { Action } from "@raycast/api";
+import { Location } from "./types";
 
 type Props = {
   projectId: string;
   title: string;
   target: React.ComponentType<{ projectId: string; locationId: string }>;
-  includeMultiRegions?: boolean;
+  fetchLocations: (projectId: string, accessToken: string) => Promise<Location[]>;
 };
 
 export const withRegionSelect = (props: Props) => {
@@ -15,7 +16,7 @@ export const withRegionSelect = (props: Props) => {
       target={
         <RegionList
           projectId={props.projectId}
-          includeMultiRegions={props.includeMultiRegions}
+          fetchLocations={props.fetchLocations}
           target={(args) => <props.target projectId={args.projectId} locationId={args.locationId} />}
         />
       }

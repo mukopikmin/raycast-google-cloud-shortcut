@@ -19,7 +19,12 @@ TBD
 This extension provides the following commands:
 
 - **Search Google Cloud Resources**: Quickly search and navigate to your Google Cloud projects and services.
-- **Update Google Cloud Projects**: Update the cached list of your Google Cloud projects.
+
+You can refresh the cached project list from the project list actions.
+
+## Authorization
+
+This extension uses Google OAuth with the `cloud-platform` scope. Search results depend on the Google Cloud projects, APIs, and resource permissions available to the signed-in account.
 
 ## Supported Services
 
@@ -29,15 +34,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 
 | Service Name | Category | Resource Search | Cloud Logging Shortcut |
 |---|---|---|---|
-| AlloyDB | Database | Clusters | - |
-| BigQuery | Data Analytics | - | - |
-| BigQuery Data Transfer | Data Analytics | - | - |
-| Bigtable | Database | - | - |
-| Cloud SQL | Database | Instances | - |
-| Cloud Spanner | Database | - | - |
-| Firestore | Database | - | - |
-| Datastore | Database | - | - |
-| Memorystore | Database | - | - |
 | Compute Engine | Compute | Instances | - |
 | Kubernetes Engine | Compute | - | - |
 | Cloud Run | Compute | Services | Yes |
@@ -46,6 +42,13 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Batch | Compute | - | - |
 | Cloud Storage | Storage | Buckets | - |
 | Transfer Service | Storage | - | - |
+| AlloyDB | Database | Clusters | - |
+| Bigtable | Database | - | - |
+| Cloud SQL | Database | Instances | - |
+| Cloud Spanner | Database | - | - |
+| Firestore | Database | - | - |
+| Datastore | Database | - | - |
+| Memorystore | Database | - | - |
 | VPC Networks | Networking | Networks | - |
 | Load Balancing | Networking | - | - |
 | Cloud NAT | Networking | - | - |
@@ -75,6 +78,8 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud Build | DevOps | Builds | - |
 | Source Repositories | DevOps | - | - |
 | Deployment Manager | DevOps | - | - |
+| BigQuery | Data Analytics | - | - |
+| BigQuery Data Transfer | Data Analytics | - | - |
 | Dataproc | Data Analytics | - | - |
 | Dataflow | Data Analytics | - | - |
 | Composer | Data Analytics | - | - |
