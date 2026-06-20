@@ -25,6 +25,7 @@ import { KubernetesEngineClusterList } from "../kubernetes-engine/KubernetesEngi
 import { ComputeEngineInstanceList } from "../compute-engine/ComputeEngineInstanceList";
 import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
 import { IamList } from "../iam/IamList";
+import { AlertPolicyList } from "../cloud-monitoring/AlertPolicyList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -154,6 +155,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<ErrorReportingErrorList projectId={projectId} />} />,
+            };
+          case "Cloud Monitoring":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<AlertPolicyList projectId={projectId} />} />,
             };
           case "App Engine":
             return {
