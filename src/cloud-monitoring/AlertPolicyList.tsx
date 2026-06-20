@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { useAlertPolicies } from "./useAlertPolicies";
 
@@ -46,10 +46,7 @@ export const AlertPolicyList = ({ projectId }: Props) => {
           id={policy.id}
           title={policy.displayName}
           subtitle={policy.id}
-          icon={{
-            source: policy.enabled === false ? Icon.CircleDisabled : Icon.Bell,
-            tintColor: policy.enabled === false ? Color.SecondaryText : Color.Blue,
-          }}
+          icon={Icon.Box}
           keywords={policy.keywords}
           accessories={[
             { text: policy.enabled === undefined ? undefined : policy.enabled ? "Enabled" : "Disabled" },
