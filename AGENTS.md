@@ -11,6 +11,8 @@ These are technical guidelines to be applied consistently across this entire pro
 
 ## 2. UI Design Patterns
 - **Resource List (List.Item)**:
+  - **icon usage**:
+    - Use `Icon.Box` for resource list items by default. Use a resource-specific icon only when the existing feature already establishes that convention.
   - **subtitle usage**: 
     - Use for "auxiliary identifiers (e.g., email address)" or "descriptive text (e.g., cron schedule)" that help identify the item at a glance.
   - **accessories usage**: 
@@ -20,6 +22,7 @@ These are technical guidelines to be applied consistently across this entire pro
     ```tsx
     <List.Item
       title={resource.name}
+      icon={Icon.Box}
       subtitle={resource.description} 
       accessories={[
         { text: resource.region },
