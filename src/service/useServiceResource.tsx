@@ -21,6 +21,8 @@ import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
 import { CloudBuildList } from "../cloud-build/CloudBuildList";
 import { VpcNetworkList } from "../vpc/VpcNetworkList";
 import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
+import { KubernetesEngineClusterList } from "../kubernetes-engine/KubernetesEngineClusterList";
+import { ComputeEngineInstanceList } from "../compute-engine/ComputeEngineInstanceList";
 import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
 import { IamList } from "../iam/IamList";
 
@@ -166,6 +168,22 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
+            };
+          case "Kubernetes Engine":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: (
+                <Action.Push title={title} target={<KubernetesEngineClusterList projectId={projectId} />} />
+              ),
+            };
+          case "Compute Engine":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />,
             };
           case "Load Balancing":
             return {
