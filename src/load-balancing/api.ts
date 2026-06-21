@@ -66,7 +66,7 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
             loadBalancingScheme: rule.loadBalancingScheme,
             url:
               region === "global"
-                ? `https://console.cloud.google.com/net-services/loadbalancing/details/global/${rule.name}?project=${projectId}`
+                ? `https://console.cloud.google.com/net-services/loadbalancing/details/httpAdvanced/${rule.name}?project=${projectId}`
                 : `https://console.cloud.google.com/net-services/loadbalancing/details/regional/${region}/${rule.name}?project=${projectId}`,
           });
         }
