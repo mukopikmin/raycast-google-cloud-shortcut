@@ -26,6 +26,7 @@ import { ComputeEngineInstanceList } from "../compute-engine/ComputeEngineInstan
 import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
 import { IamList } from "../iam/IamList";
 import { AlertPolicyList } from "../cloud-monitoring/AlertPolicyList";
+import { WorkloadIdentityPoolList } from "../workload-identity/WorkloadIdentityPoolList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -212,6 +213,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 ) : (
                   <Action.Push title={title} target={<IamList projectId={projectId} />} />
                 ),
+            };
+          case "Workload Identity Federation":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<WorkloadIdentityPoolList projectId={projectId} />} />,
             };
           default:
             service satisfies never;
