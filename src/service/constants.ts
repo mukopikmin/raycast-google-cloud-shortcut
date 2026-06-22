@@ -215,11 +215,6 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/cloud-build",
   },
   {
-    name: "Source Repositories",
-    category: "DevOps",
-    url: "https://console.cloud.google.com/source",
-  },
-  {
     name: "Infrastructure Manager",
     category: "DevOps",
     url: "https://console.cloud.google.com/infra-manager",
@@ -266,12 +261,6 @@ export const availableServices: Service[] = [
     category: "Machine Learning",
     url: "https://console.cloud.google.com/vertex-ai",
   },
-  {
-    name: "AutoML",
-    category: "Machine Learning",
-    url: "https://console.cloud.google.com/vertex-ai/datasets",
-  },
-
   {
     name: "API & Services",
     category: "Billing",

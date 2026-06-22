@@ -75,7 +75,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud Tasks | Integration | Queues | - |
 | Artifact Registry | DevOps | Repositories | - |
 | Cloud Build | DevOps | Builds | - |
-| Source Repositories | DevOps | - | - |
 | Infrastructure Manager | DevOps | - | - |
 | BigQuery | Data Analytics | - | - |
 | BigQuery Data Transfer | Data Analytics | - | - |
@@ -85,7 +84,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Data Fusion | Data Analytics | - | - |
 | Dataplex | Data Analytics | - | - |
 | Vertex AI | Machine Learning | - | - |
-| AutoML | Machine Learning | - | - |
 | API & Services | Billing | - | - |
 | API Library | Billing | - | - |
 | Credentials | Billing | - | - |
