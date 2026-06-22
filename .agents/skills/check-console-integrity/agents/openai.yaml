@@ -1,5 +1,5 @@
 interface:
-  display_name: "Check Console Integrity"
+  display_name: "Google Cloud Console Integrity"
   short_description: "Audit Google Cloud Console links and service validity"
   default_prompt: "Use $check-console-integrity to audit Google Cloud Console links in this repository and produce an evidence-backed remediation plan."
 
