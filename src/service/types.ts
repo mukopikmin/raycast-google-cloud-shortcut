@@ -67,7 +67,6 @@ export const searchDisabledServiceNames = [
   "Data Fusion",
   "Dataplex",
   "Vertex AI",
-  "Vertex AI Workbench",
   "AutoML",
   "API & Services",
   "API Library",

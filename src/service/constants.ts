@@ -267,11 +267,6 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/vertex-ai",
   },
   {
-    name: "Vertex AI Workbench",
-    category: "Machine Learning",
-    url: "https://console.cloud.google.com/vertex-ai/workbench",
-  },
-  {
     name: "AutoML",
     category: "Machine Learning",
     url: "https://console.cloud.google.com/vertex-ai/datasets",

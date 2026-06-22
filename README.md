@@ -85,7 +85,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Data Fusion | Data Analytics | - | - |
 | Dataplex | Data Analytics | - | - |
 | Vertex AI | Machine Learning | - | - |
-| Vertex AI Workbench | Machine Learning | - | - |
 | AutoML | Machine Learning | - | - |
 | API & Services | Billing | - | - |
 | API Library | Billing | - | - |
