@@ -11,6 +11,8 @@ These are technical guidelines to be applied consistently across this entire pro
 
 ## 2. UI Design Patterns
 - **Resource List (List.Item)**:
+  - **icon usage**:
+    - Use `Icon.Box` for resource list items by default. Use a resource-specific icon only when the existing feature already establishes that convention.
   - **subtitle usage**: 
     - Use for "auxiliary identifiers (e.g., email address)" or "descriptive text (e.g., cron schedule)" that help identify the item at a glance.
   - **accessories usage**: 
@@ -20,6 +22,7 @@ These are technical guidelines to be applied consistently across this entire pro
     ```tsx
     <List.Item
       title={resource.name}
+      icon={Icon.Box}
       subtitle={resource.description} 
       accessories={[
         { text: resource.region },
@@ -52,6 +55,7 @@ These are technical guidelines to be applied consistently across this entire pro
 
 ## 6. Communication
 - **GitHub Interactions**: Always write Pull Request descriptions, Issue comments, and commit messages in **English**.
+- **Pull Request Titles**: Use a concise title that directly describes the change. Do not add agent- or tool-specific prefixes such as `[codex]`.
 - **Automatic Issue Closing**: When creating a Pull Request to resolve an issue, always include "closes #<issue_number>" or similar keywords in the PR description to ensure the issue is automatically closed when the PR is merged.
 
 ## 7. Tool Usage
