@@ -44,7 +44,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Transfer Service | Storage | - | - |
 | AlloyDB | Database | Clusters | - |
 | Bigtable | Database | - | - |
-| Cloud SQL | Database | Instances | - |
+| Cloud SQL | Database | Instances | Yes |
 | Cloud Spanner | Database | - | - |
 | Firestore | Database | - | - |
 | Datastore | Database | - | - |

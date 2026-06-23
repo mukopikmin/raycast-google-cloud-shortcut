@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSqlInstances } from "./useCloudSqlInstances";
 import { ErrorDetail } from "../components/ErrorDetail";
+import { OpenCloudLoggingAction } from "../actions/cloud-logging/OpenCloudLoggingAction";
 
 type Props = {
   projectId: string;
@@ -25,6 +26,7 @@ export const CloudSqlInstanceList = (props: Props) => {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={instance.url} />
+              <OpenCloudLoggingAction target={instance} />
             </ActionPanel>
           }
         />

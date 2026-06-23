@@ -22,6 +22,9 @@ export const listCloudSqlInstances = async (projectId: string, accessToken: stri
   const instances =
     body.items?.map((instance) => {
       return {
+        kind: "cloud-sql-instance" as const,
+        projectId,
+        instanceId: instance.name,
         id: instance.name,
         region: instance.region,
         state: instance.state,
