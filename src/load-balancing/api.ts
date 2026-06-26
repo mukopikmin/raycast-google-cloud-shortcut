@@ -1,23 +1,53 @@
 import { fetchGoogleApi } from "../auth/api";
 import { ForwardingRule, GlobalAddress, LoadBalancerResource } from "./types";
 
+type ForwardingRuleResponse = {
+  id: string;
+  name: string;
+  IPAddress: string;
+  IPProtocol: string;
+  portRange?: string;
+  ports?: string[];
+  target?: string;
+  backendService?: string;
+  region?: string;
+  loadBalancingScheme: string;
+  selfLink: string;
+};
+
 type AggregatedForwardingRulesResponse = {
   items?: {
     [key: string]: {
-      forwardingRules?: {
-        id: string;
-        name: string;
-        IPAddress: string;
-        IPProtocol: string;
-        portRange?: string;
-        ports?: string[];
-        target?: string;
-        region?: string;
-        loadBalancingScheme: string;
-        selfLink: string;
-      }[];
+      forwardingRules?: ForwardingRuleResponse[];
     };
   };
+};
+
+const applicationLoadBalancerTargets = ["/targetHttpProxies/", "/targetHttpsProxies/"];
+const loadBalancerTargets = [
+  ...applicationLoadBalancerTargets,
+  "/targetGrpcProxies/",
+  "/targetSslProxies/",
+  "/targetTcpProxies/",
+  "/targetPools/",
+];
+
+const isLoadBalancerForwardingRule = (rule: ForwardingRuleResponse): boolean => {
+  return Boolean(rule.backendService || loadBalancerTargets.some((targetType) => rule.target?.includes(targetType)));
+};
+
+const createForwardingRuleConsoleUrl = (rule: ForwardingRuleResponse, region: string, projectId: string): string => {
+  const isApplicationLoadBalancer = applicationLoadBalancerTargets.some((targetType) =>
+    rule.target?.includes(targetType),
+  );
+
+  if (isApplicationLoadBalancer) {
+    return region === "global"
+      ? `https://console.cloud.google.com/net-services/loadbalancing/details/httpAdvanced/${rule.name}?project=${projectId}`
+      : `https://console.cloud.google.com/net-services/loadbalancing/details/regional/${region}/${rule.name}?project=${projectId}`;
+  }
+
+  return `https://console.cloud.google.com/loadbalancing/advanced/forwardingRules/list?project=${projectId}`;
 };
 
 type GlobalAddressesResponse = {
@@ -51,6 +81,8 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
       const regionData = body.items[regionKey];
       if (regionData.forwardingRules) {
         for (const rule of regionData.forwardingRules) {
+          if (!isLoadBalancerForwardingRule(rule)) continue;
+
           const region = regionKey.split("/").pop() ?? "global";
 
           rules.push({
@@ -64,10 +96,7 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
             target: rule.target,
             region: region,
             loadBalancingScheme: rule.loadBalancingScheme,
-            url:
-              region === "global"
-                ? `https://console.cloud.google.com/net-services/loadbalancing/details/httpAdvanced/${rule.name}?project=${projectId}`
-                : `https://console.cloud.google.com/net-services/loadbalancing/details/regional/${region}/${rule.name}?project=${projectId}`,
+            url: createForwardingRuleConsoleUrl(rule, region, projectId),
           });
         }
       }
