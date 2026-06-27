@@ -18,13 +18,13 @@ class InventoryConsoleUrlsTest(unittest.TestCase):
         self.root = Path(self.temporary_directory.name)
         origin = inventory.CONSOLE_ORIGIN
 
-        (self.root / "src").mkdir()
-        (self.root / "src" / "service.ts").write_text(
+        (self.root / "src" / "resources" / "cloud-run").mkdir(parents=True)
+        (self.root / "src" / "resources" / "cloud-run" / "api.ts").write_text(
             f'const fixed = "{origin}/compute/instances";\n'
             f"const dynamic = `{origin}/run/detail/${{region}}/${{encodeURIComponent(name)}}?project=${{projectId}}`;\n",
             encoding="utf-8",
         )
-        (self.root / "src" / "service.test.ts").write_text(
+        (self.root / "src" / "resources" / "cloud-run" / "api.test.ts").write_text(
             f'const expected = "{origin}/compute/instances?project=sample";\n',
             encoding="utf-8",
         )
@@ -45,9 +45,9 @@ class InventoryConsoleUrlsTest(unittest.TestCase):
         self.assertEqual(
             [(item["path"], item["line"], item["kind"], item["context"]) for item in findings],
             [
-                ("src/service.test.ts", 1, "fixed", "test"),
-                ("src/service.ts", 1, "fixed", "production"),
-                ("src/service.ts", 2, "dynamic", "production"),
+                ("src/resources/cloud-run/api.test.ts", 1, "fixed", "test"),
+                ("src/resources/cloud-run/api.ts", 1, "fixed", "production"),
+                ("src/resources/cloud-run/api.ts", 2, "dynamic", "production"),
             ],
         )
         self.assertEqual(findings[1]["column"], 16)

@@ -1,5 +1,5 @@
 import { withGoogleAccessToken } from "./auth/google";
-import { ProjectList } from "./project/ProjectList";
+import { ProjectList } from "./resources/project/ProjectList";
 
 export const Command = () => {
   return <ProjectList />;
