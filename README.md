@@ -44,7 +44,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Transfer Service | Storage | - | - |
 | AlloyDB | Database | Clusters | - |
 | Bigtable | Database | - | - |
-| Cloud SQL | Database | Instances | - |
+| Cloud SQL | Database | Instances | Yes |
 | Cloud Spanner | Database | - | - |
 | Firestore | Database | - | - |
 | Datastore | Database | - | - |
@@ -68,7 +68,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Error Reporting | Operations | Errors | - |
 | Cloud Trace | Operations | - | - |
 | Cloud Profiler | Operations | - | - |
-| Cloud Debugger | Operations | - | - |
 | Pub/Sub | Integration | Topics & Subscriptions | - |
 | Eventarc | Integration | - | - |
 | Workflows | Integration | Workflows | - |
@@ -76,8 +75,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud Tasks | Integration | Queues | - |
 | Artifact Registry | DevOps | Repositories | - |
 | Cloud Build | DevOps | Builds | - |
-| Source Repositories | DevOps | - | - |
-| Deployment Manager | DevOps | - | - |
+| Infrastructure Manager | DevOps | - | - |
 | BigQuery | Data Analytics | - | - |
 | BigQuery Data Transfer | Data Analytics | - | - |
 | Dataproc | Data Analytics | - | - |
@@ -86,8 +84,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Data Fusion | Data Analytics | - | - |
 | Dataplex | Data Analytics | - | - |
 | Vertex AI | Machine Learning | - | - |
-| Vertex AI Workbench | Machine Learning | - | - |
-| AutoML | Machine Learning | - | - |
 | API & Services | Billing | - | - |
 | API Library | Billing | - | - |
 | Credentials | Billing | - | - |

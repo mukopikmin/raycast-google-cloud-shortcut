@@ -40,7 +40,7 @@ These are technical guidelines to be applied consistently across this entire pro
 - **Shared Logic**: Centralize logic used across multiple workflows into local composite actions under `.github/actions/`.
 
 ## 5. Common Implementation Patterns
-- **Data Fetching**: Follow the established pattern using `usePromise` in `src/service/` or existing custom hooks.
+- **Data Fetching**: Follow the established pattern using `usePromise` in feature hooks under `src/resources/` or existing custom hooks.
 - **Type Definitions**: Organize resource-related types in a `types.ts` file within each feature directory.
 - **Bounded Pagination**:
   - Avoid eager all-page fetching for resource list APIs. Initial loads should fetch only the first page.

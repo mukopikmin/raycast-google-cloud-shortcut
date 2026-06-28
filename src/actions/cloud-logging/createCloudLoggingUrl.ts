@@ -11,6 +11,13 @@ const createCloudLoggingQueryFromFilters = (filters: CloudLoggingFilter[]): stri
 
 const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
   switch (target.kind) {
+    case "cloud-sql-instance":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "cloudsql_database" },
+        { key: "resource.labels.project_id", value: target.projectId },
+        { key: "resource.labels.database_id", value: `${target.projectId}:${target.instanceId}` },
+        { key: "resource.labels.region", value: target.region },
+      ]);
     case "cloud-function-gen1":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "cloud_function" },
