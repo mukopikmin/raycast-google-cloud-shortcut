@@ -6,6 +6,12 @@ export type CloudLoggingTarget =
       region: string;
     }
   | {
+      kind: "cloud-sql-instance";
+      projectId: string;
+      instanceId: string;
+      region: string;
+    }
+  | {
       kind: "cloud-function-gen1";
       projectId: string;
       name: string;
