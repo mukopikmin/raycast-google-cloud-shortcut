@@ -50,7 +50,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Datastore | Database | - | - |
 | Memorystore | Database | - | - |
 | VPC Networks | Networking | Networks | - |
-| Load Balancing | Networking | Forwarding Rules & Addresses | - |
+| Load Balancing | Networking | Forwarding Rules | - |
 | Cloud NAT | Networking | - | - |
 | Cloud DNS | Networking | - | - |
 | Network Intelligence Center | Networking | - | - |
