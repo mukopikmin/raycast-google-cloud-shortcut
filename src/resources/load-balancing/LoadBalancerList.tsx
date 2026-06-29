@@ -14,29 +14,22 @@ export const LoadBalancerList = ({ projectId }: Props) => {
   }
 
   return (
-    <List isLoading={isLoading} searchBarPlaceholder="Search load balancers and global addresses...">
+    <List isLoading={isLoading} searchBarPlaceholder="Search load balancers...">
       {resources?.map((resource) => (
         <List.Item
           key={resource.id}
           title={resource.name}
-          subtitle={resource.type === "forwardingRule" ? resource.IPAddress : resource.address}
+          subtitle={resource.IPAddress}
           icon={Icon.Box}
-          accessories={
-            resource.type === "forwardingRule"
-              ? [
-                  { text: resource.region },
-                  { text: resource.IPProtocol },
-                  { text: resource.loadBalancingScheme },
-                ].filter((a) => a.text)
-              : [{ text: "Global Address" }]
-          }
+          accessories={[
+            { text: resource.region },
+            { text: resource.IPProtocol },
+            { text: resource.loadBalancingScheme },
+          ].filter((a) => a.text)}
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={resource.url} />
-              <Action.CopyToClipboard
-                title="Copy IP Address"
-                content={resource.type === "forwardingRule" ? resource.IPAddress : resource.address}
-              />
+              <Action.CopyToClipboard title="Copy IP Address" content={resource.IPAddress} />
             </ActionPanel>
           }
         />
