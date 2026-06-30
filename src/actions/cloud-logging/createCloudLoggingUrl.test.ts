@@ -89,6 +89,24 @@ describe("createCloudLoggingUrl", () => {
     });
   });
 
+  it("creates a Secret Manager audit log query", () => {
+    const target: CloudLoggingTarget = {
+      kind: "secret-manager-secret",
+      projectId: "sample-project",
+      name: "database-password",
+      resourceName: "projects/sample-project/secrets/database-password",
+    };
+
+    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+      query: [
+        'resource.type="audited_resource"',
+        'resource.labels.service="secretmanager.googleapis.com"',
+        'protoPayload.resourceName="projects/sample-project/secrets/database-password"',
+      ].join("\n"),
+      projectId: "sample-project",
+    });
+  });
+
   it("encodes query and project values in the URL", () => {
     const target: CloudLoggingTarget = {
       kind: "cloud-run-service",

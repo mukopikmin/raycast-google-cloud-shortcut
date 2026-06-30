@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudLoggingAction } from "../actions/cloud-logging/OpenCloudLoggingAction";
 import { useSecretManager } from "./useSecretManager";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../hooks/useLoadMoreOnSearch";
@@ -64,6 +65,7 @@ export const SecretManagerList = (props: Props) => {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={secret.url} />
+              <OpenCloudLoggingAction target={secret} />
               {loadMoreAction}
             </ActionPanel>
           }

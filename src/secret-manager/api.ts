@@ -39,7 +39,10 @@ export const listSecretManagerSecretsPage = async (
 
       return {
         id: secret.name,
+        kind: "secret-manager-secret" as const,
+        projectId,
         name: name,
+        resourceName: secret.name,
         url: `https://console.cloud.google.com/security/secret-manager/secret/${name}?project=${projectId}`,
       };
     }) ?? [];
