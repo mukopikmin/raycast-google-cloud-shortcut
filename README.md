@@ -1,18 +1,20 @@
-# Google Cloud Shortcut
+# Google Cloud Shortcut (Raycast Extension)
 
 Open Google Cloud Console pages from Raycast without switching to a browser tab first.
 
 Use this extension to pick a Google Cloud project, search supported Google Cloud services, and open service pages or individual resources in Google Cloud Console.
 
-## Setup
+## Installation
 
-1. Open Raycast and run **Search Google Cloud Resources**.
-2. Sign in with the Google account that has access to your Google Cloud projects.
-3. Review the Google permission request and approve it.
-4. Select a project from the project list.
-5. Select a Google Cloud service or a searchable resource to open it in Google Cloud Console.
+### From Raycast Store
 
-The extension stores your project list in Raycast local storage so it can show projects faster the next time you open the command.
+TBD
+
+### Local Development
+
+1. Clone this repository.
+2. Run `npm install` to install dependencies.
+3. Run `npm run dev` to build the extension and install it in your local Raycast.
 
 ## Refreshing Projects
 
@@ -107,9 +109,3 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Billing | Billing | - | - |
 | Quotas | Billing | - | - |
 | Budgets & Alerts | Billing | - | - |
-
-## Local Development
-
-1. Clone this repository.
-2. Run `npm install` to install dependencies.
-3. Run `npm run dev` to build the extension and install it in your local Raycast.
