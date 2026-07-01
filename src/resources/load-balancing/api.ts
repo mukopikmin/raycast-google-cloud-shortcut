@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../../auth/api";
-import { ForwardingRule, GlobalAddress, LoadBalancerResource } from "./types";
+import { ForwardingRule, LoadBalancerResource } from "./types";
 
 type ForwardingRuleResponse = {
   id: string;
@@ -101,22 +101,8 @@ const createForwardingRuleConsoleUrl = async (
   return forwardingRulesConsoleUrl(projectId);
 };
 
-type GlobalAddressesResponse = {
-  items?: {
-    id: string;
-    name: string;
-    address: string;
-    selfLink: string;
-  }[];
-};
-
 export const listLoadBalancers = async (projectId: string, accessToken: string): Promise<LoadBalancerResource[]> => {
-  const [forwardingRules, globalAddresses] = await Promise.all([
-    listForwardingRules(projectId, accessToken),
-    listGlobalAddresses(projectId, accessToken),
-  ]);
-
-  return [...forwardingRules, ...globalAddresses];
+  return listForwardingRules(projectId, accessToken);
 };
 
 const listForwardingRules = async (projectId: string, accessToken: string): Promise<ForwardingRule[]> => {
@@ -158,22 +144,4 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
   }
 
   return rules;
-};
-
-const listGlobalAddresses = async (projectId: string, accessToken: string): Promise<GlobalAddress[]> => {
-  const body = await fetchGoogleApi<GlobalAddressesResponse>(
-    `https://compute.googleapis.com/compute/v1/projects/${projectId}/global/addresses`,
-    accessToken,
-  );
-
-  return (
-    body.items?.map((item) => ({
-      type: "address",
-      id: item.id,
-      name: item.name,
-      address: item.address,
-      region: "global",
-      url: `https://console.cloud.google.com/networking/addresses/details/global/${item.name}?project=${projectId}`,
-    })) ?? []
-  );
 };

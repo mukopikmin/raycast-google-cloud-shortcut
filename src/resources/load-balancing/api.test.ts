@@ -60,7 +60,6 @@ describe("Load Balancing API", () => {
         },
       },
     });
-    fetchGoogleApiMock.mockResolvedValueOnce({});
     fetchGoogleApiMock.mockResolvedValueOnce({
       urlMap: "projects/sample-project/global/urlMaps/global-app-url-map",
     });
@@ -123,7 +122,6 @@ describe("Load Balancing API", () => {
         },
       },
     });
-    fetchGoogleApiMock.mockResolvedValueOnce({});
     fetchGoogleApiMock.mockRejectedValueOnce(new Error("target proxy unavailable"));
 
     const resources = await listLoadBalancers("sample-project", "access-token");

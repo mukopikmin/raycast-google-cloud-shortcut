@@ -12,13 +12,4 @@ export type ForwardingRule = {
   url: string;
 };
 
-export type GlobalAddress = {
-  type: "address";
-  id: string;
-  name: string;
-  address: string;
-  region: "global";
-  url: string;
-};
-
-export type LoadBalancerResource = ForwardingRule | GlobalAddress;
+export type LoadBalancerResource = ForwardingRule;
