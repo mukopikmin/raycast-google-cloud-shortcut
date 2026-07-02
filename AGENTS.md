@@ -56,6 +56,8 @@ These are technical guidelines to be applied consistently across this entire pro
 ## 6. Communication
 - **GitHub Interactions**: Always write Pull Request descriptions, Issue comments, and commit messages in **English**.
 - **Pull Request Titles**: Use a concise title that directly describes the change. Do not add agent- or tool-specific prefixes such as `[codex]`.
+- **Instruction Precedence**: Project rules in this file override default naming conventions from tools, skills, or agents.
+- **Pull Request Preflight**: Immediately before creating or updating a Pull Request, verify its title and description against this section.
 - **Automatic Issue Closing**: When creating a Pull Request to resolve an issue, always include "closes #<issue_number>" or similar keywords in the PR description to ensure the issue is automatically closed when the PR is merged.
 
 ## 7. Tool Usage

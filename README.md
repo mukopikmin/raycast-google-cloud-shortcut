@@ -74,7 +74,7 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Network Intelligence Center | Networking | - | - |
 | IAM & Admin | Security | IAM Policy Bindings | - |
 | Service Accounts | Security | Service Accounts | - |
-| Workload Identity Federation | Security | - | - |
+| Workload Identity Federation | Security | Workload Identity Pools | - |
 | Organization Policies | Security | - | - |
 | Secret Manager | Security | Secrets | - |
 | Cloud KMS | Security | - | - |
