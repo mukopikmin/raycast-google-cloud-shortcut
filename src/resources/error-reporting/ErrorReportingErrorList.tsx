@@ -3,12 +3,13 @@ import { useState } from "react";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { ErrorGroupDetail, getStatusColor } from "./ErrorReportingDetail";
 import { useErrorReporting } from "./useErrorReporting";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const ErrorReportingErrorList = ({ projectId }: Props) => {
+const ErrorReportingErrorListComponent = ({ projectId }: Props) => {
   const { errorGroups, isLoading, error } = useErrorReporting(projectId);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -69,3 +70,5 @@ export const ErrorReportingErrorList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const ErrorReportingErrorList = withGoogleAccessToken(ErrorReportingErrorListComponent);

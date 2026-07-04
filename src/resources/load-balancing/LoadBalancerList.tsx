@@ -1,12 +1,13 @@
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { useLoadBalancers } from "./useLoadBalancers";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const LoadBalancerList = ({ projectId }: Props) => {
+const LoadBalancerListComponent = ({ projectId }: Props) => {
   const { resources, isLoading, error } = useLoadBalancers(projectId);
 
   if (error) {
@@ -37,3 +38,5 @@ export const LoadBalancerList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const LoadBalancerList = withGoogleAccessToken(LoadBalancerListComponent);

@@ -2,12 +2,13 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSqlInstances } from "./useCloudSqlInstances";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const CloudSqlInstanceList = (props: Props) => {
+const CloudSqlInstanceListComponent = (props: Props) => {
   const { cloudSqlInstances, isLoading, error } = useCloudSqlInstances(props.projectId);
 
   if (error) {
@@ -34,3 +35,5 @@ export const CloudSqlInstanceList = (props: Props) => {
     </List>
   );
 };
+
+export const CloudSqlInstanceList = withGoogleAccessToken(CloudSqlInstanceListComponent);

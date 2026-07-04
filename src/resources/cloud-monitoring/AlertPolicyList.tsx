@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useAlertPolicies } from "./useAlertPolicies";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const AlertPolicyList = ({ projectId }: Props) => {
+const AlertPolicyListComponent = ({ projectId }: Props) => {
   const [searchText, setSearchText] = useState("");
   const { alertPolicies, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } =
     useAlertPolicies(projectId);
@@ -82,3 +83,5 @@ export const AlertPolicyList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const AlertPolicyList = withGoogleAccessToken(AlertPolicyListComponent);

@@ -4,10 +4,11 @@ import { useCloudSchedulerJobs } from "./useCloudSchedulerJobs";
 import { toReadableCron } from "./cron";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = { projectId: string; locationId: string };
 
-export const CloudSchedulerJobList = ({ projectId, locationId }: Props) => {
+const CloudSchedulerJobListComponent = ({ projectId, locationId }: Props) => {
   const [searchText, setSearchText] = useState("");
   const { scheduledJobs, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudSchedulerJobs(
     projectId,
@@ -91,3 +92,5 @@ export const CloudSchedulerJobList = ({ projectId, locationId }: Props) => {
     </List>
   );
 };
+
+export const CloudSchedulerJobList = withGoogleAccessToken(CloudSchedulerJobListComponent);

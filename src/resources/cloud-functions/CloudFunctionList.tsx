@@ -3,12 +3,13 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useCloudFunctions } from "./useCloudFunctions";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const CloudFunctionList = ({ projectId }: Props) => {
+const CloudFunctionListComponent = ({ projectId }: Props) => {
   const [searchText, setSearchText] = useState("");
   const { functions, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudFunctions(projectId);
 
@@ -81,3 +82,5 @@ export const CloudFunctionList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const CloudFunctionList = withGoogleAccessToken(CloudFunctionListComponent);
