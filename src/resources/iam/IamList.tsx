@@ -1,12 +1,13 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useIamPolicies } from "./useIamPolicies";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const IamList = (props: Props) => {
+const IamListComponent = (props: Props) => {
   const { iamMemberRoles, isLoading, error } = useIamPolicies(props.projectId);
 
   if (error) {
@@ -35,3 +36,5 @@ export const IamList = (props: Props) => {
     </List>
   );
 };
+
+export const IamList = withGoogleAccessToken(IamListComponent);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useGoogleApi } from "../../auth/google";
+import { google } from "../../auth/google";
 import { listProjects } from "./api";
 import { cacheProjects, listCachedProjects } from "./cache";
 import { Project } from "./types";
@@ -28,7 +28,6 @@ type ErrorResult = {
 type UseProjectsResult = LoadingResult | SuccessResult | ErrorResult;
 
 export const useProjects = (): UseProjectsResult => {
-  const { accessToken } = useGoogleApi();
   const [projects, setProjects] = useState<Project[] | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
@@ -38,6 +37,7 @@ export const useProjects = (): UseProjectsResult => {
     setError(undefined);
 
     try {
+      const accessToken = await google.authorize();
       const fetchedProjects = await listProjects(accessToken);
       await cacheProjects(fetchedProjects);
       setProjects(fetchedProjects);
@@ -47,7 +47,7 @@ export const useProjects = (): UseProjectsResult => {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => {
     (async () => {

@@ -1,12 +1,13 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useAppEngineServices } from "./useAppEngineServices";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const AppEngineServiceList = (props: Props) => {
+const AppEngineServiceListComponent = (props: Props) => {
   const { services, isLoading, error } = useAppEngineServices(props.projectId);
 
   if (error) {
@@ -34,3 +35,5 @@ export const AppEngineServiceList = (props: Props) => {
     </List>
   );
 };
+
+export const AppEngineServiceList = withGoogleAccessToken(AppEngineServiceListComponent);

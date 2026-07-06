@@ -2,6 +2,7 @@ import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
 import { useCloudBuilds } from "./useCloudBuilds";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { CloudBuildStatus } from "./types";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
@@ -29,7 +30,7 @@ const statusIcon = (status: CloudBuildStatus): { source: Icon; tintColor: Color 
   }
 };
 
-export const CloudBuildList = ({ projectId }: Props) => {
+const CloudBuildListComponent = ({ projectId }: Props) => {
   const { builds, isLoading, error } = useCloudBuilds(projectId);
 
   if (error) {
@@ -62,3 +63,5 @@ export const CloudBuildList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const CloudBuildList = withGoogleAccessToken(CloudBuildListComponent);

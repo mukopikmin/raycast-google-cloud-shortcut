@@ -3,12 +3,13 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudStorage } from "./useCloudStorage";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const CloudStorageBucketList = (props: Props) => {
+const CloudStorageBucketListComponent = (props: Props) => {
   const [searchText, setSearchText] = useState("");
   const { buckets, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudStorage(props.projectId);
 
@@ -88,3 +89,5 @@ export const CloudStorageBucketList = (props: Props) => {
     </List>
   );
 };
+
+export const CloudStorageBucketList = withGoogleAccessToken(CloudStorageBucketListComponent);

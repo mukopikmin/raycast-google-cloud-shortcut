@@ -17,7 +17,9 @@ export const withRegionSelect = (props: Props) => {
         <RegionList
           projectId={props.projectId}
           fetchLocations={props.fetchLocations}
-          target={(args) => <props.target projectId={args.projectId} locationId={args.locationId} />}
+          target={(args: { projectId: string; locationId: string }) => (
+            <props.target projectId={args.projectId} locationId={args.locationId} />
+          )}
         />
       }
     />

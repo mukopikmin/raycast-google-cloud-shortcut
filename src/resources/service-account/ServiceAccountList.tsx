@@ -1,12 +1,13 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useServiceAccounts } from "./useServiceAccounts";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const ServiceAccountList = (props: Props) => {
+const ServiceAccountListComponent = (props: Props) => {
   const { serviceAccounts, isLoading, error } = useServiceAccounts(props.projectId);
 
   if (error) {
@@ -33,3 +34,5 @@ export const ServiceAccountList = (props: Props) => {
     </List>
   );
 };
+
+export const ServiceAccountList = withGoogleAccessToken(ServiceAccountListComponent);

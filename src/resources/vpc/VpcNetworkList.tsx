@@ -1,12 +1,13 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useVpcNetworks } from "./useVpcNetworks";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const VpcNetworkList = (props: Props) => {
+const VpcNetworkListComponent = (props: Props) => {
   const { networks, isLoading, error } = useVpcNetworks(props.projectId);
 
   if (error) {
@@ -33,3 +34,5 @@ export const VpcNetworkList = (props: Props) => {
     </List>
   );
 };
+
+export const VpcNetworkList = withGoogleAccessToken(VpcNetworkListComponent);
