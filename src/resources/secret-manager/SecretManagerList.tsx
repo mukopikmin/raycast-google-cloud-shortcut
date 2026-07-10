@@ -3,12 +3,13 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useSecretManager } from "./useSecretManager";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const SecretManagerList = (props: Props) => {
+const SecretManagerListComponent = (props: Props) => {
   const [searchText, setSearchText] = useState("");
   const { secrets, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useSecretManager(
     props.projectId,
@@ -89,3 +90,5 @@ export const SecretManagerList = (props: Props) => {
     </List>
   );
 };
+
+export const SecretManagerList = withGoogleAccessToken(SecretManagerListComponent);

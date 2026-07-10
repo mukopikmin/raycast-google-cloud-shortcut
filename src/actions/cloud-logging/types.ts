@@ -6,6 +6,12 @@ export type CloudLoggingTarget =
       region: string;
     }
   | {
+      kind: "workflow";
+      projectId: string;
+      name: string;
+      region: string;
+    }
+  | {
       kind: "cloud-sql-instance";
       projectId: string;
       instanceId: string;

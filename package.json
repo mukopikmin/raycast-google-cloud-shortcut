@@ -20,7 +20,10 @@
       "subtitle": "Google Cloud Shortcut",
       "description": "Open the Google Cloud service console quickly.",
       "mode": "view",
-      "keywords": ["gcp", "gc"]
+      "keywords": [
+        "gcp",
+        "gc"
+      ]
     }
   ],
   "dependencies": {
@@ -39,8 +42,8 @@
   "scripts": {
     "build": "ray build",
     "dev": "ray develop",
-    "fix-lint": "ray lint --fix",
-    "lint": "ray lint",
+    "fix-lint": "eslint src --ext .ts,.tsx --fix && prettier --write package.json src --ignore-unknown",
+    "lint": "eslint src --ext .ts,.tsx && prettier --check package.json src --ignore-unknown",
     "test": "vitest run",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",

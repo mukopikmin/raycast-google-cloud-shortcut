@@ -1,5 +1,5 @@
 import { fetchGoogleApi } from "../../auth/api";
-import { ForwardingRule, GlobalAddress, LoadBalancerResource } from "./types";
+import { ForwardingRule, LoadBalancerResource } from "./types";
 
 type ForwardingRuleResponse = {
   id: string;
@@ -23,49 +23,86 @@ type AggregatedForwardingRulesResponse = {
   };
 };
 
-const applicationLoadBalancerTargets = ["/targetHttpProxies/", "/targetHttpsProxies/"];
+type TargetProxyResponse = {
+  urlMap?: string;
+};
+
+const applicationLoadBalancerTargets = ["/targetHttpProxies/", "/targetHttpsProxies/", "/targetGrpcProxies/"];
 const loadBalancerTargets = [
   ...applicationLoadBalancerTargets,
-  "/targetGrpcProxies/",
   "/targetSslProxies/",
   "/targetTcpProxies/",
   "/targetPools/",
 ];
 
+const forwardingRulesConsoleUrl = (projectId: string): string => {
+  return `https://console.cloud.google.com/loadbalancing/advanced/forwardingRules/list?project=${projectId}`;
+};
+
+const getResourceId = (resourceNameOrUrl: string | undefined): string | undefined => {
+  return resourceNameOrUrl?.split("/").pop();
+};
+
+const normalizeComputeApiUrl = (resourceNameOrUrl: string): string => {
+  if (/^https?:\/\//.test(resourceNameOrUrl)) {
+    return resourceNameOrUrl;
+  }
+
+  return `https://compute.googleapis.com/compute/v1/${resourceNameOrUrl}`;
+};
+
 const isLoadBalancerForwardingRule = (rule: ForwardingRuleResponse): boolean => {
   return Boolean(rule.backendService || loadBalancerTargets.some((targetType) => rule.target?.includes(targetType)));
 };
 
-const createForwardingRuleConsoleUrl = (rule: ForwardingRuleResponse, region: string, projectId: string): string => {
+const isApplicationLoadBalancerForwardingRule = (rule: ForwardingRuleResponse): boolean => {
+  return applicationLoadBalancerTargets.some((targetType) => rule.target?.includes(targetType));
+};
+
+const getApplicationLoadBalancerName = async (
+  rule: ForwardingRuleResponse,
+  accessToken: string,
+): Promise<string | undefined> => {
+  if (!rule.target) {
+    return undefined;
+  }
+
+  try {
+    const targetProxy = await fetchGoogleApi<TargetProxyResponse>(normalizeComputeApiUrl(rule.target), accessToken);
+    return getResourceId(targetProxy.urlMap);
+  } catch {
+    return undefined;
+  }
+};
+
+const createForwardingRuleConsoleUrl = async (
+  rule: ForwardingRuleResponse,
+  region: string,
+  projectId: string,
+  accessToken: string,
+): Promise<string> => {
   const isApplicationLoadBalancer = applicationLoadBalancerTargets.some((targetType) =>
     rule.target?.includes(targetType),
   );
 
   if (isApplicationLoadBalancer) {
+    const loadBalancerName = await getApplicationLoadBalancerName(rule, accessToken);
+    if (!loadBalancerName) {
+      return forwardingRulesConsoleUrl(projectId);
+    }
+
+    const encodedLoadBalancerName = encodeURIComponent(loadBalancerName);
+
     return region === "global"
-      ? `https://console.cloud.google.com/net-services/loadbalancing/details/httpAdvanced/${rule.name}?project=${projectId}`
-      : `https://console.cloud.google.com/net-services/loadbalancing/details/regional/${region}/${rule.name}?project=${projectId}`;
+      ? `https://console.cloud.google.com/net-services/loadbalancing/details/httpAdvanced/${encodedLoadBalancerName}?project=${projectId}`
+      : `https://console.cloud.google.com/net-services/loadbalancing/details/regional/${region}/${encodedLoadBalancerName}?project=${projectId}`;
   }
 
-  return `https://console.cloud.google.com/loadbalancing/advanced/forwardingRules/list?project=${projectId}`;
-};
-
-type GlobalAddressesResponse = {
-  items?: {
-    id: string;
-    name: string;
-    address: string;
-    selfLink: string;
-  }[];
+  return forwardingRulesConsoleUrl(projectId);
 };
 
 export const listLoadBalancers = async (projectId: string, accessToken: string): Promise<LoadBalancerResource[]> => {
-  const [forwardingRules, globalAddresses] = await Promise.all([
-    listForwardingRules(projectId, accessToken),
-    listGlobalAddresses(projectId, accessToken),
-  ]);
-
-  return [...forwardingRules, ...globalAddresses];
+  return listForwardingRules(projectId, accessToken);
 };
 
 const listForwardingRules = async (projectId: string, accessToken: string): Promise<ForwardingRule[]> => {
@@ -84,6 +121,9 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
           if (!isLoadBalancerForwardingRule(rule)) continue;
 
           const region = regionKey.split("/").pop() ?? "global";
+          const url = isApplicationLoadBalancerForwardingRule(rule)
+            ? await createForwardingRuleConsoleUrl(rule, region, projectId, accessToken)
+            : forwardingRulesConsoleUrl(projectId);
 
           rules.push({
             type: "forwardingRule",
@@ -96,7 +136,7 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
             target: rule.target,
             region: region,
             loadBalancingScheme: rule.loadBalancingScheme,
-            url: createForwardingRuleConsoleUrl(rule, region, projectId),
+            url,
           });
         }
       }
@@ -104,22 +144,4 @@ const listForwardingRules = async (projectId: string, accessToken: string): Prom
   }
 
   return rules;
-};
-
-const listGlobalAddresses = async (projectId: string, accessToken: string): Promise<GlobalAddress[]> => {
-  const body = await fetchGoogleApi<GlobalAddressesResponse>(
-    `https://compute.googleapis.com/compute/v1/projects/${projectId}/global/addresses`,
-    accessToken,
-  );
-
-  return (
-    body.items?.map((item) => ({
-      type: "address",
-      id: item.id,
-      name: item.name,
-      address: item.address,
-      region: "global",
-      url: `https://console.cloud.google.com/networking/addresses/details/global/${item.name}?project=${projectId}`,
-    })) ?? []
-  );
 };

@@ -1,13 +1,14 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudTasks } from "./useCloudTasks";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
   locationId: string;
 };
 
-export const CloudTasksQueueList = (props: Props) => {
+const CloudTasksQueueListComponent = (props: Props) => {
   const { queues, isLoading, error } = useCloudTasks(props.projectId, props.locationId);
 
   if (error) {
@@ -33,3 +34,5 @@ export const CloudTasksQueueList = (props: Props) => {
     </List>
   );
 };
+
+export const CloudTasksQueueList = withGoogleAccessToken(CloudTasksQueueListComponent);

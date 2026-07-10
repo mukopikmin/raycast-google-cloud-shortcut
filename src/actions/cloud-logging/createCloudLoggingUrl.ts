@@ -17,6 +17,13 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.labels.cluster_id", value: target.clusterId },
         { key: "resource.labels.location", value: target.region },
       ]);
+    case "workflow":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "workflows.googleapis.com/Workflow" },
+        { key: "resource.labels.resource_container", value: target.projectId },
+        { key: "resource.labels.location", value: target.region },
+        { key: "resource.labels.workflow_id", value: target.name },
+      ]);
     case "cloud-sql-instance":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "cloudsql_database" },
