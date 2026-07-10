@@ -1,4 +1,4 @@
-import { CloudLoggingTarget } from "../actions/cloud-logging/types";
+import { CloudLoggingTarget } from "../../actions/cloud-logging/types";
 
 export type SecretManagerSecret = {
   id: string;
