@@ -40,7 +40,7 @@ These are technical guidelines to be applied consistently across this entire pro
 - **Shared Logic**: Centralize logic used across multiple workflows into local composite actions under `.github/actions/`.
 
 ## 5. Common Implementation Patterns
-- **Data Fetching**: Follow the established pattern using `usePromise` in `src/service/` or existing custom hooks.
+- **Data Fetching**: Follow the established pattern using `usePromise` in feature hooks under `src/resources/` or existing custom hooks.
 - **Type Definitions**: Organize resource-related types in a `types.ts` file within each feature directory.
 - **Bounded Pagination**:
   - Avoid eager all-page fetching for resource list APIs. Initial loads should fetch only the first page.
@@ -56,6 +56,8 @@ These are technical guidelines to be applied consistently across this entire pro
 ## 6. Communication
 - **GitHub Interactions**: Always write Pull Request descriptions, Issue comments, and commit messages in **English**.
 - **Pull Request Titles**: Use a concise title that directly describes the change. Do not add agent- or tool-specific prefixes such as `[codex]`.
+- **Instruction Precedence**: Project rules in this file override default naming conventions from tools, skills, or agents.
+- **Pull Request Preflight**: Immediately before creating or updating a Pull Request, verify its title and description against this section.
 - **Automatic Issue Closing**: When creating a Pull Request to resolve an issue, always include "closes #<issue_number>" or similar keywords in the PR description to ensure the issue is automatically closed when the PR is merged.
 
 ## 7. Tool Usage

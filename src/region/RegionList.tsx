@@ -1,6 +1,6 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
-import { useGoogleApi } from "../auth/google";
+import { useGoogleApi, withGoogleAccessToken } from "../auth/google";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { Location } from "./types";
 
@@ -10,7 +10,7 @@ type Props = {
   target: (args: { projectId: string; locationId: string }) => React.ReactNode;
 };
 
-export const RegionList = (props: Props) => {
+const RegionListComponent = (props: Props) => {
   const { accessToken } = useGoogleApi();
   const {
     data: regions,
@@ -50,3 +50,5 @@ export const RegionList = (props: Props) => {
     </List>
   );
 };
+
+export const RegionList = withGoogleAccessToken(RegionListComponent);

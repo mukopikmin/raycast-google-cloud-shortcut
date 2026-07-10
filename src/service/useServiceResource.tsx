@@ -1,31 +1,32 @@
 import { Action } from "@raycast/api";
-import { AlloyDbClusterList } from "../alloydb/AlloyDbClusterList";
-import { CloudRunServicesList } from "../cloud-run/CloudRunServicesList";
-import { SecretManagerList } from "../secret-manager/SecretManagerList";
-import { ServiceAccountList } from "../service-account/ServiceAccountList";
-import { CloudSqlInstanceList } from "../cloud-sql/CloudSqlInstanceList";
-import { CloudStorageBucketList } from "../cloud-storage/CloudStorageBucketList";
+import { AlloyDbClusterList } from "../resources/alloydb/AlloyDbClusterList";
+import { CloudRunServicesList } from "../resources/cloud-run/CloudRunServicesList";
+import { SecretManagerList } from "../resources/secret-manager/SecretManagerList";
+import { ServiceAccountList } from "../resources/service-account/ServiceAccountList";
+import { CloudSqlInstanceList } from "../resources/cloud-sql/CloudSqlInstanceList";
+import { CloudStorageBucketList } from "../resources/cloud-storage/CloudStorageBucketList";
 import { isSearchEnabledService, SearchDisabledService, SearchEnabledService } from "./types";
 import { availableServices } from "./constants";
-import { PubSubSubscriptionList } from "../pubsub/PubSubSubscriptionList";
-import { WorkflowList } from "../workflows/WorkflowList";
+import { PubSubSubscriptionList } from "../resources/pubsub/PubSubSubscriptionList";
+import { WorkflowList } from "../resources/workflows/WorkflowList";
 import { withRegionSelect } from "../region/withRegionSelect";
-import { CloudTasksQueueList } from "../cloud-tasks/CloudTasksQueueList";
-import { listCloudTasksLocations } from "../cloud-tasks/api";
-import { ArtifactRegistryRepositoryList } from "../artifact-registry/ArtifactRegistryRepositoryList";
-import { listArtifactRegistryLocations } from "../artifact-registry/api";
-import { CloudSchedulerJobList } from "../cloud-scheduler/CloudSchedulerJobList";
-import { listCloudSchedulerLocations } from "../cloud-scheduler/api";
-import { ErrorReportingErrorList } from "../error-reporting/ErrorReportingErrorList";
-import { AppEngineServiceList } from "../app-engine/AppEngineServiceList";
-import { CloudBuildList } from "../cloud-build/CloudBuildList";
-import { VpcNetworkList } from "../vpc/VpcNetworkList";
-import { CloudFunctionList } from "../cloud-functions/CloudFunctionList";
-import { KubernetesEngineClusterList } from "../kubernetes-engine/KubernetesEngineClusterList";
-import { ComputeEngineInstanceList } from "../compute-engine/ComputeEngineInstanceList";
-import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
-import { IamList } from "../iam/IamList";
-import { AlertPolicyList } from "../cloud-monitoring/AlertPolicyList";
+import { CloudTasksQueueList } from "../resources/cloud-tasks/CloudTasksQueueList";
+import { listCloudTasksLocations } from "../resources/cloud-tasks/api";
+import { ArtifactRegistryRepositoryList } from "../resources/artifact-registry/ArtifactRegistryRepositoryList";
+import { listArtifactRegistryLocations } from "../resources/artifact-registry/api";
+import { CloudSchedulerJobList } from "../resources/cloud-scheduler/CloudSchedulerJobList";
+import { listCloudSchedulerLocations } from "../resources/cloud-scheduler/api";
+import { ErrorReportingErrorList } from "../resources/error-reporting/ErrorReportingErrorList";
+import { AppEngineServiceList } from "../resources/app-engine/AppEngineServiceList";
+import { CloudBuildList } from "../resources/cloud-build/CloudBuildList";
+import { VpcNetworkList } from "../resources/vpc/VpcNetworkList";
+import { CloudFunctionList } from "../resources/cloud-functions/CloudFunctionList";
+import { KubernetesEngineClusterList } from "../resources/kubernetes-engine/KubernetesEngineClusterList";
+import { ComputeEngineInstanceList } from "../resources/compute-engine/ComputeEngineInstanceList";
+import { LoadBalancerList } from "../resources/load-balancing/LoadBalancerList";
+import { IamList } from "../resources/iam/IamList";
+import { AlertPolicyList } from "../resources/cloud-monitoring/AlertPolicyList";
+import { WorkloadIdentityPoolList } from "../workload-identity/WorkloadIdentityPoolList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -212,6 +213,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
                 ) : (
                   <Action.Push title={title} target={<IamList projectId={projectId} />} />
                 ),
+            };
+          case "Workload Identity Federation":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<WorkloadIdentityPoolList projectId={projectId} />} />,
             };
           default:
             service satisfies never;
