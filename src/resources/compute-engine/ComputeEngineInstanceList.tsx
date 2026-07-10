@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useComputeEngineInstances } from "./useComputeEngineInstances";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const ComputeEngineInstanceList = (props: Props) => {
+const ComputeEngineInstanceListComponent = (props: Props) => {
   const [searchText, setSearchText] = useState("");
   const { instances, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useComputeEngineInstances(
     props.projectId,
@@ -91,3 +92,5 @@ export const ComputeEngineInstanceList = (props: Props) => {
     </List>
   );
 };
+
+export const ComputeEngineInstanceList = withGoogleAccessToken(ComputeEngineInstanceListComponent);

@@ -3,12 +3,13 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { usePubSubResources } from "./usePubSubResources";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const PubSubSubscriptionList = (props: Props) => {
+const PubSubSubscriptionListComponent = (props: Props) => {
   const [searchText, setSearchText] = useState("");
   const { resources, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = usePubSubResources(
     props.projectId,
@@ -87,3 +88,5 @@ export const PubSubSubscriptionList = (props: Props) => {
     </List>
   );
 };
+
+export const PubSubSubscriptionList = withGoogleAccessToken(PubSubSubscriptionListComponent);

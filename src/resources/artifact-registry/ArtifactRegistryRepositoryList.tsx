@@ -1,13 +1,14 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useArtifactRegistry } from "./useArtifactRegistry";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
   locationId: string;
 };
 
-export const ArtifactRegistryRepositoryList = ({ projectId, locationId }: Props) => {
+const ArtifactRegistryRepositoryListComponent = ({ projectId, locationId }: Props) => {
   const { repositories, isLoading, error } = useArtifactRegistry(projectId, locationId);
 
   if (error) {
@@ -34,3 +35,5 @@ export const ArtifactRegistryRepositoryList = ({ projectId, locationId }: Props)
     </List>
   );
 };
+
+export const ArtifactRegistryRepositoryList = withGoogleAccessToken(ArtifactRegistryRepositoryListComponent);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { useWorkloadIdentityPools } from "./useWorkloadIdentityPools";
+import { withGoogleAccessToken } from "../auth/google";
 
 type Props = {
   projectId: string;
@@ -14,7 +15,7 @@ const formatEnum = (value: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
-export const WorkloadIdentityPoolList = ({ projectId }: Props) => {
+const WorkloadIdentityPoolListComponent = ({ projectId }: Props) => {
   const [searchText, setSearchText] = useState("");
   const { pools, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } =
     useWorkloadIdentityPools(projectId);
@@ -88,3 +89,5 @@ export const WorkloadIdentityPoolList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const WorkloadIdentityPoolList = withGoogleAccessToken(WorkloadIdentityPoolListComponent);

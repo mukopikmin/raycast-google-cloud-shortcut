@@ -2,12 +2,13 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useWorkflows } from "./useWorkflows";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const WorkflowList = ({ projectId }: Props) => {
+const WorkflowListComponent = ({ projectId }: Props) => {
   const { workflows, isLoading, error } = useWorkflows(projectId);
 
   if (error) {
@@ -34,3 +35,5 @@ export const WorkflowList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const WorkflowList = withGoogleAccessToken(WorkflowListComponent);

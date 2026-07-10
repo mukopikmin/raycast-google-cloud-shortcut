@@ -4,12 +4,13 @@ import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLog
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const CloudRunServicesList = (props: Props) => {
+const CloudRunServicesListComponent = (props: Props) => {
   const [searchText, setSearchText] = useState("");
   const { deployments, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudRunDeployments(
     props.projectId,
@@ -110,3 +111,5 @@ export const CloudRunServicesList = (props: Props) => {
     </List>
   );
 };
+
+export const CloudRunServicesList = withGoogleAccessToken(CloudRunServicesListComponent);

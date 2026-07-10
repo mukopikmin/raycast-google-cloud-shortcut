@@ -2,12 +2,13 @@ import { useState } from "react";
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { useKubernetesEngineClusters } from "./useKubernetesEngineClusters";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const KubernetesEngineClusterList = ({ projectId }: Props) => {
+const KubernetesEngineClusterListComponent = ({ projectId }: Props) => {
   const [searchText, setSearchText] = useState("");
   const { clusters, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } =
     useKubernetesEngineClusters(projectId);
@@ -87,3 +88,5 @@ export const KubernetesEngineClusterList = ({ projectId }: Props) => {
     </List>
   );
 };
+
+export const KubernetesEngineClusterList = withGoogleAccessToken(KubernetesEngineClusterListComponent);

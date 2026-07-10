@@ -1,12 +1,13 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useAlloyDbClusters } from "./useAlloyDbClusters";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
   projectId: string;
 };
 
-export const AlloyDbClusterList = (props: Props) => {
+const AlloyDbClusterListComponent = (props: Props) => {
   const { clusters, isLoading, error } = useAlloyDbClusters(props.projectId);
 
   if (error) {
@@ -36,3 +37,5 @@ export const AlloyDbClusterList = (props: Props) => {
     </List>
   );
 };
+
+export const AlloyDbClusterList = withGoogleAccessToken(AlloyDbClusterListComponent);
