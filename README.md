@@ -47,7 +47,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud SQL | Database | Instances | - |
 | Cloud Spanner | Database | - | - |
 | Firestore | Database | - | - |
-| Datastore | Database | - | - |
+| Datastore | Database | Databases | - |
 | Memorystore | Database | - | - |
 | VPC Networks | Networking | Networks | - |
 | Load Balancing | Networking | Forwarding Rules & Addresses | - |
