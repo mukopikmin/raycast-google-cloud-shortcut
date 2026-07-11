@@ -68,7 +68,6 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Error Reporting | Operations | Errors | - |
 | Cloud Trace | Operations | - | - |
 | Cloud Profiler | Operations | - | - |
-| Cloud Debugger | Operations | - | - |
 | Pub/Sub | Integration | Topics & Subscriptions | - |
 | Eventarc | Integration | - | - |
 | Workflows | Integration | Workflows | - |
@@ -76,8 +75,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Cloud Tasks | Integration | Queues | - |
 | Artifact Registry | DevOps | Repositories | - |
 | Cloud Build | DevOps | Builds | - |
-| Source Repositories | DevOps | - | - |
-| Deployment Manager | DevOps | - | - |
+| Infrastructure Manager | DevOps | - | - |
 | BigQuery | Data Analytics | - | - |
 | BigQuery Data Transfer | Data Analytics | - | - |
 | Dataproc | Data Analytics | - | - |

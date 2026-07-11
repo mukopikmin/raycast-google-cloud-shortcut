@@ -178,11 +178,6 @@ export const availableServices: Service[] = [
     category: "Operations",
     url: "https://console.cloud.google.com/profiler",
   },
-  {
-    name: "Cloud Debugger",
-    category: "Operations",
-    url: "https://console.cloud.google.com/debug",
-  },
 
   {
     name: "Pub/Sub",
@@ -221,14 +216,9 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/cloud-build",
   },
   {
-    name: "Source Repositories",
+    name: "Infrastructure Manager",
     category: "DevOps",
-    url: "https://console.cloud.google.com/source",
-  },
-  {
-    name: "Deployment Manager",
-    category: "DevOps",
-    url: "https://console.cloud.google.com/dm/deployments",
+    url: "https://console.cloud.google.com/infra-manager",
   },
 
   {
