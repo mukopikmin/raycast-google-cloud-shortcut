@@ -46,7 +46,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Bigtable | Database | - | - |
 | Cloud SQL | Database | Instances | - |
 | Cloud Spanner | Database | - | - |
-| Firestore | Database | - | - |
+| Firestore | Database | Databases | - |
 | Datastore | Database | Databases | - |
 | Memorystore | Database | - | - |
 | VPC Networks | Networking | Networks | - |

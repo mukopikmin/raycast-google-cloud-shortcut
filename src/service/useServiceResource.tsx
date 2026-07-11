@@ -27,6 +27,7 @@ import { LoadBalancerList } from "../load-balancing/LoadBalancerList";
 import { IamList } from "../iam/IamList";
 import { AlertPolicyList } from "../cloud-monitoring/AlertPolicyList";
 import { DatastoreDatabaseList } from "../datastore/DatastoreDatabaseList";
+import { FirestoreDatabaseList } from "../firestore/FirestoreDatabaseList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -71,6 +72,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<DatastoreDatabaseList projectId={projectId} />} />,
+            };
+          case "Firestore":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<FirestoreDatabaseList projectId={projectId} />} />,
             };
           case "AlloyDB":
             return {
