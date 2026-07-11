@@ -25,6 +25,12 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.labels.database_id", value: `${target.projectId}:${target.instanceId}` },
         { key: "resource.labels.region", value: target.region },
       ]);
+    case "gce-instance":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "gce_instance" },
+        { key: "resource.labels.instance_id", value: target.instanceId },
+        { key: "resource.labels.zone", value: target.zone },
+      ]);
     case "cloud-function-gen1":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "cloud_function" },
