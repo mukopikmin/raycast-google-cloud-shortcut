@@ -1,5 +1,10 @@
 export type CloudLoggingTarget =
   | {
+      kind: "app-engine-service";
+      projectId: string;
+      name: string;
+    }
+  | {
       kind: "cloud-function-gen1";
       projectId: string;
       name: string;

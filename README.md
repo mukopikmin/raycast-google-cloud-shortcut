@@ -38,7 +38,7 @@ Cloud Logging shortcuts are rolled out incrementally. The table below shows the 
 | Kubernetes Engine | Compute | Clusters | - |
 | Cloud Run | Compute | Services, Jobs & Worker Pools | Yes |
 | Cloud Functions | Compute | Functions (gen1) | Yes |
-| App Engine | Compute | Services | - |
+| App Engine | Compute | Services | Yes |
 | Batch | Compute | - | - |
 | Cloud Storage | Storage | Buckets | - |
 | Transfer Service | Storage | - | - |

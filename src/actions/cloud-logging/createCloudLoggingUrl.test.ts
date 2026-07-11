@@ -17,6 +17,19 @@ const parseCloudLoggingUrl = (url: string): { query: string; projectId: string }
 };
 
 describe("createCloudLoggingUrl", () => {
+  it("creates an App Engine service log query", () => {
+    const target: CloudLoggingTarget = {
+      kind: "app-engine-service",
+      projectId: "sample-project",
+      name: "api-service",
+    };
+
+    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+      query: ['resource.type="gae_app"', 'resource.labels.module_id="api-service"'].join("\n"),
+      projectId: "sample-project",
+    });
+  });
+
   it("creates a Cloud Functions gen1 log query", () => {
     const target: CloudLoggingTarget = {
       kind: "cloud-function-gen1",
