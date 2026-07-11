@@ -1,13 +1,12 @@
+import { CloudLoggingTarget } from "../actions/cloud-logging/types";
+
 export type KubernetesEngineCluster = {
   id: string;
-  name: string;
-  location: string;
   status: string;
   endpoint?: string;
   version: string;
   nodeCount: number;
-  projectId: string;
-};
+} & Extract<CloudLoggingTarget, { kind: "kubernetes-engine-cluster" }>;
 
 export type KubernetesEngineClustersResponse = {
   clusters?: {

@@ -22,4 +22,10 @@ export type CloudLoggingTarget =
       projectId: string;
       name: string;
       region: string;
+    }
+  | {
+      kind: "kubernetes-engine-cluster";
+      projectId: string;
+      name: string;
+      location: string;
     };

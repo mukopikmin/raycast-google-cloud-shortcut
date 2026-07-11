@@ -89,6 +89,24 @@ describe("createCloudLoggingUrl", () => {
     });
   });
 
+  it("creates a Kubernetes Engine cluster log query", () => {
+    const target: CloudLoggingTarget = {
+      kind: "kubernetes-engine-cluster",
+      projectId: "sample-project",
+      name: "sample-cluster",
+      location: "asia-northeast1-a",
+    };
+
+    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+      query: [
+        'resource.type="k8s_container"',
+        'resource.labels.cluster_name="sample-cluster"',
+        'resource.labels.location="asia-northeast1-a"',
+      ].join("\n"),
+      projectId: "sample-project",
+    });
+  });
+
   it("encodes query and project values in the URL", () => {
     const target: CloudLoggingTarget = {
       kind: "cloud-run-service",
