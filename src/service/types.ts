@@ -35,6 +35,7 @@ export const searchEnabledServiceNames = [
   "VPC Networks",
   "IAM & Admin",
   "Datastore",
+  "Workload Identity Federation",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -49,7 +50,7 @@ export const searchDisabledServiceNames = [
   "Cloud NAT",
   "Cloud DNS",
   "Network Intelligence Center",
-  "Workload Identity Federation",
+  "Cloud Debugger",
   "Organization Policies",
   "Cloud KMS",
   "Certificate Manager",
@@ -58,10 +59,10 @@ export const searchDisabledServiceNames = [
   "Cloud Logging",
   "Cloud Trace",
   "Cloud Profiler",
-  "Cloud Debugger",
-  "Eventarc",
   "Source Repositories",
   "Deployment Manager",
+  "Eventarc",
+  "Infrastructure Manager",
   "Dataproc",
   "Dataflow",
   "Composer",

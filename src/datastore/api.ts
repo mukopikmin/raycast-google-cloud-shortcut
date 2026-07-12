@@ -14,10 +14,7 @@ type DatastoreDatabasesResponse = {
 /**
  * @see https://docs.cloud.google.com/firestore/docs/reference/rest/v1/projects.databases/list
  */
-export const listDatastoreDatabases = async (
-  projectId: string,
-  accessToken: string,
-): Promise<DatastoreDatabase[]> => {
+export const listDatastoreDatabases = async (projectId: string, accessToken: string): Promise<DatastoreDatabase[]> => {
   const body = await fetchGoogleApi<DatastoreDatabasesResponse>(
     `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases`,
     accessToken,
