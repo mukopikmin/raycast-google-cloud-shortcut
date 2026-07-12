@@ -62,3 +62,5 @@ These are technical guidelines to be applied consistently across this entire pro
 
 ## 7. Tool Usage
 - **Command-Line First**: Prioritize using terminal commands for all operations (e.g., repository management, information gathering, and verification). Use the browser tool only when a task cannot be accomplished via the command line or when visual confirmation is explicitly required.
+- **GitHub Authentication Verification**: If `gh auth status` fails in a sandboxed environment, retry it with network-enabled or escalated execution before concluding that the token is invalid. Ask the user to re-authenticate only if that retry also confirms an invalid or expired token.
+- **GitHub MCP Fallback**: If authenticated `gh` access remains unavailable but the GitHub MCP connection is available, use GitHub MCP for repository and Pull Request operations. Treat Git remote authentication (such as SSH for `git push`) independently from GitHub CLI authentication, and stop for user authentication only when neither `gh` nor GitHub MCP can complete the operation.
