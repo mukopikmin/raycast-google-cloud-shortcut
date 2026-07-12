@@ -1,0 +1,41 @@
+import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
+import { useAppEngineServices } from "./useAppEngineServices";
+import { ErrorDetail } from "../../components/ErrorDetail";
+import { withGoogleAccessToken } from "../../auth/google";
+
+type Props = {
+  projectId: string;
+};
+
+const AppEngineServiceListComponent = (props: Props) => {
+  const { services, isLoading, error } = useAppEngineServices(props.projectId);
+
+  if (error) {
+    return <ErrorDetail error={error} />;
+  }
+
+  return (
+    <List isLoading={isLoading}>
+      {services?.map((service) => {
+        return (
+          <List.Item
+            key={service.id}
+            id={service.id}
+            icon={Icon.Box}
+            title={service.name}
+            keywords={service.keywords}
+            actions={
+              <ActionPanel>
+                <Action.OpenInBrowser url={service.url} />
+                <OpenCloudLoggingAction target={service} />
+              </ActionPanel>
+            }
+          />
+        );
+      })}
+    </List>
+  );
+};
+
+export const AppEngineServiceList = withGoogleAccessToken(AppEngineServiceListComponent);

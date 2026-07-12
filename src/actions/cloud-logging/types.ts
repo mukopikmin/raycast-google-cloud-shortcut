@@ -5,6 +5,18 @@ export type CloudLoggingTarget =
       name: string;
     }
   | {
+      kind: "workflow";
+      projectId: string;
+      name: string;
+      region: string;
+    }
+  | {
+      kind: "cloud-sql-instance";
+      projectId: string;
+      instanceId: string;
+      region: string;
+    }
+  | {
       kind: "cloud-function-gen1";
       projectId: string;
       name: string;
