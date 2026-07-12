@@ -11,7 +11,10 @@ export const OpenCloudLoggingAction = ({ target }: Props) => {
     <Action.OpenInBrowser
       title="Open Logs"
       url={createCloudLoggingUrl(target)}
-      shortcut={{ modifiers: ["cmd"], key: "l" }}
+      shortcut={{
+        macOS: { modifiers: ["cmd"], key: "l" },
+        Windows: { modifiers: ["ctrl"], key: "l" },
+      }}
     />
   );
 };
