@@ -178,7 +178,6 @@ export const availableServices: Service[] = [
     category: "Operations",
     url: "https://console.cloud.google.com/profiler",
   },
-
   {
     name: "Pub/Sub",
     category: "Integration",
@@ -262,17 +261,6 @@ export const availableServices: Service[] = [
     category: "Machine Learning",
     url: "https://console.cloud.google.com/vertex-ai",
   },
-  {
-    name: "Vertex AI Workbench",
-    category: "Machine Learning",
-    url: "https://console.cloud.google.com/vertex-ai/workbench",
-  },
-  {
-    name: "AutoML",
-    category: "Machine Learning",
-    url: "https://console.cloud.google.com/vertex-ai/datasets",
-  },
-
   {
     name: "API & Services",
     category: "Billing",

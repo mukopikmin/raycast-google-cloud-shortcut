@@ -34,6 +34,7 @@ export const searchEnabledServiceNames = [
   "Load Balancing",
   "VPC Networks",
   "IAM & Admin",
+  "Workload Identity Federation",
 ] as const;
 
 export const searchDisabledServiceNames = [
@@ -49,7 +50,6 @@ export const searchDisabledServiceNames = [
   "Cloud NAT",
   "Cloud DNS",
   "Network Intelligence Center",
-  "Workload Identity Federation",
   "Organization Policies",
   "Cloud KMS",
   "Certificate Manager",
@@ -66,8 +66,6 @@ export const searchDisabledServiceNames = [
   "Data Fusion",
   "Dataplex",
   "Vertex AI",
-  "Vertex AI Workbench",
-  "AutoML",
   "API & Services",
   "API Library",
   "Credentials",
