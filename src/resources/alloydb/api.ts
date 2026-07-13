@@ -26,6 +26,8 @@ export const listAlloyDbClusters = async (projectId: string, accessToken: string
       const region = parts[parts.length - 3];
 
       return {
+        kind: "alloydb-cluster" as const,
+        projectId,
         id: cluster.uid,
         clusterId,
         name: cluster.displayName || clusterId,
