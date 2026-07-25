@@ -5,6 +5,7 @@ import { useCloudRunDeployments } from "./useCloudRunDeployments";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
 import { withGoogleAccessToken } from "../../auth/google";
+import { createCloudRunExecutionsUrl, createCloudRunRevisionsUrl } from "./urls";
 
 type Props = {
   projectId: string;
@@ -74,14 +75,14 @@ const CloudRunServicesListComponent = (props: Props) => {
                 {(deployment.deployType === "Container Services" || deployment.deployType === "Function Services") && (
                   <Action.OpenInBrowser
                     title="Open Revisions in Browser"
-                    url={`https://console.cloud.google.com/run/detail/${deployment.region}/${deployment.name}/revisions?project=${props.projectId}`}
+                    url={createCloudRunRevisionsUrl(props.projectId, deployment.region, deployment.name)}
                     icon={Icon.ChevronRight}
                   />
                 )}
                 {deployment.deployType === "Jobs" && (
                   <Action.OpenInBrowser
                     title="Open Executions in Browser"
-                    url={`https://console.cloud.google.com/run/jobs/details/${deployment.region}/${deployment.name}/executions?project=${props.projectId}`}
+                    url={createCloudRunExecutionsUrl(props.projectId, deployment.region, deployment.name)}
                     icon={Icon.ChevronRight}
                   />
                 )}
