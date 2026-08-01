@@ -5,6 +5,12 @@ export type CloudLoggingTarget =
       name: string;
     }
   | {
+      kind: "alloydb-cluster";
+      projectId: string;
+      clusterId: string;
+      region: string;
+    }
+  | {
       kind: "workflow";
       projectId: string;
       name: string;

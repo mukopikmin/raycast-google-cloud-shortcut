@@ -16,6 +16,12 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.type", value: "gae_app" },
         { key: "resource.labels.module_id", value: target.name },
       ]);
+    case "alloydb-cluster":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "alloydb.googleapis.com/Cluster" },
+        { key: "resource.labels.cluster_id", value: target.clusterId },
+        { key: "resource.labels.location", value: target.region },
+      ]);
     case "workflow":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "workflows.googleapis.com/Workflow" },

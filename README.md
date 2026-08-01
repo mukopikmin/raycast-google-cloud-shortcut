@@ -60,7 +60,7 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Batch | Compute | - | - |
 | Cloud Storage | Storage | Buckets | - |
 | Transfer Service | Storage | - | - |
-| AlloyDB | Database | Clusters | - |
+| AlloyDB | Database | Clusters | Yes |
 | Bigtable | Database | - | - |
 | Cloud SQL | Database | Instances | Yes |
 | Cloud Spanner | Database | - | - |
@@ -86,7 +86,6 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Error Reporting | Operations | Errors | - |
 | Cloud Trace | Operations | - | - |
 | Cloud Profiler | Operations | - | - |
-| Cloud Debugger | Operations | - | - |
 | Pub/Sub | Integration | Topics & Subscriptions | - |
 | Eventarc | Integration | - | - |
 | Workflows | Integration | Workflows | Yes |

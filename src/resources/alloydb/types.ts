@@ -1,3 +1,5 @@
+import { CloudLoggingTarget } from "../../actions/cloud-logging/types";
+
 export type AlloyDbCluster = {
   id: string;
   clusterId: string;
@@ -6,4 +8,4 @@ export type AlloyDbCluster = {
   region: string;
   state: string;
   url: string;
-};
+} & Extract<CloudLoggingTarget, { kind: "alloydb-cluster" }>;
