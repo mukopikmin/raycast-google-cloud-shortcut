@@ -140,7 +140,7 @@ export const availableServices: Service[] = [
   {
     name: "Certificate Manager",
     category: "Security",
-    url: "https://console.cloud.google.com/security/certificates",
+    url: "https://console.cloud.google.com/security/ccm/list",
   },
   {
     name: "Security Command Center",

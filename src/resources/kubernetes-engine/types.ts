@@ -20,3 +20,11 @@ export type KubernetesEngineClustersResponse = {
   }[];
   nextPageToken?: string;
 };
+
+export const createKubernetesEngineClusterUrl = <
+  T extends Pick<KubernetesEngineCluster, "location" | "name" | "projectId">,
+>(
+  cluster: T,
+): string => {
+  return `https://console.cloud.google.com/kubernetes/clusters/details/${cluster.location}/${cluster.name}/details?project=${cluster.projectId}`;
+};

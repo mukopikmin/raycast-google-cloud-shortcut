@@ -4,6 +4,7 @@ import { useKubernetesEngineClusters } from "./useKubernetesEngineClusters";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { withGoogleAccessToken } from "../../auth/google";
+import { createKubernetesEngineClusterUrl } from "./types";
 
 type Props = {
   projectId: string;
@@ -58,10 +59,7 @@ const KubernetesEngineClusterListComponent = ({ projectId }: Props) => {
           ].filter((a) => a.text)}
           actions={
             <ActionPanel>
-              <Action.OpenInBrowser
-                title="Open in Cloud Console"
-                url={`https://console.cloud.google.com/kubernetes/clusters/details/${cluster.location}/${cluster.name}/details?project=${projectId}`}
-              />
+              <Action.OpenInBrowser title="Open in Cloud Console" url={createKubernetesEngineClusterUrl(cluster)} />
               <OpenCloudLoggingAction target={cluster} />
               <Action.CopyToClipboard title="Copy Cluster Name" content={cluster.name} />
               {cluster.endpoint && <Action.CopyToClipboard title="Copy Endpoint" content={cluster.endpoint} />}
