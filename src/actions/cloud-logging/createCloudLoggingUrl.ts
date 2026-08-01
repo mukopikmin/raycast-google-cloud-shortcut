@@ -61,6 +61,12 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.labels.worker_pool_name", value: target.name },
         { key: "resource.labels.location", value: target.region },
       ]);
+    case "secret-manager-secret":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "audited_resource" },
+        { key: "resource.labels.service", value: "secretmanager.googleapis.com" },
+        { key: "protoPayload.resourceName", value: target.resourceName },
+      ]);
   }
 };
 
