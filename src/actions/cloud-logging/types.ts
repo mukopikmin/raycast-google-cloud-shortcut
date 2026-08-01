@@ -1,5 +1,23 @@
 export type CloudLoggingTarget =
   | {
+      kind: "alloydb-cluster";
+      projectId: string;
+      clusterId: string;
+      region: string;
+    }
+  | {
+      kind: "workflow";
+      projectId: string;
+      name: string;
+      region: string;
+    }
+  | {
+      kind: "cloud-sql-instance";
+      projectId: string;
+      instanceId: string;
+      region: string;
+    }
+  | {
       kind: "cloud-function-gen1";
       projectId: string;
       name: string;
@@ -22,4 +40,10 @@ export type CloudLoggingTarget =
       projectId: string;
       name: string;
       region: string;
+    }
+  | {
+      kind: "secret-manager-secret";
+      projectId: string;
+      name: string;
+      resourceName: string;
     };
