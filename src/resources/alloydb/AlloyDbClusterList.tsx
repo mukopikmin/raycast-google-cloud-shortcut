@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useAlloyDbClusters } from "./useAlloyDbClusters";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
@@ -30,6 +31,7 @@ const AlloyDbClusterListComponent = (props: Props) => {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser url={cluster.url} />
+              <OpenCloudLoggingAction target={cluster} />
             </ActionPanel>
           }
         />

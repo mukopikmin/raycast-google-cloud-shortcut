@@ -21,3 +21,7 @@ export type KubernetesEngineClustersResponse = {
   }[];
   nextPageToken?: string;
 };
+
+export const createKubernetesEngineClusterUrl = (cluster: KubernetesEngineCluster): string => {
+  return `https://console.cloud.google.com/kubernetes/clusters/details/${cluster.location}/${cluster.name}/details?project=${cluster.projectId}`;
+};
