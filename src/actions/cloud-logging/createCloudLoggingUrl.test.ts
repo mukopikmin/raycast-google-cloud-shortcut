@@ -35,6 +35,24 @@ describe("createCloudLoggingUrl", () => {
     });
   });
 
+  it("creates an AlloyDB cluster log query", () => {
+    const target: CloudLoggingTarget = {
+      kind: "alloydb-cluster",
+      projectId: "sample-project",
+      clusterId: "primary-cluster",
+      region: "asia-northeast1",
+    };
+
+    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+      query: [
+        'resource.type="alloydb.googleapis.com/Cluster"',
+        'resource.labels.cluster_id="primary-cluster"',
+        'resource.labels.location="asia-northeast1"',
+      ].join("\n"),
+      projectId: "sample-project",
+    });
+  });
+
   it("creates a Cloud Functions gen1 log query", () => {
     const target: CloudLoggingTarget = {
       kind: "cloud-function-gen1",
@@ -102,6 +120,44 @@ describe("createCloudLoggingUrl", () => {
         'resource.type="cloud_run_worker_pool"',
         'resource.labels.worker_pool_name="worker-pool"',
         'resource.labels.location="us-west1"',
+      ].join("\n"),
+      projectId: "sample-project",
+    });
+  });
+
+  it("creates a Cloud SQL instance log query", () => {
+    const target: CloudLoggingTarget = {
+      kind: "cloud-sql-instance",
+      projectId: "sample-project",
+      instanceId: "orders-db",
+      region: "us-central1",
+    };
+
+    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+      query: [
+        'resource.type="cloudsql_database"',
+        'resource.labels.project_id="sample-project"',
+        'resource.labels.database_id="sample-project:orders-db"',
+        'resource.labels.region="us-central1"',
+      ].join("\n"),
+      projectId: "sample-project",
+    });
+  });
+
+  it("creates a Workflows log query", () => {
+    const target: CloudLoggingTarget = {
+      kind: "workflow",
+      projectId: "sample-project",
+      name: "invoice-flow",
+      region: "asia-northeast1",
+    };
+
+    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+      query: [
+        'resource.type="workflows.googleapis.com/Workflow"',
+        'resource.labels.resource_container="sample-project"',
+        'resource.labels.location="asia-northeast1"',
+        'resource.labels.workflow_id="invoice-flow"',
       ].join("\n"),
       projectId: "sample-project",
     });
