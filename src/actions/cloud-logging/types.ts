@@ -46,4 +46,10 @@ export type CloudLoggingTarget =
       projectId: string;
       name: string;
       location: string;
+    }
+  | {
+      kind: "secret-manager-secret";
+      projectId: string;
+      name: string;
+      resourceName: string;
     };
