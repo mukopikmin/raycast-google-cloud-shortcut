@@ -58,7 +58,7 @@ These are technical guidelines to be applied consistently across this entire pro
 - **Pull Request Titles**: Use a concise title that directly describes the change. Do not add agent- or tool-specific prefixes such as `[codex]`.
 - **Instruction Precedence**: Project rules in this file override default naming conventions from tools, skills, or agents.
 - **Pull Request Preflight**: Immediately before creating or updating a Pull Request, verify its title and description against this section.
-- **Automatic Issue Closing**: When creating a Pull Request to resolve an issue, always include "closes #<issue_number>" or similar keywords in the PR description to ensure the issue is automatically closed when the PR is merged.
+- **Automatic Issue Closing**: When work was started for the purpose of resolving an issue, always include "Closes #<issue_number>" or an equivalent closing keyword in the Pull Request description so that merging the Pull Request closes the issue.
 
 ## 7. Tool Usage
 - **Command-Line First**: Prioritize using terminal commands for all operations (e.g., repository management, information gathering, and verification). Use the browser tool only when a task cannot be accomplished via the command line or when visual confirmation is explicitly required.
