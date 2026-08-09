@@ -64,7 +64,7 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Bigtable | Database | - | - |
 | Cloud SQL | Database | Instances | Yes |
 | Cloud Spanner | Database | - | - |
-| Firestore | Database | - | - |
+| Firestore | Database | Databases | - |
 | Datastore | Database | Databases | - |
 | Memorystore | Database | - | - |
 | VPC Networks | Networking | Networks | - |

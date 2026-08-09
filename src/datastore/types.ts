@@ -1,3 +1,5 @@
+import { GoogleCloudDatabase } from "../firestore-database/types";
+
 export type DatastoreDatabase = {
   id: string;
   location?: string;
@@ -7,20 +9,17 @@ export type DatastoreDatabase = {
 
 export const createDatastoreDatabase = (args: {
   projectId: string;
-  resourceName: string;
-  location?: string;
-  edition?: string;
+  database: GoogleCloudDatabase;
 }): DatastoreDatabase => {
-  const id = args.resourceName.split("/").at(-1) ?? args.resourceName;
   const query = new URLSearchParams({
     project: args.projectId,
-    database: id,
+    database: args.database.id,
   });
 
   return {
-    id,
-    location: args.location,
-    edition: args.edition,
+    id: args.database.id,
+    location: args.database.location,
+    edition: args.database.edition,
     url: `https://console.cloud.google.com/datastore/entities/query?${query.toString()}`,
   };
 };

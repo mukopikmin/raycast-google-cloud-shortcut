@@ -35,6 +35,7 @@ export const searchEnabledServiceNames = [
   "VPC Networks",
   "IAM & Admin",
   "Datastore",
+  "Firestore",
   "Workload Identity Federation",
 ] as const;
 
@@ -43,7 +44,6 @@ export const searchDisabledServiceNames = [
   "BigQuery Data Transfer",
   "Bigtable",
   "Cloud Spanner",
-  "Firestore",
   "Memorystore",
   "Batch",
   "Transfer Service",

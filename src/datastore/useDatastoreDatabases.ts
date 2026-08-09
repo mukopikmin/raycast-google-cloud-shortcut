@@ -1,10 +1,12 @@
-import { usePromise } from "@raycast/utils";
-import { useGoogleApi } from "../auth/google";
-import { listDatastoreDatabases } from "./api";
+import { useGoogleCloudDatabases } from "../firestore-database/useGoogleCloudDatabases";
+import { createDatastoreDatabase } from "./types";
 
 export const useDatastoreDatabases = (projectId: string) => {
-  const { accessToken } = useGoogleApi();
-  const { data, isLoading, error } = usePromise(listDatastoreDatabases, [projectId, accessToken]);
+  const { databases, isLoading, error } = useGoogleCloudDatabases(projectId, "DATASTORE_MODE");
 
-  return { databases: data, isLoading, error };
+  return {
+    databases: databases?.map((database) => createDatastoreDatabase({ projectId, database })),
+    isLoading,
+    error,
+  };
 };
