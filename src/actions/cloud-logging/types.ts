@@ -1,5 +1,10 @@
 export type CloudLoggingTarget =
   | {
+      kind: "app-engine-service";
+      projectId: string;
+      name: string;
+    }
+  | {
       kind: "alloydb-cluster";
       projectId: string;
       clusterId: string;
