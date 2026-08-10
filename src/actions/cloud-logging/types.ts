@@ -18,6 +18,12 @@ export type CloudLoggingTarget =
       region: string;
     }
   | {
+      kind: "gce-instance";
+      projectId: string;
+      instanceId: string;
+      zone: string;
+    }
+  | {
       kind: "cloud-function-gen1";
       projectId: string;
       name: string;
