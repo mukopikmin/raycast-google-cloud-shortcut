@@ -29,6 +29,7 @@ export const listKubernetesEngineClustersPage = async (
   return {
     clusters:
       body.clusters?.map((cluster) => ({
+        kind: "kubernetes-engine-cluster",
         id: cluster.id,
         name: cluster.name,
         location: cluster.location,

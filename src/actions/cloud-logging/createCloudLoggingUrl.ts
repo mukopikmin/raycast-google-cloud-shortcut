@@ -55,6 +55,12 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.labels.worker_pool_name", value: target.name },
         { key: "resource.labels.location", value: target.region },
       ]);
+    case "kubernetes-engine-cluster":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "k8s_container" },
+        { key: "resource.labels.cluster_name", value: target.name },
+        { key: "resource.labels.location", value: target.location },
+      ]);
     case "secret-manager-secret":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "audited_resource" },

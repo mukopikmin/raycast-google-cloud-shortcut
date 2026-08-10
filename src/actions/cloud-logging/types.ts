@@ -42,6 +42,12 @@ export type CloudLoggingTarget =
       region: string;
     }
   | {
+      kind: "kubernetes-engine-cluster";
+      projectId: string;
+      name: string;
+      location: string;
+    }
+  | {
       kind: "secret-manager-secret";
       projectId: string;
       name: string;
