@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { google } from "../../auth/google";
 import { listProjects } from "./api";
 import { cacheProjects, listCachedProjects } from "./cache";
 import { Project } from "./types";
@@ -8,6 +7,7 @@ type LoadingResult = {
   projects: undefined;
   isLoading: true;
   error: undefined;
+  requiresAuthentication: false;
   refreshProjects: () => Promise<void>;
 };
 
@@ -15,6 +15,7 @@ type SuccessResult = {
   projects: Project[];
   isLoading: false;
   error: undefined;
+  requiresAuthentication: false;
   refreshProjects: () => Promise<void>;
 };
 
@@ -22,22 +23,43 @@ type ErrorResult = {
   projects: undefined;
   isLoading: false;
   error: Error;
+  requiresAuthentication: false;
   refreshProjects: () => Promise<void>;
 };
 
-type UseProjectsResult = LoadingResult | SuccessResult | ErrorResult;
+type AuthenticationRequiredResult = {
+  projects: undefined;
+  isLoading: false;
+  error: undefined;
+  requiresAuthentication: true;
+  refreshProjects: () => Promise<void>;
+};
 
-export const useProjects = (): UseProjectsResult => {
+export type UseProjectsResult = LoadingResult | SuccessResult | ErrorResult | AuthenticationRequiredResult;
+
+type UseProjectsOptions = {
+  accessToken?: string;
+  skipCache?: boolean;
+};
+
+export const useProjects = ({ accessToken, skipCache = false }: UseProjectsOptions = {}): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
+  const [requiresAuthentication, setRequiresAuthentication] = useState(false);
 
   const refreshProjects = useCallback(async () => {
+    if (!accessToken) {
+      setRequiresAuthentication(true);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(undefined);
+    setRequiresAuthentication(false);
 
     try {
-      const accessToken = await google.authorize();
       const fetchedProjects = await listProjects(accessToken);
       await cacheProjects(fetchedProjects);
       setProjects(fetchedProjects);
@@ -47,7 +69,7 @@ export const useProjects = (): UseProjectsResult => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [accessToken]);
 
   useEffect(() => {
     (async () => {
@@ -55,6 +77,11 @@ export const useProjects = (): UseProjectsResult => {
       setError(undefined);
 
       try {
+        if (skipCache) {
+          await refreshProjects();
+          return;
+        }
+
         const cachedProjects = await listCachedProjects();
 
         if (cachedProjects !== undefined) {
@@ -63,20 +90,32 @@ export const useProjects = (): UseProjectsResult => {
           return;
         }
 
-        await refreshProjects();
+        setRequiresAuthentication(true);
+        setIsLoading(false);
       } catch (error) {
         setProjects(undefined);
         setError(error instanceof Error ? error : new Error(String(error)));
         setIsLoading(false);
       }
     })();
-  }, [refreshProjects]);
+  }, [refreshProjects, skipCache]);
 
   if (error) {
     return {
       projects: undefined,
       isLoading: false,
       error,
+      requiresAuthentication: false,
+      refreshProjects,
+    };
+  }
+
+  if (requiresAuthentication) {
+    return {
+      projects: undefined,
+      isLoading: false,
+      error: undefined,
+      requiresAuthentication: true,
       refreshProjects,
     };
   }
@@ -86,12 +125,14 @@ export const useProjects = (): UseProjectsResult => {
         projects: undefined,
         isLoading: true,
         error: undefined,
+        requiresAuthentication: false,
         refreshProjects,
       }
     : {
         projects: projects ?? [],
         isLoading: false,
         error: undefined,
+        requiresAuthentication: false,
         refreshProjects,
       };
 };
