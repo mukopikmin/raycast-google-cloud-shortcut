@@ -15,30 +15,55 @@ export const google = OAuthService.google({
   scope: ["https://www.googleapis.com/auth/cloud-platform"].join(" "),
 });
 
-export const withGoogleAccessToken = withAccessToken(google);
+export const getGoogleAccessToken = async (fallback: string): Promise<string> =>
+  (await google.client.getTokens())?.accessToken ?? fallback;
+
+export const authorizeGoogle = async (): Promise<string> => {
+  const tokens = await google.client.getTokens();
+  if (tokens?.isExpired() && !tokens.refreshToken) {
+    await google.client.removeTokens();
+  }
+  const token = await google.authorize();
+  // The SDK can return the old token after its refresh flow triggers a new sign-in.
+  return getGoogleAccessToken(token);
+};
+
+export const withGoogleAccessToken = withAccessToken({ client: google.client, authorize: authorizeGoogle });
 
 type RefreshableOAuthService = OAuthService & {
   refreshTokens(args: { token: string }): Promise<OAuth.TokenResponse | undefined>;
 };
 
-export const refreshGoogleAccessToken = async (): Promise<string | undefined> => {
+const refreshAccessToken = async (rejectedToken: string): Promise<string | undefined> => {
   const tokens = await google.client.getTokens();
+  if (tokens?.accessToken && tokens.accessToken !== rejectedToken) {
+    return tokens.accessToken;
+  }
   const refreshToken = tokens?.refreshToken;
 
   if (!refreshToken) {
-    return undefined;
+    await google.client.removeTokens();
+    return authorizeGoogle();
   }
 
   const refreshedTokens = await (google as RefreshableOAuthService).refreshTokens({ token: refreshToken });
-  const accessToken = refreshedTokens?.access_token;
-
-  if (!accessToken) {
-    return undefined;
+  if (refreshedTokens?.access_token) {
+    await google.client.setTokens(refreshedTokens);
   }
 
-  await google.client.setTokens(refreshedTokens);
+  // refreshTokens returns undefined when it has completed an interactive sign-in.
+  const accessToken = (await google.client.getTokens())?.accessToken;
+  return accessToken !== rejectedToken ? accessToken : undefined;
+};
 
-  return accessToken;
+let pendingRefresh: Promise<string | undefined> | undefined;
+
+export const refreshGoogleAccessToken = (rejectedToken: string): Promise<string | undefined> => {
+  // Regional requests can all receive 401 together; share one refresh/sign-in flow.
+  pendingRefresh ??= refreshAccessToken(rejectedToken).finally(() => {
+    pendingRefresh = undefined;
+  });
+  return pendingRefresh;
 };
 
 export const useGoogleApi = (): AuthorizedGoogleApiClient => {
