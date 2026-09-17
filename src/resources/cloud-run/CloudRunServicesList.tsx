@@ -3,7 +3,6 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
 import { ErrorDetail } from "../../components/ErrorDetail";
-import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
 import { withGoogleAccessToken } from "../../auth/google";
 import { createCloudRunExecutionsUrl, createCloudRunRevisionsUrl } from "./urls";
 
@@ -13,12 +12,10 @@ type Props = {
 
 const CloudRunServicesListComponent = (props: Props) => {
   const [searchText, setSearchText] = useState("");
-  const { deployments, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudRunDeployments(
-    props.projectId,
-  );
+  const { deployments, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error, unreachable } =
+    useCloudRunDeployments(props.projectId);
 
-  const canLoadMore = hasMore && !isTruncated;
-  useLoadMoreOnSearch({ searchText, canLoadMore, isLoading, isLoadingMore, loadMore });
+  const canLoadMore = hasMore;
 
   if (error) {
     return <ErrorDetail error={error} />;
@@ -31,17 +28,6 @@ const CloudRunServicesListComponent = (props: Props) => {
   return (
     <List
       isLoading={isLoading || isLoadingMore}
-      pagination={
-        canLoadMore
-          ? {
-              pageSize: 50,
-              hasMore: canLoadMore,
-              onLoadMore: () => {
-                void loadMore();
-              },
-            }
-          : undefined
-      }
       filtering
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search loaded deployments..."
@@ -58,6 +44,33 @@ const CloudRunServicesListComponent = (props: Props) => {
         }
         actions={loadMoreAction ? <ActionPanel>{loadMoreAction}</ActionPanel> : undefined}
       />
+      {unreachable.length > 0 && (
+        <List.Item
+          id="cloud-run-services-unreachable"
+          title="Some Service Regions Could Not Be Loaded"
+          subtitle="Service results may be incomplete"
+          icon={Icon.ExclamationMark}
+          keywords={[searchText]}
+          accessories={[{ text: unreachable.join(", ") }]}
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="Show Unavailable Regions"
+                target={
+                  <ErrorDetail
+                    error={
+                      new Error(
+                        `Cloud Run services could not be loaded from: ${unreachable.join(", ")}. Results from other regions are shown. Reopen the list to retry.`,
+                      )
+                    }
+                  />
+                }
+              />
+              {loadMoreAction}
+            </ActionPanel>
+          }
+        />
+      )}
       {deployments?.map((deployment) => {
         return (
           <List.Item
@@ -96,6 +109,7 @@ const CloudRunServicesListComponent = (props: Props) => {
         <List.Item
           id="load-more-cloud-run-deployments"
           title="Load More Deployments"
+          keywords={[searchText]}
           icon={Icon.ArrowDown}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }]}
           actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
@@ -105,6 +119,7 @@ const CloudRunServicesListComponent = (props: Props) => {
         <List.Item
           id="cloud-run-deployments-truncated"
           title="Deployment List Truncated"
+          keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }]}
         />

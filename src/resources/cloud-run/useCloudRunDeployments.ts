@@ -34,11 +34,12 @@ type ErrorResult = {
   error: Error;
 };
 
-type UseCloudRunDeploymentsResult = SuccessResult | LoadingResult | ErrorResult;
+type UseCloudRunDeploymentsResult = (SuccessResult | LoadingResult | ErrorResult) & { unreachable: string[] };
 
 export const useCloudRunDeployments = (projectId: string): UseCloudRunDeploymentsResult => {
   const {
     services,
+    unreachable,
     isLoading: isLoadingServices,
     isLoadingMore: isLoadingMoreServices,
     hasMore: hasMoreServices,
@@ -82,6 +83,7 @@ export const useCloudRunDeployments = (projectId: string): UseCloudRunDeployment
 
   if (error) {
     return {
+      unreachable,
       deployments: undefined,
       isLoading: false,
       isLoadingMore: false,
@@ -96,6 +98,7 @@ export const useCloudRunDeployments = (projectId: string): UseCloudRunDeployment
 
   if (isLoading && !services && !jobs && !workerPools) {
     return {
+      unreachable,
       deployments: undefined,
       isLoading: true,
       isLoadingMore: false,
@@ -107,6 +110,7 @@ export const useCloudRunDeployments = (projectId: string): UseCloudRunDeployment
   }
 
   return {
+    unreachable,
     deployments: [...(services ?? []), ...(jobs ?? []), ...(workerPools ?? [])],
     isLoading,
     isLoadingMore: isLoadingMoreServices || isLoadingMoreJobs || isLoadingMoreWorkerPools,
