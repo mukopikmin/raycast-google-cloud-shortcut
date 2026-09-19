@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { google } from "../../auth/google";
+import { authorizeGoogle } from "../../auth/google";
 import { listProjects } from "./api";
 import { cacheProjects, listCachedProjects } from "./cache";
 import { Project } from "./types";
@@ -37,7 +37,7 @@ export const useProjects = (): UseProjectsResult => {
     setError(undefined);
 
     try {
-      const accessToken = await google.authorize();
+      const accessToken = await authorizeGoogle();
       const fetchedProjects = await listProjects(accessToken);
       await cacheProjects(fetchedProjects);
       setProjects(fetchedProjects);

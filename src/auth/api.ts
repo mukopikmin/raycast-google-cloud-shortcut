@@ -1,4 +1,4 @@
-import { refreshGoogleAccessToken } from "./google";
+import { getGoogleAccessToken, refreshGoogleAccessToken } from "./google";
 
 const requestGoogleApi = (url: string, accessToken: string, init?: RequestInit) =>
   fetch(url, {
@@ -16,17 +16,14 @@ const getErrorDetail = async (response: Response) => {
 };
 
 export const fetchGoogleApi = async <T>(url: string, accessToken: string, init?: RequestInit): Promise<T> => {
-  const response = await requestGoogleApi(url, accessToken, init);
+  const currentAccessToken = await getGoogleAccessToken(accessToken);
+  let response = await requestGoogleApi(url, currentAccessToken, init);
 
   if (response.status === 401) {
-    const refreshedAccessToken = await refreshGoogleAccessToken();
+    const refreshedAccessToken = await refreshGoogleAccessToken(currentAccessToken);
 
     if (refreshedAccessToken) {
-      const retriedResponse = await requestGoogleApi(url, refreshedAccessToken, init);
-
-      if (retriedResponse.ok) {
-        return (await retriedResponse.json()) as T;
-      }
+      response = await requestGoogleApi(url, refreshedAccessToken, init);
     }
   }
 
