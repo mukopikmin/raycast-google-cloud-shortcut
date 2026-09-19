@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
 import { useKubernetesEngineClusters } from "./useKubernetesEngineClusters";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { withGoogleAccessToken } from "../../auth/google";
 import { createKubernetesEngineClusterUrl } from "./types";
 
@@ -59,6 +60,7 @@ const KubernetesEngineClusterListComponent = ({ projectId }: Props) => {
           actions={
             <ActionPanel>
               <Action.OpenInBrowser title="Open in Cloud Console" url={createKubernetesEngineClusterUrl(cluster)} />
+              <OpenCloudLoggingAction target={cluster} />
               <Action.CopyToClipboard title="Copy Cluster Name" content={cluster.name} />
               {cluster.endpoint && <Action.CopyToClipboard title="Copy Endpoint" content={cluster.endpoint} />}
               {loadMoreAction}
