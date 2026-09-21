@@ -12,6 +12,7 @@ export type CloudRunDeploymentListResult = {
   isTruncated: boolean;
   loadMore: () => Promise<void>;
   error: Error | undefined;
+  unreachable?: string[];
 };
 
 type Props = CloudRunDeploymentListResult & {
@@ -29,6 +30,7 @@ export const CloudRunDeploymentList = ({
   error,
   resourceName,
   secondaryAction,
+  unreachable = [],
 }: Props) => {
   const [searchText, setSearchText] = useState("");
   const canLoadMore = hasMore && !isTruncated;
@@ -64,6 +66,33 @@ export const CloudRunDeploymentList = ({
         }
         actions={loadMoreAction ? <ActionPanel>{loadMoreAction}</ActionPanel> : undefined}
       />
+      {unreachable.length > 0 && (
+        <List.Item
+          id="cloud-run-services-unreachable"
+          title="Some Service Regions Could Not Be Loaded"
+          subtitle="Service results may be incomplete"
+          icon={Icon.ExclamationMark}
+          keywords={[searchText]}
+          accessories={[{ text: unreachable.join(", ") }].filter((a) => a.text)}
+          actions={
+            <ActionPanel>
+              <Action.Push
+                title="Show Unavailable Regions"
+                target={
+                  <ErrorDetail
+                    error={
+                      new Error(
+                        `Cloud Run services could not be loaded from: ${unreachable.join(", ")}. Results from other regions are shown. Reopen the list to retry.`,
+                      )
+                    }
+                  />
+                }
+              />
+              {loadMoreAction}
+            </ActionPanel>
+          }
+        />
+      )}
       {deployments?.map((deployment) => (
         <List.Item
           key={deployment.id}
@@ -87,6 +116,7 @@ export const CloudRunDeploymentList = ({
         <List.Item
           id={`load-more-cloud-run-${resourceName.toLowerCase().replaceAll(" ", "-")}`}
           title={`Load More ${resourceName}`}
+          keywords={[searchText]}
           icon={Icon.ArrowDown}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
           actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
@@ -96,6 +126,7 @@ export const CloudRunDeploymentList = ({
         <List.Item
           id={`cloud-run-${resourceName.toLowerCase().replaceAll(" ", "-")}-truncated`}
           title={`${resourceName} List Truncated`}
+          keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
         />
