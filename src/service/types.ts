@@ -13,7 +13,9 @@ export type SearchDisabledService = {
 };
 
 export const searchEnabledServiceNames = [
-  "Cloud Run",
+  "Cloud Run Services",
+  "Cloud Run Jobs",
+  "Cloud Run Worker Pools",
   "Cloud SQL",
   "AlloyDB",
   "Cloud Storage",

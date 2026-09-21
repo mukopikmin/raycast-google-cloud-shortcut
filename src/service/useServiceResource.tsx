@@ -1,6 +1,8 @@
 import { Action } from "@raycast/api";
 import { AlloyDbClusterList } from "../resources/alloydb/AlloyDbClusterList";
 import { CloudRunServicesList } from "../resources/cloud-run/CloudRunServicesList";
+import { CloudRunJobsList } from "../resources/cloud-run/CloudRunJobsList";
+import { CloudRunWorkerPoolsList } from "../resources/cloud-run/CloudRunWorkerPoolsList";
 import { SecretManagerList } from "../resources/secret-manager/SecretManagerList";
 import { ServiceAccountList } from "../resources/service-account/ServiceAccountList";
 import { CloudSqlInstanceList } from "../resources/cloud-sql/CloudSqlInstanceList";
@@ -51,12 +53,26 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
 
       if (isSearchEnabledService(service)) {
         switch (service.name) {
-          case "Cloud Run":
+          case "Cloud Run Services":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudRunServicesList projectId={projectId} />} />,
+            };
+          case "Cloud Run Jobs":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudRunJobsList projectId={projectId} />} />,
+            };
+          case "Cloud Run Worker Pools":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<CloudRunWorkerPoolsList projectId={projectId} />} />,
             };
           case "Cloud SQL":
             return {

@@ -6,7 +6,9 @@ describe("availableServices", () => {
     expect(Object.fromEntries(availableServices.map((service) => [service.name, service.url]))).toEqual({
       "Compute Engine": "https://console.cloud.google.com/compute/instances",
       "Kubernetes Engine": "https://console.cloud.google.com/kubernetes/list",
-      "Cloud Run": "https://console.cloud.google.com/run",
+      "Cloud Run Services": "https://console.cloud.google.com/run",
+      "Cloud Run Jobs": "https://console.cloud.google.com/run/jobs",
+      "Cloud Run Worker Pools": "https://console.cloud.google.com/run/workerpools",
       "Cloud Functions": "https://console.cloud.google.com/functions",
       "App Engine": "https://console.cloud.google.com/appengine",
       Batch: "https://console.cloud.google.com/batch/jobs",

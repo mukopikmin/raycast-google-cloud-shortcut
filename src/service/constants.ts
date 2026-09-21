@@ -13,9 +13,19 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/kubernetes/list",
   },
   {
-    name: "Cloud Run",
+    name: "Cloud Run Services",
     category: "Compute",
     url: "https://console.cloud.google.com/run",
+  },
+  {
+    name: "Cloud Run Jobs",
+    category: "Compute",
+    url: "https://console.cloud.google.com/run/jobs",
+  },
+  {
+    name: "Cloud Run Worker Pools",
+    category: "Compute",
+    url: "https://console.cloud.google.com/run/workerpools",
   },
   {
     name: "Cloud Functions",
