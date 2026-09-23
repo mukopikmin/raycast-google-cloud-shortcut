@@ -41,3 +41,33 @@ export const createCloudRunDeployment = (args: {
     keywords: [args.name, args.region, args.deployType],
   };
 };
+
+export type CloudRunDeploymentPage = {
+  deployments: CloudRunDeployment[];
+  nextPageToken?: string;
+};
+
+export type CloudRunServicesPage = CloudRunDeploymentPage & {
+  unreachable: string[];
+};
+
+export type CloudRunServicesResponse = {
+  items?: {
+    metadata: {
+      name: string;
+      uid: string;
+      labels: Record<string, string>;
+      annotations?: Record<string, string>;
+    };
+    status?: { url?: string };
+  }[];
+  metadata?: { continue?: string };
+  unreachable?: string[];
+};
+
+export type CloudRunServicesState = {
+  services: CloudRunDeployment[];
+  nextPageToken?: string;
+  unreachable: string[];
+  isTruncated: boolean;
+};

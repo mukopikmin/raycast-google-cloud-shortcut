@@ -1,182 +1,71 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../../auth/google";
-import { listCloudRunLocations, listCloudRunServicesPage } from "./api";
-import { CloudRunDeployment } from "./types";
+import { listCloudRunServicesPage } from "./api";
+import { appendCloudRunServicesPage, emptyCloudRunServicesState } from "./pagination";
 
 const CLOUD_RUN_SERVICE_PAGE_SIZE = 50;
-const CLOUD_RUN_SERVICE_LIMIT = 500;
 
-type PaginationTokens = Record<string, string>;
-
-const isNotFoundError = (error: unknown) => error instanceof Error && error.message.includes("Failed to fetch (404)");
-
-const listCloudRunServicesPageOrEmpty = async (
-  projectId: string,
-  locationId: string,
-  accessToken: string,
-  options: { pageSize: number; pageToken?: string },
-) => {
-  try {
-    return await listCloudRunServicesPage(projectId, locationId, accessToken, options);
-  } catch (error) {
-    if (isNotFoundError(error)) {
-      return { deployments: [], nextPageToken: undefined };
-    }
-
-    throw error;
-  }
-};
-
-type SuccessResult = {
-  services: CloudRunDeployment[];
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  hasMore: boolean;
-  isTruncated: boolean;
-  loadMore: () => Promise<void>;
-  error: undefined;
-};
-
-type LoadingResult = {
-  services: undefined;
-  isLoading: true;
-  isLoadingMore: false;
-  hasMore: false;
-  isTruncated: false;
-  loadMore: () => Promise<void>;
-  error: undefined;
-};
-
-type ErrorResult = {
-  services: undefined;
-  isLoading: false;
-  isLoadingMore: false;
-  hasMore: false;
-  isTruncated: false;
-  loadMore: () => Promise<void>;
-  error: Error;
-};
-
-type UseCloudRunServicesResult = SuccessResult | LoadingResult | ErrorResult;
-
-export const useCloudRunServices = (projectId: string): UseCloudRunServicesResult => {
+export const useCloudRunServices = (projectId: string) => {
   const { accessToken } = useGoogleApi();
-  const [services, setServices] = useState<CloudRunDeployment[]>([]);
-  const [paginationTokens, setPaginationTokens] = useState<PaginationTokens>({});
+  const [state, setState] = useState(emptyCloudRunServicesState);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isTruncated, setIsTruncated] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState<Error | undefined>();
-
-  const loadMore = useCallback(async () => {
-    const regions = Object.keys(paginationTokens);
-    if (regions.length === 0 || isLoadingMore || isTruncated) {
-      return;
-    }
-
-    setIsLoadingMore(true);
-    setLoadMoreError(undefined);
-    try {
-      const pages = await Promise.all(
-        regions.map(async (region) => ({
-          region,
-          page: await listCloudRunServicesPageOrEmpty(projectId, region, accessToken, {
-            pageSize: CLOUD_RUN_SERVICE_PAGE_SIZE,
-            pageToken: paginationTokens[region],
-          }),
-        })),
-      );
-
-      const nextServices = [...services, ...pages.flatMap(({ page }) => page.deployments)];
-      if (nextServices.length >= CLOUD_RUN_SERVICE_LIMIT) {
-        setServices(nextServices.slice(0, CLOUD_RUN_SERVICE_LIMIT));
-        setPaginationTokens({});
-        setIsTruncated(
-          pages.some(({ page }) => Boolean(page.nextPageToken)) || nextServices.length > CLOUD_RUN_SERVICE_LIMIT,
-        );
-      } else {
-        setServices(nextServices);
-        setPaginationTokens(
-          Object.fromEntries(
-            pages.flatMap(({ region, page }) => (page.nextPageToken ? [[region, page.nextPageToken]] : [])),
-          ),
-        );
-      }
-    } catch (error) {
-      setLoadMoreError(error instanceof Error ? error : new Error(String(error)));
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [accessToken, services, isLoadingMore, isTruncated, paginationTokens, projectId]);
-
-  const noopLoadMore = useCallback(async () => undefined, []);
+  const loadingMore = useRef(false);
+  const generation = useRef(0);
 
   const { isLoading, error } = usePromise(
     async (projId: string, token: string) => {
-      setServices([]);
-      setPaginationTokens({});
-      setIsTruncated(false);
+      generation.current += 1;
+      loadingMore.current = false;
+      setIsLoadingMore(false);
+      setState(emptyCloudRunServicesState());
       setLoadMoreError(undefined);
-
-      const locations = await listCloudRunLocations(projId, token);
-      const pages = await Promise.all(
-        locations.map(async (location) => ({
-          region: location.id,
-          page: await listCloudRunServicesPageOrEmpty(projId, location.id, token, {
-            pageSize: CLOUD_RUN_SERVICE_PAGE_SIZE,
-          }),
-        })),
-      );
-
-      const nextServices = pages.flatMap(({ page }) => page.deployments);
-      setServices(nextServices.slice(0, CLOUD_RUN_SERVICE_LIMIT));
-      setPaginationTokens(
-        nextServices.length >= CLOUD_RUN_SERVICE_LIMIT
-          ? {}
-          : Object.fromEntries(
-              pages.flatMap(({ region, page }) => (page.nextPageToken ? [[region, page.nextPageToken]] : [])),
-            ),
-      );
-      setIsTruncated(
-        nextServices.length >= CLOUD_RUN_SERVICE_LIMIT && pages.some(({ page }) => Boolean(page.nextPageToken)),
-      );
+      return listCloudRunServicesPage(projId, token, { pageSize: CLOUD_RUN_SERVICE_PAGE_SIZE });
     },
     [projectId, accessToken],
+    {
+      onData: (page) => setState(appendCloudRunServicesPage(emptyCloudRunServicesState(), page)),
+    },
   );
 
-  const resultError = error || loadMoreError;
-
-  if (resultError) {
-    return {
-      services: undefined,
-      isLoading: false,
-      isLoadingMore: false,
-      hasMore: false,
-      isTruncated: false,
-      loadMore: noopLoadMore,
-      error: resultError,
-    };
-  }
-
-  if (isLoading && services.length === 0) {
-    return {
-      services: undefined,
-      isLoading: true,
-      isLoadingMore: false,
-      hasMore: false,
-      isTruncated: false,
-      loadMore: noopLoadMore,
-      error: undefined,
-    };
-  }
+  const loadMore = useCallback(async () => {
+    if (!state.nextPageToken || loadingMore.current || isLoading || state.isTruncated) {
+      return;
+    }
+    const requestGeneration = generation.current;
+    loadingMore.current = true;
+    setIsLoadingMore(true);
+    setLoadMoreError(undefined);
+    try {
+      const page = await listCloudRunServicesPage(projectId, accessToken, {
+        pageSize: CLOUD_RUN_SERVICE_PAGE_SIZE,
+        pageToken: state.nextPageToken,
+      });
+      if (requestGeneration === generation.current) {
+        setState((current) => appendCloudRunServicesPage(current, page));
+      }
+    } catch (error) {
+      if (requestGeneration === generation.current) {
+        setLoadMoreError(error instanceof Error ? error : new Error(String(error)));
+      }
+    } finally {
+      if (requestGeneration === generation.current) {
+        loadingMore.current = false;
+        setIsLoadingMore(false);
+      }
+    }
+  }, [accessToken, isLoading, projectId, state.nextPageToken, state.isTruncated]);
 
   return {
-    services,
+    services: state.services,
+    nextPageToken: state.nextPageToken,
+    unreachable: state.unreachable,
     isLoading,
     isLoadingMore,
-    hasMore: Object.keys(paginationTokens).length > 0,
-    isTruncated,
+    hasMore: Boolean(state.nextPageToken),
+    isTruncated: state.isTruncated,
     loadMore,
-    error: undefined,
+    error: error || loadMoreError,
   };
 };
