@@ -3,6 +3,7 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useComputeEngineInstances } from "./useComputeEngineInstances";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { withGoogleAccessToken } from "../../auth/google";
+import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 
 type Props = {
   projectId: string;
@@ -59,6 +60,7 @@ const ComputeEngineInstanceListComponent = (props: Props) => {
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={instance.url} />
+                <OpenCloudLoggingAction target={instance} />
                 <Action.CopyToClipboard title="Copy Instance ID" content={instance.id} />
                 {instance.internalIp && (
                   <Action.CopyToClipboard title="Copy Internal IP" content={instance.internalIp} />

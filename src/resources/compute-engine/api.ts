@@ -63,6 +63,9 @@ export const listComputeEngineInstancesPage = async (
 
         return {
           id: instance.id,
+          kind: "gce-instance" as const,
+          projectId,
+          instanceId: instance.id,
           name: instance.name,
           status: instance.status,
           zone,
