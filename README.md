@@ -48,63 +48,63 @@ The command first shows your Google Cloud projects. After selecting a project, i
 
 This extension supports quick navigation to Google Cloud services. For some services, you can also search and navigate directly to resources such as instances, buckets, clusters, jobs, or queues.
 
-Cloud Logging shortcuts are available for selected resource types. The table below shows the current support status for both resource search and Cloud Logging shortcuts.
+Cloud Logging and Cloud Audit Logs shortcuts are available for selected resource types. The table below shows the current support status for resource search and both logging shortcuts.
 
-| Service Name | Category | Resource Search | Cloud Logging Shortcut |
-|---|---|---|---|
-| Compute Engine | Compute | Instances | - |
-| Kubernetes Engine | Compute | Clusters | - |
-| Cloud Run | Compute | Services, Jobs & Worker Pools | Yes |
-| Cloud Functions | Compute | Functions (gen1) | Yes |
-| App Engine | Compute | Services | Yes |
-| Batch | Compute | - | - |
-| Cloud Storage | Storage | Buckets | - |
-| Transfer Service | Storage | - | - |
-| AlloyDB | Database | Clusters | Yes |
-| Bigtable | Database | - | - |
-| Cloud SQL | Database | Instances | Yes |
-| Cloud Spanner | Database | - | - |
-| Firestore | Database | - | - |
-| Datastore | Database | - | - |
-| Memorystore | Database | - | - |
-| VPC Networks | Networking | Networks | - |
-| Load Balancing | Networking | Forwarding Rules | - |
-| Cloud NAT | Networking | - | - |
-| Cloud DNS | Networking | - | - |
-| Network Intelligence Center | Networking | - | - |
-| IAM & Admin | Security | IAM Policy Bindings | - |
-| Service Accounts | Security | Service Accounts | - |
-| Workload Identity Federation | Security | Workload Identity Pools | - |
-| Organization Policies | Security | - | - |
-| Secret Manager | Security | Secrets | - |
-| Cloud KMS | Security | - | - |
-| Certificate Manager | Security | - | - |
-| Security Command Center | Security | - | - |
-| Web Security Scanner | Security | - | - |
-| Cloud Logging | Operations | - | - |
-| Cloud Monitoring | Operations | Alert Policies | - |
-| Error Reporting | Operations | Errors | - |
-| Cloud Trace | Operations | - | - |
-| Cloud Profiler | Operations | - | - |
-| Pub/Sub | Integration | Topics & Subscriptions | - |
-| Eventarc | Integration | - | - |
-| Workflows | Integration | Workflows | Yes |
-| Cloud Scheduler | Integration | Jobs | - |
-| Cloud Tasks | Integration | Queues | - |
-| Artifact Registry | DevOps | Repositories | - |
-| Cloud Build | DevOps | Builds | - |
-| Infrastructure Manager | DevOps | - | - |
-| BigQuery | Data Analytics | - | - |
-| BigQuery Data Transfer | Data Analytics | - | - |
-| Dataproc | Data Analytics | - | - |
-| Dataflow | Data Analytics | - | - |
-| Composer | Data Analytics | - | - |
-| Data Fusion | Data Analytics | - | - |
-| Dataplex | Data Analytics | - | - |
-| Vertex AI | Machine Learning | - | - |
-| API & Services | Billing | - | - |
-| API Library | Billing | - | - |
-| Credentials | Billing | - | - |
-| Billing | Billing | - | - |
-| Quotas | Billing | - | - |
-| Budgets & Alerts | Billing | - | - |
+| Service Name                 | Category         | Resource Search               | Cloud Logging Shortcut | Audit Logs Shortcut |
+| ---------------------------- | ---------------- | ----------------------------- | ---------------------- | ------------------- |
+| Compute Engine               | Compute          | Instances                     | -                      | -                   |
+| Kubernetes Engine            | Compute          | Clusters                      | -                      | -                   |
+| Cloud Run                    | Compute          | Services, Jobs & Worker Pools | Yes                    | Yes                 |
+| Cloud Functions              | Compute          | Functions (gen1)              | Yes                    | Yes                 |
+| App Engine                   | Compute          | Services                      | Yes                    | Yes                 |
+| Batch                        | Compute          | -                             | -                      | -                   |
+| Cloud Storage                | Storage          | Buckets                       | -                      | -                   |
+| Transfer Service             | Storage          | -                             | -                      | -                   |
+| AlloyDB                      | Database         | Clusters                      | Yes                    | Yes                 |
+| Bigtable                     | Database         | -                             | -                      | -                   |
+| Cloud SQL                    | Database         | Instances                     | Yes                    | Yes                 |
+| Cloud Spanner                | Database         | -                             | -                      | -                   |
+| Firestore                    | Database         | -                             | -                      | -                   |
+| Datastore                    | Database         | -                             | -                      | -                   |
+| Memorystore                  | Database         | -                             | -                      | -                   |
+| VPC Networks                 | Networking       | Networks                      | -                      | -                   |
+| Load Balancing               | Networking       | Forwarding Rules              | -                      | -                   |
+| Cloud NAT                    | Networking       | -                             | -                      | -                   |
+| Cloud DNS                    | Networking       | -                             | -                      | -                   |
+| Network Intelligence Center  | Networking       | -                             | -                      | -                   |
+| IAM & Admin                  | Security         | IAM Policy Bindings           | -                      | -                   |
+| Service Accounts             | Security         | Service Accounts              | -                      | -                   |
+| Workload Identity Federation | Security         | Workload Identity Pools       | -                      | -                   |
+| Organization Policies        | Security         | -                             | -                      | -                   |
+| Secret Manager               | Security         | Secrets                       | Yes                    | Yes                 |
+| Cloud KMS                    | Security         | -                             | -                      | -                   |
+| Certificate Manager          | Security         | -                             | -                      | -                   |
+| Security Command Center      | Security         | -                             | -                      | -                   |
+| Web Security Scanner         | Security         | -                             | -                      | -                   |
+| Cloud Logging                | Operations       | -                             | -                      | -                   |
+| Cloud Monitoring             | Operations       | Alert Policies                | -                      | -                   |
+| Error Reporting              | Operations       | Errors                        | -                      | -                   |
+| Cloud Trace                  | Operations       | -                             | -                      | -                   |
+| Cloud Profiler               | Operations       | -                             | -                      | -                   |
+| Pub/Sub                      | Integration      | Topics & Subscriptions        | -                      | -                   |
+| Eventarc                     | Integration      | -                             | -                      | -                   |
+| Workflows                    | Integration      | Workflows                     | Yes                    | Yes                 |
+| Cloud Scheduler              | Integration      | Jobs                          | -                      | -                   |
+| Cloud Tasks                  | Integration      | Queues                        | -                      | -                   |
+| Artifact Registry            | DevOps           | Repositories                  | -                      | -                   |
+| Cloud Build                  | DevOps           | Builds                        | -                      | -                   |
+| Infrastructure Manager       | DevOps           | -                             | -                      | -                   |
+| BigQuery                     | Data Analytics   | -                             | -                      | -                   |
+| BigQuery Data Transfer       | Data Analytics   | -                             | -                      | -                   |
+| Dataproc                     | Data Analytics   | -                             | -                      | -                   |
+| Dataflow                     | Data Analytics   | -                             | -                      | -                   |
+| Composer                     | Data Analytics   | -                             | -                      | -                   |
+| Data Fusion                  | Data Analytics   | -                             | -                      | -                   |
+| Dataplex                     | Data Analytics   | -                             | -                      | -                   |
+| Vertex AI                    | Machine Learning | -                             | -                      | -                   |
+| API & Services               | Billing          | -                             | -                      | -                   |
+| API Library                  | Billing          | -                             | -                      | -                   |
+| Credentials                  | Billing          | -                             | -                      | -                   |
+| Billing                      | Billing          | -                             | -                      | -                   |
+| Quotas                       | Billing          | -                             | -                      | -                   |
+| Budgets & Alerts             | Billing          | -                             | -                      | -                   |

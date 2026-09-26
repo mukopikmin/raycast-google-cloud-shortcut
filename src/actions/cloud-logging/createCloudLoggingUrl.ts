@@ -62,9 +62,9 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
       ]);
     case "secret-manager-secret":
       return createCloudLoggingQueryFromFilters([
-        { key: "resource.type", value: "audited_resource" },
-        { key: "resource.labels.service", value: "secretmanager.googleapis.com" },
-        { key: "protoPayload.resourceName", value: target.resourceName },
+        { key: "resource.type", value: "secretmanager.googleapis.com/Secret" },
+        { key: "resource.labels.resource_container", value: target.projectId },
+        { key: "resource.labels.secret_id", value: target.name },
       ]);
   }
 };

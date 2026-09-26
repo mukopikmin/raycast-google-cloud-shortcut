@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
+import { OpenCloudAuditLoggingAction } from "../../actions/cloud-logging/OpenCloudAuditLoggingAction";
 import { useCloudRunDeployments } from "./useCloudRunDeployments";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { withGoogleAccessToken } from "../../auth/google";
@@ -84,6 +85,7 @@ const CloudRunServicesListComponent = (props: Props) => {
               <ActionPanel>
                 <Action.OpenInBrowser url={deployment.url} />
                 <OpenCloudLoggingAction target={deployment} />
+                <OpenCloudAuditLoggingAction target={deployment} />
                 {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
                 {(deployment.deployType === "Container Services" || deployment.deployType === "Function Services") && (
                   <Action.OpenInBrowser

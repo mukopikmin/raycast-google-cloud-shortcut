@@ -120,7 +120,7 @@ describe("createCloudLoggingUrl", () => {
     });
   });
 
-  it("creates a Secret Manager audit log query", () => {
+  it("creates a Secret Manager resource log query", () => {
     const target: CloudLoggingTarget = {
       kind: "secret-manager-secret",
       projectId: "sample-project",
@@ -130,9 +130,9 @@ describe("createCloudLoggingUrl", () => {
 
     expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
       query: [
-        'resource.type="audited_resource"',
-        'resource.labels.service="secretmanager.googleapis.com"',
-        'protoPayload.resourceName="projects/sample-project/secrets/database-password"',
+        'resource.type="secretmanager.googleapis.com/Secret"',
+        'resource.labels.resource_container="sample-project"',
+        'resource.labels.secret_id="database-password"',
       ].join("\n"),
       projectId: "sample-project",
     });
