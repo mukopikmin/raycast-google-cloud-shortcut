@@ -1,3 +1,4 @@
+import { environment } from "@raycast/api";
 import { getAccessToken, OAuthService, withAccessToken } from "@raycast/utils";
 import { createGoogleSession } from "./session";
 
@@ -14,6 +15,16 @@ const provider = OAuthService.google({
   tokenUrl: "https://oauth2.googleapis.com/token",
   scope: ["https://www.googleapis.com/auth/cloud-platform"].join(" "),
 });
+
+if (environment.isDevelopment) {
+  const authorize = provider.client.authorize.bind(provider.client);
+  provider.client.authorize = async (options) => {
+    console.info("[Google OAuth] wait for callback: started");
+    const result = await authorize(options);
+    console.info("[Google OAuth] wait for callback: completed");
+    return result;
+  };
+}
 
 const session = createGoogleSession(provider, OAUTH_CLIENT_ID);
 
