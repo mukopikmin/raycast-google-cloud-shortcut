@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { google } from "../../auth/google";
+import { getAccessToken } from "@raycast/utils";
+import { launchAuthenticatedCommand } from "../../auth/launch";
 import { listProjects } from "./api";
 import { cacheProjects, listCachedProjects } from "./cache";
 import { Project } from "./types";
@@ -27,7 +28,7 @@ type ErrorResult = {
 
 type UseProjectsResult = LoadingResult | SuccessResult | ErrorResult;
 
-export const useProjects = (): UseProjectsResult => {
+export const useProjects = (refreshOnLoad = false): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
@@ -37,10 +38,7 @@ export const useProjects = (): UseProjectsResult => {
     setError(undefined);
 
     try {
-      const accessToken = await google.authorize();
-      const fetchedProjects = await listProjects(accessToken);
-      await cacheProjects(fetchedProjects);
-      setProjects(fetchedProjects);
+      await launchAuthenticatedCommand({ type: "refresh-projects" });
     } catch (error) {
       setProjects(undefined);
       setError(error instanceof Error ? error : new Error(String(error)));
@@ -55,6 +53,15 @@ export const useProjects = (): UseProjectsResult => {
       setError(undefined);
 
       try {
+        if (refreshOnLoad) {
+          const { token: accessToken } = getAccessToken();
+          const fetchedProjects = await listProjects(accessToken);
+          await cacheProjects(fetchedProjects);
+          setProjects(fetchedProjects);
+          setIsLoading(false);
+          return;
+        }
+
         const cachedProjects = await listCachedProjects();
 
         if (cachedProjects !== undefined) {
@@ -70,7 +77,7 @@ export const useProjects = (): UseProjectsResult => {
         setIsLoading(false);
       }
     })();
-  }, [refreshProjects]);
+  }, [refreshOnLoad, refreshProjects]);
 
   if (error) {
     return {
