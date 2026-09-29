@@ -17,10 +17,14 @@ const provider = OAuthService.google({
 });
 
 if (environment.isDevelopment) {
+  console.info("[Google OAuth] client initialized");
   const authorize = provider.client.authorize.bind(provider.client);
   provider.client.authorize = async (options) => {
     console.info("[Google OAuth] wait for callback: started");
-    const result = await authorize(options);
+    const result = await authorize(options).catch((error) => {
+      console.info("[Google OAuth] wait for callback: failed");
+      throw error;
+    });
     console.info("[Google OAuth] wait for callback: completed");
     return result;
   };
