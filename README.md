@@ -52,7 +52,7 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 
 | Service Name | Category | Resource Search | Cloud Logging Shortcut |
 |---|---|---|---|
-| Compute Engine | Compute | Instances | - |
+| Compute Engine | Compute | Instances | Yes |
 | Kubernetes Engine | Compute | Clusters | - |
 | Cloud Run Services | Compute | Services | Yes |
 | Cloud Run Jobs | Compute | Jobs | Yes |
