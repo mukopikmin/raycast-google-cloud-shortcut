@@ -5,8 +5,8 @@ import { useProjects } from "./useProjects";
 import { useProjectHistory } from "./useProjectHistory";
 import { sortProjectsByRecency } from "./history";
 
-export const ProjectList = () => {
-  const { projects, isLoading, error, refreshProjects } = useProjects();
+export const ProjectList = ({ refreshOnLoad = false }: { refreshOnLoad?: boolean }) => {
+  const { projects, isLoading, error, refreshProjects } = useProjects(refreshOnLoad);
   const history = useProjectHistory();
   const displayError = error || history.error;
 
