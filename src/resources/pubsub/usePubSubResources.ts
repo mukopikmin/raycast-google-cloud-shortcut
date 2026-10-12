@@ -1,11 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import { appendResourcePage } from "../../pagination/pages";
+import { useCallback, useMemo, useState, useRef } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../../auth/google";
 import { listPubSubSubscriptionsPage, listPubSubTopicsPage } from "./api";
 import { PubSubResource } from "./types";
 
 const PUBSUB_PAGE_SIZE = 50;
-const PUBSUB_RESOURCE_LIMIT = 500;
 
 type SuccessResult = {
   resources: PubSubResource[];
@@ -15,6 +15,7 @@ type SuccessResult = {
   isTruncated: boolean;
   loadMore: () => Promise<void>;
   error: undefined;
+  reload: () => Promise<void>;
 };
 
 type LoadingResult = {
@@ -48,6 +49,8 @@ export const usePubSubResources = (projectId: string): UsePubSubResourcesResult 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState<Error | undefined>();
+  const loadingMore = useRef(false);
+  const generation = useRef(0);
 
   const hasMore = useMemo(
     () => Boolean(topicNextPageToken) || Boolean(subscriptionNextPageToken),
@@ -55,10 +58,12 @@ export const usePubSubResources = (projectId: string): UsePubSubResourcesResult 
   );
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || isLoadingMore || isTruncated) {
+    if (!hasMore || loadingMore.current) {
       return;
     }
 
+    const requestGeneration = generation.current;
+    loadingMore.current = true;
     setIsLoadingMore(true);
     setLoadMoreError(undefined);
 
@@ -75,37 +80,34 @@ export const usePubSubResources = (projectId: string): UsePubSubResourcesResult 
           : Promise.resolve({ subscriptions: [], nextPageToken: undefined }),
       ]);
 
-      const mergedResources = [...resources, ...topicsPage.topics, ...subscriptionsPage.subscriptions];
-      if (mergedResources.length >= PUBSUB_RESOURCE_LIMIT) {
-        setResources(mergedResources.slice(0, PUBSUB_RESOURCE_LIMIT));
-        setTopicNextPageToken(undefined);
-        setSubscriptionNextPageToken(undefined);
-        setIsTruncated(Boolean(topicsPage.nextPageToken) || Boolean(subscriptionsPage.nextPageToken));
-      } else {
-        setResources(mergedResources);
-        setTopicNextPageToken(topicsPage.nextPageToken);
-        setSubscriptionNextPageToken(subscriptionsPage.nextPageToken);
-      }
+      if (requestGeneration !== generation.current) return;
+      const next = appendResourcePage(
+        { resources, isTruncated },
+        { resources: [...topicsPage.topics, ...subscriptionsPage.subscriptions] },
+        (resource) => `${resource.resourceType}/${resource.name}`,
+      );
+      setResources(next.resources);
+      setIsTruncated(next.isTruncated);
+      setTopicNextPageToken(topicsPage.nextPageToken);
+      setSubscriptionNextPageToken(subscriptionsPage.nextPageToken);
     } catch (error) {
+      if (requestGeneration !== generation.current) return;
       setLoadMoreError(error instanceof Error ? error : new Error(String(error)));
     } finally {
-      setIsLoadingMore(false);
+      if (requestGeneration === generation.current) {
+        loadingMore.current = false;
+        setIsLoadingMore(false);
+      }
     }
-  }, [
-    accessToken,
-    hasMore,
-    isLoadingMore,
-    isTruncated,
-    projectId,
-    resources,
-    subscriptionNextPageToken,
-    topicNextPageToken,
-  ]);
+  }, [accessToken, hasMore, isTruncated, projectId, resources, subscriptionNextPageToken, topicNextPageToken]);
 
   const noopLoadMore = useCallback(async () => undefined, []);
 
-  const { isLoading, error } = usePromise(
+  const { isLoading, error, revalidate } = usePromise(
     async (projId: string, token: string) => {
+      const requestGeneration = ++generation.current;
+      loadingMore.current = false;
+      setIsLoadingMore(false);
       setResources([]);
       setTopicNextPageToken(undefined);
       setSubscriptionNextPageToken(undefined);
@@ -117,17 +119,16 @@ export const usePubSubResources = (projectId: string): UsePubSubResourcesResult 
         listPubSubSubscriptionsPage(projId, token, { pageSize: PUBSUB_PAGE_SIZE }),
       ]);
 
-      const nextResources = [...topicsPage.topics, ...subscriptionsPage.subscriptions];
-      if (nextResources.length >= PUBSUB_RESOURCE_LIMIT) {
-        setResources(nextResources.slice(0, PUBSUB_RESOURCE_LIMIT));
-        setTopicNextPageToken(undefined);
-        setSubscriptionNextPageToken(undefined);
-        setIsTruncated(Boolean(topicsPage.nextPageToken) || Boolean(subscriptionsPage.nextPageToken));
-      } else {
-        setResources(nextResources);
-        setTopicNextPageToken(topicsPage.nextPageToken);
-        setSubscriptionNextPageToken(subscriptionsPage.nextPageToken);
-      }
+      if (requestGeneration !== generation.current) return;
+      const initial = appendResourcePage(
+        { resources: [], isTruncated: false },
+        { resources: [...topicsPage.topics, ...subscriptionsPage.subscriptions] },
+        (resource) => `${resource.resourceType}/${resource.name}`,
+      );
+      setResources(initial.resources);
+      setIsTruncated(initial.isTruncated);
+      setTopicNextPageToken(topicsPage.nextPageToken);
+      setSubscriptionNextPageToken(subscriptionsPage.nextPageToken);
     },
     [projectId, accessToken],
   );
@@ -164,6 +165,9 @@ export const usePubSubResources = (projectId: string): UsePubSubResourcesResult 
     hasMore,
     isTruncated,
     loadMore,
+    reload: async () => {
+      await revalidate();
+    },
     error: undefined,
   };
 };

@@ -1,3 +1,4 @@
+import { RESOURCE_LIMIT } from "../../pagination/pages";
 import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
@@ -11,6 +12,7 @@ export type CloudRunDeploymentListResult = {
   hasMore: boolean;
   isTruncated: boolean;
   loadMore: () => Promise<void>;
+  reload?: () => Promise<void>;
   error: Error | undefined;
   unreachable?: string[];
 };
@@ -27,13 +29,14 @@ export const CloudRunDeploymentList = ({
   hasMore,
   isTruncated,
   loadMore,
+  reload,
   error,
   resourceName,
   secondaryAction,
   unreachable = [],
 }: Props) => {
   const [searchText, setSearchText] = useState("");
-  const canLoadMore = hasMore && !isTruncated;
+  const canLoadMore = hasMore;
 
   if (error) {
     return <ErrorDetail error={error} />;
@@ -42,6 +45,8 @@ export const CloudRunDeploymentList = ({
   const loadMoreAction = canLoadMore ? (
     <Action title={`Load More ${resourceName}`} icon={Icon.ArrowDown} onAction={loadMore} />
   ) : null;
+  const reloadAction =
+    isTruncated && reload ? <Action title="Reload from Start" icon={Icon.ArrowClockwise} onAction={reload} /> : null;
 
   return (
     <List
@@ -53,7 +58,7 @@ export const CloudRunDeploymentList = ({
       <List.EmptyView
         icon={Icon.MagnifyingGlass}
         title={
-          searchText && hasMore
+          searchText && (hasMore || isTruncated)
             ? `No loaded ${resourceName.toLowerCase()} match this search`
             : `No ${resourceName.toLowerCase()} found`
         }
@@ -61,10 +66,17 @@ export const CloudRunDeploymentList = ({
           searchText && hasMore
             ? `More ${resourceName.toLowerCase()} may exist. Load more to expand the searchable set.`
             : isTruncated
-              ? `The ${resourceName.toLowerCase()} list is truncated to keep memory usage bounded.`
+              ? "Earlier loaded results are omitted. Reload from start to revisit them."
               : undefined
         }
-        actions={loadMoreAction ? <ActionPanel>{loadMoreAction}</ActionPanel> : undefined}
+        actions={
+          loadMoreAction || reloadAction ? (
+            <ActionPanel>
+              {loadMoreAction}
+              {reloadAction}
+            </ActionPanel>
+          ) : undefined
+        }
       />
       {unreachable.length > 0 && (
         <List.Item
@@ -89,6 +101,7 @@ export const CloudRunDeploymentList = ({
                 }
               />
               {loadMoreAction}
+              {reloadAction}
             </ActionPanel>
           }
         />
@@ -108,6 +121,7 @@ export const CloudRunDeploymentList = ({
               {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
               {secondaryAction?.(deployment)}
               {loadMoreAction}
+              {reloadAction}
             </ActionPanel>
           }
         />
@@ -119,16 +133,23 @@ export const CloudRunDeploymentList = ({
           keywords={[searchText]}
           icon={Icon.ArrowDown}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
+          subtitle={
+            (deployments?.length ?? 0) >= RESOURCE_LIMIT
+              ? "Loading more replaces the oldest displayed results"
+              : undefined
+          }
           actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
         />
       )}
       {isTruncated && (
         <List.Item
           id={`cloud-run-${resourceName.toLowerCase().replaceAll(" ", "-")}-truncated`}
-          title={`${resourceName} List Truncated`}
+          title={`Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`}
+          subtitle="Earlier loaded results are omitted. Reload from start to revisit them."
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
+          actions={reloadAction ? <ActionPanel>{reloadAction}</ActionPanel> : undefined}
         />
       )}
     </List>

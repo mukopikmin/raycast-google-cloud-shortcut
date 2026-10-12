@@ -29,6 +29,7 @@ type ElementProps = {
   target?: ReactElement<{ error: Error }>;
   keywords?: string[];
   onAction?: () => Promise<void>;
+  title?: string;
 };
 
 const elements = (node: ReactNode): ReactElement<ElementProps>[] =>
@@ -66,6 +67,7 @@ describe("Cloud Run partial service results", () => {
       services: [service],
       nextPageToken: "page-2",
       unreachable: ["europe-west1"],
+      reload: vi.fn(async () => undefined),
     });
     const servicesList = CloudRunServicesList({ projectId: "project-1" }) as ReactElement<
       Parameters<typeof CloudRunDeploymentList>[0]
@@ -90,13 +92,35 @@ describe("Cloud Run partial service results", () => {
     expect(rendered.some(({ props }) => props.id === "cloud-run-services-unreachable")).toBe(false);
   });
 
-  it("keeps the truncation notice searchable and stops loading at the cap", () => {
+  it("keeps load more and reload available while older results are omitted", async () => {
+    const reload = vi.fn(async () => undefined);
     const rendered = elements(
-      CloudRunDeploymentList({ ...result, resourceName: "Services", hasMore: false, isTruncated: true }),
+      CloudRunDeploymentList({ ...result, resourceName: "Services", isTruncated: true, reload }),
     );
     expect(rendered.find(({ props }) => props.id === "cloud-run-services-truncated")?.props.keywords).toEqual([
       "missing-service",
     ]);
-    expect(rendered.some(({ props }) => props.onAction)).toBe(false);
+    const more = rendered.find(({ props }) => props.id === "load-more-cloud-run-services");
+    expect(more?.props.keywords).toEqual(["missing-service"]);
+    await elements(more?.props.actions)
+      .find(({ props }) => props.onAction)
+      ?.props.onAction?.();
+    expect(result.loadMore).toHaveBeenCalledOnce();
+    await rendered.find(({ props }) => props.title === "Reload from Start")?.props.onAction?.();
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it("offers a restart after reaching the last page beyond 500 services", () => {
+    const rendered = elements(
+      CloudRunDeploymentList({
+        ...result,
+        resourceName: "Services",
+        hasMore: false,
+        isTruncated: true,
+        reload: vi.fn(async () => undefined),
+      }),
+    );
+    expect(rendered.some(({ props }) => props.id === "load-more-cloud-run-services")).toBe(false);
+    expect(rendered.some(({ props }) => props.title === "Reload from Start")).toBe(true);
   });
 });

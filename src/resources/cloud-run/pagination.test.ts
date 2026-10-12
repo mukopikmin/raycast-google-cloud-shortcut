@@ -43,15 +43,15 @@ describe("Cloud Run global service pagination", () => {
     expect(second.services[0].uri).toBe("https://new.example.com");
   });
 
-  it.each([undefined, "more"])("caps retained services and marks actual truncation (next: %s)", (nextPageToken) => {
+  it.each([undefined, "more"])("keeps pagination available at exactly 500 services (next: %s)", (nextPageToken) => {
     const state = appendCloudRunServicesPage(emptyCloudRunServicesState(), {
       deployments: Array.from({ length: 500 }, (_, i) => service(i)),
       unreachable: [],
       nextPageToken,
     });
     expect(state.services).toHaveLength(500);
-    expect(state.nextPageToken).toBeUndefined();
-    expect(state.isTruncated).toBe(Boolean(nextPageToken));
+    expect(state.nextPageToken).toBe(nextPageToken);
+    expect(state.isTruncated).toBe(false);
   });
 
   it("marks overflow even when there is no continuation token", () => {
@@ -65,8 +65,29 @@ describe("Cloud Run global service pagination", () => {
       unreachable: [],
     });
     expect(last.services).toHaveLength(500);
+    expect(last.services[0].id).toBe("10");
+    expect(last.services.at(-1)?.id).toBe("509");
     expect(last.isTruncated).toBe(true);
     expect(last.nextPageToken).toBeUndefined();
+  });
+
+  it("continues beyond the retention limit and preserves regional warnings", () => {
+    const first = appendCloudRunServicesPage(emptyCloudRunServicesState(), {
+      deployments: Array.from({ length: 500 }, (_, i) => service(i)),
+      nextPageToken: "page-11",
+      unreachable: ["me-central2"],
+    });
+    const next = appendCloudRunServicesPage(first, {
+      deployments: Array.from({ length: 50 }, (_, i) => service(500 + i)),
+      nextPageToken: "page-12",
+      unreachable: [],
+    });
+    expect(next.services).toHaveLength(500);
+    expect(next.services[0].id).toBe("50");
+    expect(next.services.at(-1)?.id).toBe("549");
+    expect(next.nextPageToken).toBe("page-12");
+    expect(next.isTruncated).toBe(true);
+    expect(next.unreachable).toEqual(["me-central2"]);
   });
 
   it("keeps an empty partial page pageable and resets warnings for a fresh list", () => {

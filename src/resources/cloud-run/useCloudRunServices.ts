@@ -14,7 +14,7 @@ export const useCloudRunServices = (projectId: string) => {
   const loadingMore = useRef(false);
   const generation = useRef(0);
 
-  const { isLoading, error } = usePromise(
+  const { isLoading, error, revalidate } = usePromise(
     async (projId: string, token: string) => {
       generation.current += 1;
       loadingMore.current = false;
@@ -30,7 +30,7 @@ export const useCloudRunServices = (projectId: string) => {
   );
 
   const loadMore = useCallback(async () => {
-    if (!state.nextPageToken || loadingMore.current || isLoading || state.isTruncated) {
+    if (!state.nextPageToken || loadingMore.current || isLoading) {
       return;
     }
     const requestGeneration = generation.current;
@@ -55,7 +55,7 @@ export const useCloudRunServices = (projectId: string) => {
         setIsLoadingMore(false);
       }
     }
-  }, [accessToken, isLoading, projectId, state.nextPageToken, state.isTruncated]);
+  }, [accessToken, isLoading, projectId, state.nextPageToken]);
 
   return {
     services: state.services,
@@ -66,6 +66,9 @@ export const useCloudRunServices = (projectId: string) => {
     hasMore: Boolean(state.nextPageToken),
     isTruncated: state.isTruncated,
     loadMore,
+    reload: async () => {
+      await revalidate();
+    },
     error: error || loadMoreError,
   };
 };

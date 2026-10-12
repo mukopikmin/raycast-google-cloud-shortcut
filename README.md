@@ -44,6 +44,8 @@ Run **Search Google Cloud Resources** from Raycast.
 
 The command first shows your Google Cloud projects. After selecting a project, it shows supported Google Cloud services. Services with resource search support include a search action for their resources; every service can be opened directly in Google Cloud Console for the selected project.
 
+Paginated resource lists initially load one page. Choose **Load More** to fetch the next page, including when searching. Lists keep at most 500 resources in memory: loading more beyond 500 replaces the oldest displayed results, so resources after the first 500 remain accessible. The list shows a notice when earlier results are omitted; choose **Reload from Start** to revisit them. Search applies to the resources currently loaded.
+
 ## Supported Services
 
 This extension supports quick navigation to Google Cloud services. For some services, you can also search and navigate directly to resources such as instances, buckets, clusters, jobs, or queues.
