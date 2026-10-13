@@ -29,7 +29,10 @@ describe("Google API authentication recovery", () => {
     fetchMock
       .mockResolvedValueOnce(new Response(null, { status: 401 }))
       .mockResolvedValueOnce(Response.json({ error: "denied" }, { status: 403 }));
-    await expect(fetchGoogleApi("https://example.com", "old-access")).rejects.toThrow("Forbidden (403)");
+    await expect(fetchGoogleApi("https://example.com", "old-access")).rejects.toMatchObject({
+      status: 403,
+      message: expect.stringContaining("Forbidden (403)"),
+    });
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

@@ -6,6 +6,7 @@ import { useCloudRunJobs } from "../resources/cloud-run/useCloudRunJobs";
 import { useCloudRunWorkerPools } from "../resources/cloud-run/useCloudRunWorkerPools";
 import { usePubSubResources } from "../resources/pubsub/usePubSubResources";
 import { useCloudSchedulerJobs } from "../resources/cloud-scheduler/useCloudSchedulerJobs";
+import { GoogleApiError } from "../auth/GoogleApiError";
 
 // A small stateful hook runner lets these tests exercise real feature hooks and
 // API helpers without requiring the Raycast host or a browser renderer.
@@ -113,10 +114,22 @@ vi.mock("../auth/api", () => ({ fetchGoogleApi: vi.fn() }));
 const fetchMock = vi.mocked(fetchGoogleApi);
 const pageResponse = (url: string) => {
   const parsed = new URL(url);
+  if (parsed.pathname.endsWith("/locations")) {
+    return { locations: [{ locationId: "us-central1" }] };
+  }
   const offset = Number(parsed.searchParams.get("pageToken") || parsed.searchParams.get("continue") || 0);
   const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit"));
   const nextPageToken = offset + size < 620 ? String(offset + size) : undefined;
   const ids = Array.from({ length: Math.min(size, 620 - offset) }, (_, i) => String(offset + i));
+  if (parsed.pathname.startsWith("/v2/")) {
+    return {
+      services: ids.map((id) => ({
+        uid: id,
+        name: `projects/project/locations/us-central1/services/deployment-${id}`,
+      })),
+      nextPageToken,
+    };
+  }
   if (parsed.hostname === "secretmanager.googleapis.com") {
     return { secrets: ids.map((id) => ({ name: `projects/project/secrets/secret-${id}` })), nextPageToken };
   }
@@ -143,7 +156,7 @@ const pageResponse = (url: string) => {
     items: ids.map((id) => ({
       metadata: { uid: id, name: `deployment-${id}`, labels: { "cloud.googleapis.com/location": "us-central1" } },
     })),
-    metadata: { continue: nextPageToken },
+    metadata: { continue: parsed.pathname.includes("serving.knative.dev") ? undefined : nextPageToken },
     unreachable: ["europe-west1"],
   };
 };
@@ -221,11 +234,171 @@ describe("resource pagination beyond 500", () => {
     fetchMock.mockImplementation(async (url) => pageResponse(url));
   });
 
-  it.each(hooks.filter(({ count }) => count === 620))(
-    "shows journal for j even when $name has hundreds of earlier matching resources",
-    async ({ hook: featureHook }) => {
+  it.each(["j", "journal"])(
+    "finds journal for %s when the global response returns only 53 services without a token",
+    async (search) => {
       fetchMock.mockImplementation(async (url) => {
         const parsed = new URL(url);
+        const service = (region: string, index: number) => ({
+          uid: `${region}-${index}`,
+          name: `projects/project/locations/${region}/services/${region === "asia-northeast1" && index === 619 ? "journal" : `project-service-${index}`}`,
+        });
+        if (parsed.pathname.includes("serving.knative.dev")) {
+          const entries = [
+            ...Array.from({ length: 50 }, (_, index) => service("asia-northeast1", index)),
+            ...Array.from({ length: 3 }, (_, index) => service("europe-west1", index)),
+          ];
+          return {
+            items: entries.map((entry) => ({
+              metadata: {
+                uid: entry.uid,
+                name: entry.name.split("/").at(-1),
+                labels: { "cloud.googleapis.com/location": entry.name.split("/")[3] },
+              },
+            })),
+            metadata: {},
+          };
+        }
+        if (parsed.pathname.endsWith("/locations")) {
+          return parsed.searchParams.has("pageToken")
+            ? { locations: [{ locationId: "asia-northeast1" }, { locationId: "us-central1" }] }
+            : {
+                locations: [{ locationId: "asia-northeast1" }, { locationId: "europe-west1" }],
+                nextPageToken: "more-locations",
+              };
+        }
+        const region = parsed.pathname.split("/")[5];
+        const count = region === "asia-northeast1" ? 620 : region === "europe-west1" ? 3 : 0;
+        const offset = Number(parsed.searchParams.get("pageToken") || 0);
+        const size = Number(parsed.searchParams.get("pageSize"));
+        return {
+          services: Array.from({ length: Math.min(size, count - offset) }, (_, index) =>
+            service(region, offset + index),
+          ),
+          nextPageToken: offset + size < count ? String(offset + size) : undefined,
+        };
+      });
+      let query = "";
+      const hook = () => useCloudRunServices("project", query);
+      runtime.render(hook);
+      await runtime.settle();
+      const initial = runtime.render(hook);
+      expect(initial.services).toHaveLength(53);
+      expect(initial.services.some(({ name }) => name === "journal")).toBe(false);
+      expect(initial.hasMore).toBe(true);
+      expect(fetchMock).toHaveBeenCalledOnce();
+
+      query = search;
+      runtime.render(hook);
+      await runtime.settle();
+      const result = runtime.render(hook);
+      expect(result.services[0]).toMatchObject({ name: "journal", region: "asia-northeast1" });
+      expect(result.services).toHaveLength(search === "j" ? 500 : 1);
+      expect(result.resourcesSearched).toBe(623);
+      expect(result.pagesSearched).toBe(17);
+      expect(result.hasMore).toBe(false);
+      expect(result.error).toBeUndefined();
+      expect(fetchMock.mock.calls.filter(([url]) => url.includes("serving.knative.dev"))).toHaveLength(1);
+      expect(
+        fetchMock.mock.calls.filter(([url]) => url.includes("/v2/") && url.includes("/asia-northeast1/")),
+      ).toHaveLength(13);
+      expect(
+        fetchMock.mock.calls.filter(([url]) => url.includes("/v2/") && url.includes("/us-central1/")),
+      ).toHaveLength(1);
+      const firstEuropeanRequest = fetchMock.mock.calls.find(
+        ([url]) => url.includes("/v2/") && url.includes("/europe-west1/"),
+      )![0];
+      expect(new URL(firstEuropeanRequest).searchParams.has("pageToken")).toBe(false);
+    },
+  );
+
+  it("continues location discovery after an empty locations page", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ locations: [], nextPageToken: "more-locations" })
+      .mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }] })
+      .mockResolvedValueOnce({ services: [{ name: "projects/project/locations/asia-northeast1/services/journal" }] });
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.services.map(({ name }) => name)).toEqual(["journal"]);
+    expect(result.pagesSearched).toBe(3);
+    expect(fetchMock.mock.calls[1][0]).toContain("pageToken=more-locations");
+  });
+
+  it("preserves regional matches and reports a region that cannot be read", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }, { locationId: "europe-west1" }] })
+      .mockResolvedValueOnce({ services: [{ name: "projects/project/locations/asia-northeast1/services/journal" }] })
+      .mockRejectedValueOnce(new GoogleApiError(403, "Region unavailable"));
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.services.map(({ name }) => name)).toEqual(["journal"]);
+    expect(result.unreachable).toEqual(["europe-west1"]);
+    expect(result.error).toBeUndefined();
+  });
+
+  it.each(["locations", "authentication"])(
+    "propagates %s failures instead of reporting no service matches",
+    async (stage) => {
+      const failure = new GoogleApiError(stage === "locations" ? 403 : 401, "Request failed");
+      if (stage === "authentication")
+        fetchMock.mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }] });
+      fetchMock.mockRejectedValueOnce(failure);
+      const hook = () => useCloudRunServices("project", "journal");
+      runtime.render(hook);
+      await runtime.settle();
+      expect(runtime.render(hook).error).toBe(failure);
+    },
+  );
+
+  it.each(["regional", "locations"])(
+    "rejects repeated %s API tokens even though local continuation tokens advance",
+    async (stage) => {
+      if (stage === "regional") fetchMock.mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }] });
+      fetchMock.mockResolvedValue({ services: [], locations: [], nextPageToken: "same-token" });
+      const hook = () => useCloudRunServices("project", "journal");
+      runtime.render(hook);
+      await runtime.settle();
+      expect(runtime.render(hook).error?.message).toContain("repeated pagination token");
+      expect(fetchMock).toHaveBeenCalledTimes(stage === "regional" ? 3 : 2);
+    },
+  );
+
+  it.each(["query", "project"])("ignores stale regional discovery when the %s changes", async (change) => {
+    let resolveOldPage!: (data: unknown) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOldPage = resolve;
+        }),
+    );
+    let projectId = "first-project";
+    let query = change === "project" ? "619" : "old-query";
+    const hook = () => useCloudRunServices(projectId, query);
+    runtime.render(hook);
+    if (change === "project") projectId = "second-project";
+    if (change === "query") query = "619";
+    runtime.render(hook);
+    resolveOldPage({ locations: [{ locationId: "stale-region" }] });
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.services).toHaveLength(1);
+    expect(result.services[0]).toMatchObject({ name: "deployment-619", projectId });
+    expect(result.pagesSearched).toBe(14);
+    expect(result.resourcesSearched).toBe(620);
+    expect(result.error).toBeUndefined();
+    expect(fetchMock.mock.calls.some(([url]) => url.includes("stale-region"))).toBe(false);
+  });
+
+  it.each(hooks.filter(({ count }) => count === 620))(
+    "shows journal for j even when $name has hundreds of earlier matching resources",
+    async ({ hook: featureHook, name: featureName }) => {
+      fetchMock.mockImplementation(async (url) => {
+        const parsed = new URL(url);
+        if (parsed.pathname.endsWith("/locations")) return { locations: [{ locationId: "us-central1" }] };
         const offset = Number(parsed.searchParams.get("pageToken") || parsed.searchParams.get("continue") || 0);
         const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit"));
         const ids = Array.from({ length: Math.min(size, 620 - offset) }, (_, index) => String(offset + index));
@@ -233,6 +406,15 @@ describe("resource pagination beyond 500", () => {
         const next = offset + size < 620 ? String(offset + size) : undefined;
         if (parsed.hostname === "secretmanager.googleapis.com") {
           return { secrets: ids.map((id) => ({ name: `projects/project/secrets/${name(id)}` })), nextPageToken: next };
+        }
+        if (parsed.pathname.startsWith("/v2/")) {
+          return {
+            services: ids.map((id) => ({
+              uid: id,
+              name: `projects/project/locations/us-central1/services/${name(id)}`,
+            })),
+            nextPageToken: next,
+          };
         }
         return {
           items: ids.map((id) => ({
@@ -251,7 +433,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items).toHaveLength(500);
       expect(result.isTruncated).toBe(true);
       expect(result.hasMore).toBe(false);
-      expect(result.pagesSearched).toBe(13);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 14 : 13);
       expect(result.resourcesSearched).toBe(620);
       query = "journal";
       runtime.render(hook);
@@ -306,32 +488,35 @@ describe("resource pagination beyond 500", () => {
     },
   );
 
-  it.each(hooks)("finds an unrequested $name resource beyond item 500", async ({ hook: featureHook, count }) => {
-    let query = "";
-    const hook = () => featureHook(query);
-    runtime.render(hook);
-    await runtime.settle();
-    expect(runtime.render(hook).items?.some(({ name }) => name.endsWith("619"))).toBe(false);
-    query = "619";
-    runtime.render(hook);
-    expect(runtime.render(hook).isSearching).toBe(true);
-    await runtime.settle();
-    const result = runtime.render(hook);
-    expect(result.items).toHaveLength(count === 620 ? 1 : 2);
-    expect(result.items?.every(({ name }) => name.endsWith("619"))).toBe(true);
-    expect(result.hasMore).toBe(false);
-    expect(result.isSearching).toBe(false);
-    expect(result.pagesSearched).toBe(count === 620 ? 13 : 26);
-    expect(result.error).toBeUndefined();
-    const requests = fetchMock.mock.calls.length;
-    query = "";
-    runtime.render(hook);
-    await runtime.settle();
-    const unfiltered = runtime.render(hook);
-    expect(unfiltered.items?.length).toBe(count === 620 ? 50 : 100);
-    expect(unfiltered.isSearching).toBe(false);
-    expect(fetchMock.mock.calls.length - requests).toBe(count === 620 ? 1 : 2);
-  });
+  it.each(hooks)(
+    "finds an unrequested $name resource beyond item 500",
+    async ({ hook: featureHook, count, name: featureName }) => {
+      let query = "";
+      const hook = () => featureHook(query);
+      runtime.render(hook);
+      await runtime.settle();
+      expect(runtime.render(hook).items?.some(({ name }) => name.endsWith("619"))).toBe(false);
+      query = "619";
+      runtime.render(hook);
+      expect(runtime.render(hook).isSearching).toBe(true);
+      await runtime.settle();
+      const result = runtime.render(hook);
+      expect(result.items).toHaveLength(count === 620 ? 1 : 2);
+      expect(result.items?.every(({ name }) => name.endsWith("619"))).toBe(true);
+      expect(result.hasMore).toBe(false);
+      expect(result.isSearching).toBe(false);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 14 : count === 620 ? 13 : 26);
+      expect(result.error).toBeUndefined();
+      const requests = fetchMock.mock.calls.length;
+      query = "";
+      runtime.render(hook);
+      await runtime.settle();
+      const unfiltered = runtime.render(hook);
+      expect(unfiltered.items?.length).toBe(count === 620 ? 50 : 100);
+      expect(unfiltered.isSearching).toBe(false);
+      expect(fetchMock.mock.calls.length - requests).toBe(count === 620 ? 1 : 2);
+    },
+  );
 
   it.each(hooks.filter(({ count }) => count === 620))(
     "finds an evicted $name resource by restarting the search",
@@ -395,7 +580,7 @@ describe("resource pagination beyond 500", () => {
     await runtime.settle();
     let result = runtime.render(hook);
     expect(result.services).toEqual([]);
-    expect(result.pagesSearched).toBe(13);
+    expect(result.pagesSearched).toBe(14);
     expect(result.resourcesSearched).toBe(620);
     expect(result.isSearching).toBe(false);
     expect(result.hasMore).toBe(false);

@@ -65,6 +65,17 @@ export type CloudRunServicesResponse = {
   unreachable?: string[];
 };
 
+export type CloudRunRegionalServicesResponse = {
+  services?: {
+    name: string;
+    uid?: string;
+    uri?: string;
+    labels?: Record<string, string>;
+    buildConfig?: { functionTarget?: string };
+  }[];
+  nextPageToken?: string;
+};
+
 export type CloudRunServicesState = {
   services: CloudRunDeployment[];
   nextPageToken?: string;

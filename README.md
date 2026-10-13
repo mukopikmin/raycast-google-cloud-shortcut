@@ -48,6 +48,8 @@ Paginated resource lists initially load one page. Choose **Load More** to fetch 
 
 If an existing Cloud Run resource or Secret Manager secret is missing from search results, open the action menu and choose **Copy Search Diagnostics** after the search finishes. This action is available even when the result list is empty. It copies the selected project, query, search status, pages and resources checked before filtering, displayed result count, and any unavailable Cloud Run regions. The report contains no authentication tokens. Resource counts describe entries checked, rather than unique resources or the total number in the project.
 
+Cloud Run service searches discover the project's supported regions, including every page of the region list, and check every service page in each region using the regional v2 API. The initial unfiltered list uses a global snapshot for a quick first load; **Load More** continues through regional pages even when that snapshot has no continuation token. Diagnostic page counts include region discovery requests. Regions that cannot be read are reported as unavailable while results from other regions remain visible.
+
 ## Supported Services
 
 This extension supports quick navigation to Google Cloud services. For some services, you can also search and navigate directly to resources such as instances, buckets, clusters, jobs, or queues.

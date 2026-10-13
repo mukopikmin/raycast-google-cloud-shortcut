@@ -20,7 +20,7 @@ export const SearchDiagnosticsAction = (props: Props) => (
     title="Copy Search Diagnostics"
     content={JSON.stringify(
       {
-        implementation: "all-pages-ranked-with-diagnostics",
+        implementation: "all-pages-ranked-with-regional-cloud-run-services",
         projectId: props.projectId,
         resource: props.resourceName,
         query: props.searchText,

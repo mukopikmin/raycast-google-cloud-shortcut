@@ -3,8 +3,65 @@ import {
   CloudRunDeploymentPage,
   CloudRunServicesPage,
   CloudRunServicesResponse,
+  CloudRunRegionalServicesResponse,
   createCloudRunDeployment,
 } from "./types";
+import { PageOptions } from "../../pagination/types";
+
+type CloudRunLocationsResponse = {
+  locations?: { locationId: string }[];
+  nextPageToken?: string;
+};
+
+/** @see https://docs.cloud.google.com/run/docs/reference/rest/v1/projects.locations/list */
+export const listCloudRunLocationsPage = async (projectId: string, accessToken: string, options: PageOptions) => {
+  const query = new URLSearchParams({ pageSize: String(options.pageSize) });
+  if (options.pageToken) query.set("pageToken", options.pageToken);
+  const body = await fetchGoogleApi<CloudRunLocationsResponse>(
+    `https://run.googleapis.com/v1/projects/${projectId}/locations?${query}`,
+    accessToken,
+  );
+  return {
+    regions: [...new Set((body.locations ?? []).map(({ locationId }) => locationId))]
+      .filter((region) => region && region !== "global" && region !== "-")
+      .sort(),
+    nextPageToken: body.nextPageToken || undefined,
+  };
+};
+
+/** @see https://docs.cloud.google.com/run/docs/reference/rest/v2/projects.locations.services/list */
+export const listCloudRunRegionalServicesPage = async (
+  projectId: string,
+  region: string,
+  accessToken: string,
+  options: PageOptions,
+): Promise<CloudRunServicesPage> => {
+  const query = new URLSearchParams({ pageSize: String(options.pageSize) });
+  if (options.pageToken) query.set("pageToken", options.pageToken);
+  const body = await fetchGoogleApi<CloudRunRegionalServicesResponse>(
+    `https://run.googleapis.com/v2/projects/${projectId}/locations/${region}/services?${query}`,
+    accessToken,
+  );
+  return {
+    deployments: (body.services ?? []).map((service) => {
+      const name = service.name.split("/").at(-1)!;
+      return createCloudRunDeployment({
+        id: service.uid || service.name,
+        projectId,
+        name,
+        region,
+        deployType:
+          service.buildConfig || service.labels?.["goog-managed-by"] === "cloudfunctions"
+            ? "Function Services"
+            : "Container Services",
+        url: `https://console.cloud.google.com/run/detail/${region}/${name}?project=${projectId}`,
+        uri: service.uri,
+      });
+    }),
+    nextPageToken: body.nextPageToken || undefined,
+    unreachable: [],
+  };
+};
 
 type CloudRunJobsResponse = {
   items?: {
