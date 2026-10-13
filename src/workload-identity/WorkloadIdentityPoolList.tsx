@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../components/ErrorDetail";
@@ -16,14 +17,21 @@ const formatEnum = (value: string) =>
     .join(" ");
 
 const WorkloadIdentityPoolListComponent = ({ projectId }: Props) => {
-  const { pools, error, ...pagination } = useWorkloadIdentityPools(projectId);
+  const [searchText, setSearchText] = useState("");
+  const { pools, error, ...pagination } = useWorkloadIdentityPools(projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Workload Identity Pools" loadedCount={pools.length}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Workload Identity Pools"
+      loadedCount={pools.length}
+    >
       {(loadMoreAction) =>
         pools.map((pool) => (
           <List.Item

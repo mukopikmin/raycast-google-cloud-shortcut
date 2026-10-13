@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useComputeEngineInstances } from "./useComputeEngineInstances";
@@ -10,14 +11,21 @@ type Props = {
 };
 
 const ComputeEngineInstanceListComponent = (props: Props) => {
-  const { instances, error, ...pagination } = useComputeEngineInstances(props.projectId);
+  const [searchText, setSearchText] = useState("");
+  const { instances, error, ...pagination } = useComputeEngineInstances(props.projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Compute Engine Instances" loadedCount={instances.length}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Compute Engine Instances"
+      loadedCount={instances.length}
+    >
       {(loadMoreAction) =>
         instances.map((instance) => {
           const ips = [instance.internalIp, instance.externalIp].filter(Boolean).join(" / ");

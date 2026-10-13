@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { ErrorDetail } from "../../components/ErrorDetail";
@@ -9,14 +10,21 @@ type Props = {
 };
 
 const AlertPolicyListComponent = ({ projectId }: Props) => {
-  const { alertPolicies, error, ...pagination } = useAlertPolicies(projectId);
+  const [searchText, setSearchText] = useState("");
+  const { alertPolicies, error, ...pagination } = useAlertPolicies(projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Alert Policies" loadedCount={alertPolicies.length}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Alert Policies"
+      loadedCount={alertPolicies.length}
+    >
       {(loadMoreAction) =>
         alertPolicies.map((policy) => (
           <List.Item

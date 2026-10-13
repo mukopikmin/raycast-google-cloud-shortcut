@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Action, Icon } from "@raycast/api";
 import { withGoogleAccessToken } from "../../auth/google";
 import { CloudRunDeploymentList } from "./CloudRunDeploymentList";
@@ -7,10 +8,13 @@ import { useCloudRunJobs } from "./useCloudRunJobs";
 type Props = { projectId: string };
 
 const CloudRunJobsListComponent = ({ projectId }: Props) => {
-  const { jobs, ...result } = useCloudRunJobs(projectId);
+  const [searchText, setSearchText] = useState("");
+  const { jobs, ...result } = useCloudRunJobs(projectId, searchText);
 
   return (
     <CloudRunDeploymentList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
       {...result}
       deployments={jobs}
       resourceName="Jobs"

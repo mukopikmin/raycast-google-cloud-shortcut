@@ -103,6 +103,7 @@ vi.mock("react", () => ({
   useState: runtime.useState,
   useRef: runtime.useRef,
   useMemo: runtime.useMemo,
+  useEffect: () => undefined,
   useCallback: (callback: unknown, dependencies: unknown[]) => runtime.useMemo(() => callback, dependencies),
 }));
 vi.mock("@raycast/utils", () => ({ usePromise: runtime.usePromise }));
@@ -147,52 +148,52 @@ const pageResponse = (url: string) => {
   };
 };
 
-const hooks: { name: string; count: number; hook: () => Result }[] = [
+const hooks: { name: string; count: number; hook: (query?: string) => Result }[] = [
   {
     name: "Secret Manager",
     count: 620,
-    hook: () => {
-      const result = useSecretManager("project");
+    hook: (query = "") => {
+      const result = useSecretManager("project", query);
       return { ...result, items: result.secrets };
     },
   },
   {
     name: "Cloud Run services",
     count: 620,
-    hook: () => {
-      const result = useCloudRunServices("project");
+    hook: (query = "") => {
+      const result = useCloudRunServices("project", query);
       return { ...result, items: result.services };
     },
   },
   {
     name: "Cloud Run jobs",
     count: 620,
-    hook: () => {
-      const result = useCloudRunJobs("project");
+    hook: (query = "") => {
+      const result = useCloudRunJobs("project", query);
       return { ...result, items: result.jobs };
     },
   },
   {
     name: "Cloud Run worker pools",
     count: 620,
-    hook: () => {
-      const result = useCloudRunWorkerPools("project");
+    hook: (query = "") => {
+      const result = useCloudRunWorkerPools("project", query);
       return { ...result, items: result.workerPools };
     },
   },
   {
     name: "Pub/Sub streams",
     count: 1240,
-    hook: () => {
-      const result = usePubSubResources("project");
+    hook: (query = "") => {
+      const result = usePubSubResources("project", query);
       return { ...result, items: result.resources };
     },
   },
   {
     name: "Cloud Scheduler streams",
     count: 1240,
-    hook: () => {
-      const result = useCloudSchedulerJobs("project", "us-central1");
+    hook: (query = "") => {
+      const result = useCloudSchedulerJobs("project", "us-central1", query);
       return { ...result, items: result.scheduledJobs };
     },
   },
@@ -204,6 +205,8 @@ type Result = {
   hasMore: boolean;
   isTruncated: boolean;
   isLoadingMore: boolean;
+  isSearching?: boolean;
+  pagesSearched?: number;
   loadMore: () => Promise<void>;
   reload?: () => Promise<void>;
   error: Error | undefined;
@@ -215,6 +218,100 @@ describe("resource pagination beyond 500", () => {
     runtime.reset();
     fetchMock.mockReset();
     fetchMock.mockImplementation(async (url) => pageResponse(url));
+  });
+
+  it.each(hooks)("finds an unrequested $name resource beyond item 500", async ({ hook: featureHook, count }) => {
+    let query = "";
+    const hook = () => featureHook(query);
+    runtime.render(hook);
+    await runtime.settle();
+    expect(runtime.render(hook).items?.some(({ name }) => name.endsWith("619"))).toBe(false);
+    query = "619";
+    runtime.render(hook);
+    expect(runtime.render(hook).isSearching).toBe(true);
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.items).toHaveLength(count === 620 ? 1 : 2);
+    expect(result.items?.every(({ name }) => name.endsWith("619"))).toBe(true);
+    expect(result.hasMore).toBe(false);
+    expect(result.isSearching).toBe(false);
+    expect(result.pagesSearched).toBe(count === 620 ? 13 : 26);
+    expect(result.error).toBeUndefined();
+    const requests = fetchMock.mock.calls.length;
+    query = "";
+    runtime.render(hook);
+    await runtime.settle();
+    const unfiltered = runtime.render(hook);
+    expect(unfiltered.items?.length).toBe(count === 620 ? 50 : 100);
+    expect(unfiltered.isSearching).toBe(false);
+    expect(fetchMock.mock.calls.length - requests).toBe(count === 620 ? 1 : 2);
+  });
+
+  it.each(hooks.filter(({ count }) => count === 620))(
+    "finds an evicted $name resource by restarting the search",
+    async ({ hook: featureHook }) => {
+      let query = "";
+      const hook = () => featureHook(query);
+      runtime.render(hook);
+      await runtime.settle();
+      let result = runtime.render(hook);
+      const firstResource = result.items?.[0];
+      for (let page = 0; result.hasMore && page < 20; page++) {
+        await result.loadMore();
+        result = runtime.render(hook);
+      }
+      expect(result.isTruncated).toBe(true);
+      expect(result.items?.some((item) => key(item) === key(firstResource!))).toBe(false);
+      query = firstResource!.name;
+      runtime.render(hook);
+      await runtime.settle();
+      result = runtime.render(hook);
+      expect(result.items).toHaveLength(1);
+      expect(key(result.items![0])).toBe(key(firstResource!));
+      expect(result.isTruncated).toBe(false);
+      expect(result.error).toBeUndefined();
+    },
+  );
+
+  it("cancels a search when the query changes and rejects stale load-more actions", async () => {
+    let query = "";
+    const hook = () => useSecretManager("project", query);
+    runtime.render(hook);
+    await runtime.settle();
+    const staleLoadMore = runtime.render(hook).loadMore;
+    let resolveOldPage!: (data: unknown) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOldPage = resolve;
+        }),
+    );
+    query = "619";
+    runtime.render(hook);
+    query = "secret-0";
+    runtime.render(hook);
+    await staleLoadMore();
+    resolveOldPage(pageResponse("https://secretmanager.googleapis.com/v1/projects/project/secrets?pageSize=50"));
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.secrets.map(({ name }) => name)).toEqual(["secret-0"]);
+    expect(result.error).toBeUndefined();
+    expect(result.isSearching).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(15);
+  });
+
+  it("rejects load-more actions retained from a different project", async () => {
+    let projectId = "first-project";
+    const hook = () => useSecretManager(projectId);
+    runtime.render(hook);
+    await runtime.settle();
+    const previousLoadMore = runtime.render(hook).loadMore;
+    projectId = "second-project";
+    runtime.render(hook);
+    await runtime.settle();
+    await previousLoadMore();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(runtime.render(hook).secrets).toHaveLength(50);
   });
 
   it.each(hooks)("keeps all $count $name resources reachable and supports restarting", async ({ hook, count }) => {

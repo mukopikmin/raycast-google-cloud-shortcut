@@ -15,11 +15,15 @@ export type CloudRunDeploymentListResult = {
   reload?: () => Promise<void>;
   error: Error | undefined;
   unreachable?: string[];
+  isSearching?: boolean;
+  pagesSearched?: number;
 };
 
 type Props = CloudRunDeploymentListResult & {
   resourceName: string;
   secondaryAction?: (deployment: CloudRunDeployment) => React.ReactNode;
+  searchText?: string;
+  onSearchTextChange?: (text: string) => void;
 };
 
 export const CloudRunDeploymentList = ({
@@ -34,8 +38,13 @@ export const CloudRunDeploymentList = ({
   resourceName,
   secondaryAction,
   unreachable = [],
+  searchText: controlledSearchText,
+  onSearchTextChange,
+  isSearching = false,
+  pagesSearched = 0,
 }: Props) => {
-  const [searchText, setSearchText] = useState("");
+  const [localSearchText, setLocalSearchText] = useState("");
+  const searchText = controlledSearchText ?? localSearchText;
   const canLoadMore = hasMore;
 
   if (error) {
@@ -51,23 +60,32 @@ export const CloudRunDeploymentList = ({
   return (
     <List
       isLoading={isLoading || isLoadingMore}
-      filtering
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder={`Search loaded ${resourceName.toLowerCase()}...`}
+      filtering={false}
+      throttle
+      searchText={searchText}
+      onSearchTextChange={(text) => {
+        setLocalSearchText(text);
+        onSearchTextChange?.(text);
+      }}
+      searchBarPlaceholder={`Search all ${resourceName.toLowerCase()}...`}
     >
       <List.EmptyView
         icon={Icon.MagnifyingGlass}
         title={
-          searchText && (hasMore || isTruncated)
-            ? `No loaded ${resourceName.toLowerCase()} match this search`
-            : `No ${resourceName.toLowerCase()} found`
+          isSearching
+            ? `Searching all ${resourceName.toLowerCase()}...`
+            : searchText
+              ? `No ${resourceName.toLowerCase()} match this search`
+              : `No ${resourceName.toLowerCase()} found`
         }
         description={
-          searchText && hasMore
-            ? `More ${resourceName.toLowerCase()} may exist. Load more to expand the searchable set.`
-            : isTruncated
-              ? "Earlier loaded results are omitted. Reload from start to revisit them."
-              : undefined
+          isSearching
+            ? `${pagesSearched} API pages checked. Searching includes resources outside the displayed results.`
+            : searchText && hasMore
+              ? "More matching results may exist. Load more to continue searching."
+              : isTruncated
+                ? "Earlier displayed results are omitted. Search again to find them, or reload from start."
+                : undefined
         }
         actions={
           loadMoreAction || reloadAction ? (
@@ -78,6 +96,14 @@ export const CloudRunDeploymentList = ({
           ) : undefined
         }
       />
+      {isSearching && (
+        <List.Item
+          id="cloud-run-search-progress"
+          title={`Searching all ${resourceName}...`}
+          icon={Icon.MagnifyingGlass}
+          accessories={[{ text: `${pagesSearched} API pages checked` }]}
+        />
+      )}
       {unreachable.length > 0 && (
         <List.Item
           id="cloud-run-services-unreachable"
@@ -145,7 +171,7 @@ export const CloudRunDeploymentList = ({
         <List.Item
           id={`cloud-run-${resourceName.toLowerCase().replaceAll(" ", "-")}-truncated`}
           title={`Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`}
-          subtitle="Earlier loaded results are omitted. Reload from start to revisit them."
+          subtitle="Search again to find earlier results, or reload from start."
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}

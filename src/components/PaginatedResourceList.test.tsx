@@ -48,6 +48,8 @@ const result: ReturnType<typeof useSecretManager> = {
   nextPageToken: "page-14",
   isLoading: false,
   isLoadingMore: false,
+  isSearching: false,
+  pagesSearched: 0,
   hasMore: true,
   isTruncated: true,
   loadMore,
@@ -88,5 +90,19 @@ describe("Secret Manager pagination controls", () => {
     const rendered = renderList({ ...result, hasMore: false, nextPageToken: undefined });
     expect(rendered.some(({ props }) => props.id === "load-more-resources")).toBe(false);
     expect(rendered.some(({ props }) => props.title === "Reload from Start")).toBe(true);
+  });
+
+  it("passes the search text to the Secret Manager hook and shows progress instead of no matches", () => {
+    const rendered = renderList({
+      ...result,
+      secrets: [],
+      resources: [],
+      isLoading: true,
+      isSearching: true,
+      pagesSearched: 8,
+    });
+    expect(useSecretManager).toHaveBeenCalledWith("project", "secret-619");
+    expect(rendered.some(({ props }) => props.id === "resource-search-progress")).toBe(true);
+    expect(rendered.some(({ props }) => props.title?.startsWith("No "))).toBe(false);
   });
 });

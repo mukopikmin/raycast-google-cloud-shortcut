@@ -6,6 +6,7 @@ export type PageOptions = {
 export type ResourcePage<T> = {
   resources: T[];
   nextPageToken?: string;
+  unreachable?: string[];
 };
 
 export type ResourcePageState<T> = ResourcePage<T> & {
@@ -19,4 +20,6 @@ export type ResourcePagination = {
   isTruncated: boolean;
   loadMore: () => Promise<void>;
   reload?: () => Promise<void>;
+  isSearching?: boolean;
+  pagesSearched?: number;
 };

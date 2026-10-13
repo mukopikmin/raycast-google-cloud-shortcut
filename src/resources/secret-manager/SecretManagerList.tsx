@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
@@ -10,14 +11,21 @@ type Props = {
 };
 
 const SecretManagerListComponent = (props: Props) => {
-  const { secrets, error, ...pagination } = useSecretManager(props.projectId);
+  const [searchText, setSearchText] = useState("");
+  const { secrets, error, ...pagination } = useSecretManager(props.projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Secrets" loadedCount={secrets.length}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Secrets"
+      loadedCount={secrets.length}
+    >
       {(loadMoreAction) =>
         secrets.map((secret) => (
           <List.Item

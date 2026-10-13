@@ -43,13 +43,14 @@ These are technical guidelines to be applied consistently across this entire pro
 - **Data Fetching**: Follow the established pattern using `usePromise` in feature hooks under `src/resources/` or existing custom hooks.
 - **Type Definitions**: Organize resource-related types in a `types.ts` file within each feature directory.
 - **Bounded Pagination**:
-  - Avoid eager all-page fetching for resource list APIs. Initial loads should fetch only the first page.
+  - Avoid eager all-page fetching for unfiltered resource lists. Initial loads without a search query should fetch only the first page.
   - API helpers should expose page-level functions that return both the resources and the pagination token, e.g. `{ resources, nextPageToken }`.
   - Hooks should own pagination state, including loaded resources, `nextPageToken`, `isLoadingMore`, `hasMore`, `isTruncated`, `loadMore`, and `error`.
   - Add explicit load-more behavior in the list UI instead of automatically following every page token.
   - Enforce a hard cap on retained resources, currently 500 items per resource list, to keep memory usage bounded.
   - If an API has multiple pagination streams for one list, keep each token explicit in hook state and merge/deduplicate loaded resources deterministically.
-  - Search only the resources that have already been loaded. Search placeholders and empty states must make this clear when more results may exist.
+  - Search must include resources outside the retained window. Restart from the first API page when the query changes, discard nonmatching resources, and continue until a page of matches is collected or the API is exhausted. Cancel superseded searches and keep retained results bounded.
+  - Search placeholders and progress states must distinguish searching from a completed search with no matches. Additional pages of matching results should use explicit load-more behavior.
   - When results are truncated by the hard cap, show an explicit truncated state in the UI.
   - Preserve existing partial-success behavior when converting progressive pagination to bounded pagination.
 

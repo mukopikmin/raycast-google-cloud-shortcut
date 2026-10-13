@@ -6,8 +6,9 @@ import { listWorkloadIdentityPoolsPage } from "./api";
 import { WorkloadIdentityPool } from "./types";
 
 const getResourceId = (item: WorkloadIdentityPool) => item.id;
+const getSearchText = (item: WorkloadIdentityPool) => item.keywords.filter(Boolean).join(" ");
 
-export const useWorkloadIdentityPools = (projectId: string) => {
+export const useWorkloadIdentityPools = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +17,6 @@ export const useWorkloadIdentityPools = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, pools: result.resources };
 };

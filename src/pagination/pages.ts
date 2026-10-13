@@ -15,5 +15,8 @@ export const appendResourcePage = <T>(
     resources: resources.slice(-RESOURCE_LIMIT),
     nextPageToken: page.nextPageToken,
     isTruncated: state.isTruncated || resources.length > RESOURCE_LIMIT,
+    ...(state.unreachable || page.unreachable
+      ? { unreachable: [...new Set([...(state.unreachable ?? []), ...(page.unreachable ?? [])])].sort() }
+      : {}),
   };
 };

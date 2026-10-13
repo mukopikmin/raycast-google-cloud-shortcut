@@ -6,8 +6,9 @@ import { listCloudStorageBucketsPage } from "./api";
 import { CloudStorageBucket } from "./types";
 
 const getResourceId = (item: CloudStorageBucket) => item.id;
+const getSearchText = (item: CloudStorageBucket) => [item.name, item.location].filter(Boolean).join(" ");
 
-export const useCloudStorage = (projectId: string) => {
+export const useCloudStorage = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +17,6 @@ export const useCloudStorage = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, buckets: result.resources };
 };

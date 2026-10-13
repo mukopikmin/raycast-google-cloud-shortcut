@@ -6,8 +6,9 @@ import { listAlertPoliciesPage } from "./api";
 import { AlertPolicy } from "./types";
 
 const getResourceId = (item: AlertPolicy) => item.id;
+const getSearchText = (item: AlertPolicy) => item.keywords.filter(Boolean).join(" ");
 
-export const useAlertPolicies = (projectId: string) => {
+export const useAlertPolicies = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +17,6 @@ export const useAlertPolicies = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, alertPolicies: result.resources };
 };

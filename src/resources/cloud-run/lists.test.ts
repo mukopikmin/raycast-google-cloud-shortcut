@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 const readSource = (file: string) => readFileSync(`src/${file}`, "utf8");
 
 describe("Cloud Run resource lists", () => {
-  it("loads additional pages only through the explicit Load More action", () => {
+  it("keeps additional unfiltered pages behind the explicit Load More action", () => {
     const source = readSource("resources/cloud-run/CloudRunDeploymentList.tsx");
 
     expect(source).not.toContain("useLoadMoreOnSearch");
@@ -23,7 +23,7 @@ describe("Cloud Run resource lists", () => {
     );
 
     expect(importedHooks).toEqual([expectedHook]);
-    expect(source).toContain(`${expectedHook}(projectId)`);
+    expect(source).toContain(`${expectedHook}(projectId, searchText)`);
   });
 
   it.each([

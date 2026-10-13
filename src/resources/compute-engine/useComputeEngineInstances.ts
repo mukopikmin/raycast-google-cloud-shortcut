@@ -6,8 +6,12 @@ import { listComputeEngineInstancesPage } from "./api";
 import { ComputeEngineInstance } from "./types";
 
 const getResourceId = (item: ComputeEngineInstance) => item.id;
+const getSearchText = (item: ComputeEngineInstance) =>
+  [item.name, item.id, item.zone, item.machineType, item.status, item.internalIp, item.externalIp]
+    .filter(Boolean)
+    .join(" ");
 
-export const useComputeEngineInstances = (projectId: string) => {
+export const useComputeEngineInstances = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +20,6 @@ export const useComputeEngineInstances = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, instances: result.resources };
 };

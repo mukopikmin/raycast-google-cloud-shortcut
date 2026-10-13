@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
@@ -10,14 +11,21 @@ type Props = {
 };
 
 const CloudFunctionListComponent = ({ projectId }: Props) => {
-  const { functions, error, ...pagination } = useCloudFunctions(projectId);
+  const [searchText, setSearchText] = useState("");
+  const { functions, error, ...pagination } = useCloudFunctions(projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Functions" loadedCount={functions.length}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Functions"
+      loadedCount={functions.length}
+    >
       {(loadMoreAction) =>
         functions.map((cloudFunction) => (
           <List.Item

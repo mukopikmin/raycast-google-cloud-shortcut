@@ -44,7 +44,7 @@ Run **Search Google Cloud Resources** from Raycast.
 
 The command first shows your Google Cloud projects. After selecting a project, it shows supported Google Cloud services. Services with resource search support include a search action for their resources; every service can be opened directly in Google Cloud Console for the selected project.
 
-Paginated resource lists initially load one page. Choose **Load More** to fetch the next page, including when searching. Lists keep at most 500 resources in memory: loading more beyond 500 replaces the oldest displayed results, so resources after the first 500 remain accessible. The list shows a notice when earlier results are omitted; choose **Reload from Start** to revisit them. Search applies to the resources currently loaded.
+Paginated resource lists initially load one page. Choose **Load More** to fetch the next page, including when searching. Lists keep at most 500 resources in memory: loading more beyond 500 replaces the oldest displayed results, so resources after the first 500 remain accessible. The list shows a notice when earlier results are omitted; choose **Reload from Start** to revisit them. Search includes resources that have not been loaded and earlier results that were removed from the displayed window. Each new query scans from the first API page, discards nonmatching resources, and stops after collecting a page of matches or exhausting the API. Choose **Load More** for further matching results. Search checks all whitespace-separated terms against resource names and their displayed metadata; the list shows progress while checking pages.
 
 ## Supported Services
 

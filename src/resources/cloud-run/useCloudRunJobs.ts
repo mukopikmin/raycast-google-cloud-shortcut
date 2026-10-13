@@ -6,8 +6,9 @@ import { listCloudRunJobsPage } from "./api";
 import { CloudRunDeployment } from "./types";
 
 const getResourceId = (item: CloudRunDeployment) => item.id;
+const getSearchText = (item: CloudRunDeployment) => item.keywords.filter(Boolean).join(" ");
 
-export const useCloudRunJobs = (projectId: string) => {
+export const useCloudRunJobs = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +17,6 @@ export const useCloudRunJobs = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, jobs: result.resources };
 };

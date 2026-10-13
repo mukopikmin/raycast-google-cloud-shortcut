@@ -6,8 +6,9 @@ import { listCloudFunctionsPage } from "./api";
 import { CloudFunction } from "./types";
 
 const getResourceId = (item: CloudFunction) => item.id;
+const getSearchText = (item: CloudFunction) => item.keywords.filter(Boolean).join(" ");
 
-export const useCloudFunctions = (projectId: string) => {
+export const useCloudFunctions = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +17,6 @@ export const useCloudFunctions = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, functions: result.resources };
 };

@@ -65,6 +65,9 @@ describe("Cloud Run partial service results", () => {
     vi.mocked(useCloudRunServices).mockReturnValue({
       ...result,
       services: [service],
+      resources: [service],
+      isSearching: false,
+      pagesSearched: 0,
       nextPageToken: "page-2",
       unreachable: ["europe-west1"],
       reload: vi.fn(async () => undefined),

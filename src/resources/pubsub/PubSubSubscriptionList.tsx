@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { usePubSubResources } from "./usePubSubResources";
@@ -9,14 +10,21 @@ type Props = {
 };
 
 const PubSubSubscriptionListComponent = (props: Props) => {
-  const { resources, error, ...pagination } = usePubSubResources(props.projectId);
+  const [searchText, setSearchText] = useState("");
+  const { resources, error, ...pagination } = usePubSubResources(props.projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Pub/Sub Resources" loadedCount={resources?.length ?? 0}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Pub/Sub Resources"
+      loadedCount={resources?.length ?? 0}
+    >
       {(loadMoreAction) =>
         resources?.map((resource) => (
           <List.Item

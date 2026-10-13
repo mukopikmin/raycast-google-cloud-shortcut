@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudStorage } from "./useCloudStorage";
@@ -9,14 +10,21 @@ type Props = {
 };
 
 const CloudStorageBucketListComponent = (props: Props) => {
-  const { buckets, error, ...pagination } = useCloudStorage(props.projectId);
+  const [searchText, setSearchText] = useState("");
+  const { buckets, error, ...pagination } = useCloudStorage(props.projectId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
   return (
-    <PaginatedResourceList {...pagination} resourceName="Buckets" loadedCount={buckets.length}>
+    <PaginatedResourceList
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      {...pagination}
+      resourceName="Buckets"
+      loadedCount={buckets.length}
+    >
       {(loadMoreAction) =>
         buckets.map((bucket) => (
           <List.Item

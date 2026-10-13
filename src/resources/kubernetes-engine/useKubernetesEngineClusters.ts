@@ -6,8 +6,10 @@ import { listKubernetesEngineClustersPage } from "./api";
 import { KubernetesEngineCluster } from "./types";
 
 const getResourceId = (item: KubernetesEngineCluster) => item.id;
+const getSearchText = (item: KubernetesEngineCluster) =>
+  [item.name, item.location, item.endpoint, item.status, item.version].filter(Boolean).join(" ");
 
-export const useKubernetesEngineClusters = (projectId: string) => {
+export const useKubernetesEngineClusters = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
     async (options: PageOptions) => {
@@ -16,6 +18,6 @@ export const useKubernetesEngineClusters = (projectId: string) => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
   return { ...result, clusters: result.resources };
 };

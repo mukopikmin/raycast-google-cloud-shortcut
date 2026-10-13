@@ -8,6 +8,8 @@ type Props = ResourcePagination & {
   loadedCount: number;
   isShowingDetail?: boolean;
   children: (loadMoreAction: ReactNode) => ReactNode;
+  searchText?: string;
+  onSearchTextChange?: (text: string) => void;
 };
 
 export const PaginatedResourceList = ({
@@ -21,8 +23,13 @@ export const PaginatedResourceList = ({
   reload,
   isShowingDetail,
   children,
+  searchText: controlledSearchText,
+  onSearchTextChange,
+  isSearching = false,
+  pagesSearched = 0,
 }: Props) => {
-  const [searchText, setSearchText] = useState("");
+  const [localSearchText, setLocalSearchText] = useState("");
+  const searchText = controlledSearchText ?? localSearchText;
   const canLoadMore = hasMore;
   const action = canLoadMore ? (
     <Action title={`Load More ${resourceName}`} icon={Icon.ArrowDown} onAction={loadMore} />
@@ -36,29 +43,47 @@ export const PaginatedResourceList = ({
         {reloadAction}
       </>
     ) : null;
-  const incomplete = canLoadMore || isTruncated;
   const name = resourceName.toLowerCase();
 
   return (
     <List
       isLoading={isLoading || isLoadingMore}
-      filtering
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder={`Search loaded ${name}...`}
+      filtering={false}
+      throttle
+      searchText={searchText}
+      onSearchTextChange={(text) => {
+        setLocalSearchText(text);
+        onSearchTextChange?.(text);
+      }}
+      searchBarPlaceholder={`Search all ${name}...`}
       isShowingDetail={isShowingDetail}
     >
       <List.EmptyView
         icon={Icon.MagnifyingGlass}
-        title={searchText && incomplete ? `No loaded ${name} match this search` : `No ${name} found`}
+        title={
+          isSearching ? `Searching all ${name}...` : searchText ? `No ${name} match this search` : `No ${name} found`
+        }
         description={
-          isTruncated
-            ? `The latest ${RESOURCE_LIMIT} loaded ${name} are searchable. Load more to continue, or reload from start to revisit earlier results.`
-            : canLoadMore
-              ? `More ${name} may exist. Load more to expand the searchable set.`
-              : undefined
+          isSearching
+            ? `${pagesSearched} API pages checked. Searching includes resources outside the displayed results.`
+            : isTruncated
+              ? "Earlier displayed results are omitted. Search again to find them, or reload from start."
+              : canLoadMore
+                ? searchText
+                  ? "More matching results may exist. Load more to continue searching."
+                  : `More ${name} may exist. Search to find them, or load more.`
+                : undefined
         }
         actions={actions ? <ActionPanel>{actions}</ActionPanel> : undefined}
       />
+      {isSearching && (
+        <List.Item
+          id="resource-search-progress"
+          title={`Searching all ${resourceName}...`}
+          icon={Icon.MagnifyingGlass}
+          accessories={[{ text: `${pagesSearched} API pages checked` }]}
+        />
+      )}
       {children(actions)}
       {canLoadMore && (
         <List.Item
@@ -75,7 +100,7 @@ export const PaginatedResourceList = ({
         <List.Item
           id="resources-truncated"
           title={`Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`}
-          subtitle="Earlier loaded results are omitted. Reload from start to revisit them."
+          subtitle="Search again to find earlier results, or reload from start."
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${loadedCount} loaded` }]}
