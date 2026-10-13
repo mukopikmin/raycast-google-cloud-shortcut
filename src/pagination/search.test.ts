@@ -193,4 +193,24 @@ describe("resource search across API pages", () => {
     expect(result.isTruncated).toBe(true);
     expect(fetchPage).toHaveBeenCalledTimes(25);
   });
+
+  it("publishes bounded ranked results after each page while still searching later pages", async () => {
+    const fetchPage = dataset(620, (id) => (id === 619 ? "journal" : `journal-backup-${id}`));
+    const onMatches = vi.fn();
+    await collectMatchingResourcePage(
+      fetchPage,
+      { pageSize: 500 },
+      "journal",
+      getId,
+      getSearchText,
+      current,
+      checked,
+      getSearchText,
+      onMatches,
+    );
+    expect(onMatches).toHaveBeenCalledTimes(2);
+    expect(onMatches.mock.calls.every(([page]) => page.resources.length <= 500)).toBe(true);
+    expect(onMatches.mock.calls[0][0].resources.some(({ name }: Resource) => name === "journal")).toBe(false);
+    expect(onMatches.mock.lastCall![0].resources[0].name).toBe("journal");
+  });
 });

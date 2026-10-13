@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoogleApi } from "../auth/api";
 import { useSecretManager } from "../resources/secret-manager/useSecretManager";
-import { useCloudRunServices } from "../resources/cloud-run/useCloudRunServices";
+import { CLOUD_RUN_SEARCH_CONCURRENCY, useCloudRunServices } from "../resources/cloud-run/useCloudRunServices";
 import { useCloudRunJobs } from "../resources/cloud-run/useCloudRunJobs";
 import { useCloudRunWorkerPools } from "../resources/cloud-run/useCloudRunWorkerPools";
 import { usePubSubResources } from "../resources/pubsub/usePubSubResources";
 import { useCloudSchedulerJobs } from "../resources/cloud-scheduler/useCloudSchedulerJobs";
 import { GoogleApiError } from "../auth/GoogleApiError";
+
+const credentials = vi.hoisted(() => ({ accessToken: "token" }));
 
 // A small stateful hook runner lets these tests exercise real feature hooks and
 // API helpers without requiring the Raycast host or a browser renderer.
@@ -108,7 +110,7 @@ vi.mock("react", () => ({
   useCallback: (callback: unknown, dependencies: unknown[]) => runtime.useMemo(() => callback, dependencies),
 }));
 vi.mock("@raycast/utils", () => ({ usePromise: runtime.usePromise }));
-vi.mock("../auth/google", () => ({ useGoogleApi: () => ({ accessToken: "token" }) }));
+vi.mock("../auth/google", () => ({ useGoogleApi: () => ({ accessToken: credentials.accessToken }) }));
 vi.mock("../auth/api", () => ({ fetchGoogleApi: vi.fn() }));
 
 const fetchMock = vi.mocked(fetchGoogleApi);
@@ -229,9 +231,200 @@ const key = (item: Item) => item.id ?? `${item.resourceType ?? ""}/${item.name}`
 
 describe("resource pagination beyond 500", () => {
   beforeEach(() => {
+    credentials.accessToken = "token";
     runtime.reset();
     fetchMock.mockReset();
     fetchMock.mockImplementation(async (url) => pageResponse(url));
+  });
+
+  it("limits parallel requests, keeps each region sequential, and finds a match past two large pages", async () => {
+    const regions = Array.from({ length: 21 }, (_, index) => `region-${String(index).padStart(2, "0")}`);
+    const activeRegions = new Set<string>();
+    let peak = 0;
+    fetchMock.mockImplementation(async (url) => {
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith("/locations")) return { locations: regions.map((locationId) => ({ locationId })) };
+      const region = parsed.pathname.split("/")[5];
+      expect(activeRegions.has(region)).toBe(false);
+      activeRegions.add(region);
+      peak = Math.max(peak, activeRegions.size);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      activeRegions.delete(region);
+      const count = region === regions[0] ? 1100 : 1;
+      const offset = Number(parsed.searchParams.get("pageToken") || 0);
+      const size = Number(parsed.searchParams.get("pageSize"));
+      return {
+        services: Array.from({ length: Math.min(size, count - offset) }, (_, index) => ({
+          name: `projects/project/locations/${region}/services/${region === regions[0] && offset + index === 1099 ? "journal" : `journal-backup-${offset + index}`}`,
+        })),
+        nextPageToken: offset + size < count ? String(offset + size) : undefined,
+      };
+    });
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.services[0].name).toBe("journal");
+    expect(result.services).toHaveLength(500);
+    expect(result.resourcesSearched).toBe(1120);
+    expect(peak).toBeGreaterThan(1);
+    expect(peak).toBeLessThanOrEqual(CLOUD_RUN_SEARCH_CONCURRENCY);
+    expect(activeRegions.size).toBe(0);
+    expect(result.error).toBeUndefined();
+    const regionalRequests = fetchMock.mock.calls.filter(([url]) => url.includes("/v2/"));
+    expect(regionalRequests).toHaveLength(23);
+    expect(regionalRequests.every(([url]) => new URL(url).searchParams.get("pageSize") === "500")).toBe(true);
+    expect(
+      regionalRequests
+        .filter(([url]) => url.includes(regions[0]))
+        .map(([url]) => new URL(url).searchParams.get("pageToken")),
+    ).toEqual([null, "500", "1000"]);
+  });
+
+  it("shows a fast match while another region is still loading", async () => {
+    let resolveSlow!: (data: unknown) => void;
+    fetchMock.mockImplementation(async (url) => {
+      if (url.includes("/locations?")) return { locations: [{ locationId: "a-slow" }, { locationId: "z-fast" }] };
+      if (url.includes("/a-slow/"))
+        return new Promise((resolve) => {
+          resolveSlow = resolve;
+        });
+      return { services: [{ name: "projects/project/locations/z-fast/services/journal" }] };
+    });
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    try {
+      await vi.waitFor(() => expect(runtime.render(hook).services[0]?.name).toBe("journal"));
+      expect(runtime.render(hook).isSearching).toBe(true);
+      expect(runtime.render(hook).pagesSearched).toBe(2);
+    } finally {
+      resolveSlow({ services: [] });
+      await runtime.settle();
+    }
+    expect(runtime.render(hook).isSearching).toBe(false);
+    expect(runtime.render(hook).services[0].name).toBe("journal");
+  });
+
+  it("aborts all old parallel requests when a new query starts", async () => {
+    const oldSignals: AbortSignal[] = [];
+    let oldQuery = true;
+    fetchMock.mockImplementation(async (url, _token, init) => {
+      if (url.includes("/locations?"))
+        return { locations: Array.from({ length: 8 }, (_, index) => ({ locationId: `region-${index}` })) };
+      if (oldQuery) {
+        const signal = init!.signal as AbortSignal;
+        oldSignals.push(signal);
+        return new Promise((_resolve, reject) =>
+          signal.addEventListener("abort", () => reject(Object.assign(new Error("Aborted"), { name: "AbortError" })), {
+            once: true,
+          }),
+        );
+      }
+      const region = new URL(url).pathname.split("/")[5];
+      return { services: [{ name: `projects/project/locations/${region}/services/new-service` }] };
+    });
+    let query = "old-service";
+    const hook = () => useCloudRunServices("project", query);
+    runtime.render(hook);
+    await vi.waitFor(() => expect(oldSignals).toHaveLength(CLOUD_RUN_SEARCH_CONCURRENCY));
+    oldQuery = false;
+    query = "new-service";
+    runtime.render(hook);
+    expect(oldSignals.every((signal) => signal.aborted)).toBe(true);
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.services).toHaveLength(8);
+    expect(result.services.every(({ name }) => name === "new-service")).toBe(true);
+    expect(result.error).toBeUndefined();
+    expect(result.pagesSearched).toBe(8);
+  });
+
+  it("stops outstanding parallel work on an authentication failure", async () => {
+    const signals: AbortSignal[] = [];
+    const failure = new GoogleApiError(401, "Unauthorized");
+    fetchMock.mockImplementation(async (url, _token, init) => {
+      if (url.includes("/locations?"))
+        return { locations: Array.from({ length: 8 }, (_, index) => ({ locationId: `region-${index}` })) };
+      const signal = init!.signal as AbortSignal;
+      signals.push(signal);
+      if (url.includes("/region-0/")) throw failure;
+      return new Promise((_resolve, reject) =>
+        signal.addEventListener("abort", () => reject(Object.assign(new Error("Aborted"), { name: "AbortError" })), {
+          once: true,
+        }),
+      );
+    });
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    await runtime.settle();
+    expect(runtime.render(hook).error).toBe(failure);
+    expect(signals).toHaveLength(CLOUD_RUN_SEARCH_CONCURRENCY);
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1 + CLOUD_RUN_SEARCH_CONCURRENCY);
+  });
+
+  it.each(["project", "credentials", "expiry", "reload"])(
+    "reuses region discovery but refreshes it after %s changes",
+    async (change) => {
+      const clock = vi.spyOn(Date, "now").mockReturnValue(1000);
+      try {
+        let projectId = "project";
+        let query = "619";
+        const hook = () => useCloudRunServices(projectId, query);
+        runtime.render(hook);
+        await runtime.settle();
+        query = "618";
+        runtime.render(hook);
+        await runtime.settle();
+        expect(fetchMock.mock.calls.filter(([url]) => url.includes("/locations?"))).toHaveLength(1);
+        expect(runtime.render(hook).pagesSearched).toBe(2);
+        if (change === "project") projectId = "second-project";
+        if (change === "credentials") credentials.accessToken = "new-token";
+        if (change === "expiry") {
+          clock.mockReturnValue(61_001);
+          query = "617";
+        }
+        if (change === "reload") await runtime.render(hook).reload();
+        else {
+          runtime.render(hook);
+          await runtime.settle();
+        }
+        expect(fetchMock.mock.calls.filter(([url]) => url.includes("/locations?"))).toHaveLength(2);
+        expect(runtime.render(hook).services).toHaveLength(1);
+        expect(runtime.render(hook).error).toBeUndefined();
+      } finally {
+        clock.mockRestore();
+      }
+    },
+  );
+
+  it("checks regions with displayed services before empty regions", async () => {
+    fetchMock.mockImplementation(async (url) => {
+      if (url.includes("serving.knative.dev"))
+        return {
+          items: [
+            { metadata: { uid: "journal", name: "journal", labels: { "cloud.googleapis.com/location": "z-used" } } },
+          ],
+        };
+      if (url.includes("/locations?"))
+        return {
+          locations: [...Array.from({ length: 9 }, (_, index) => `a-empty-${index}`), "z-used"].map((locationId) => ({
+            locationId,
+          })),
+        };
+      return url.includes("/z-used/")
+        ? { services: [{ name: "projects/project/locations/z-used/services/journal" }] }
+        : { services: [] };
+    });
+    let query = "";
+    const hook = () => useCloudRunServices("project", query);
+    runtime.render(hook);
+    await runtime.settle();
+    query = "journal";
+    runtime.render(hook);
+    await runtime.settle();
+    expect(fetchMock.mock.calls.find(([url]) => url.includes("/v2/"))![0]).toContain("/z-used/");
+    expect(runtime.render(hook).services[0].name).toBe("journal");
   });
 
   it.each(["j", "journal"])(
@@ -295,13 +488,13 @@ describe("resource pagination beyond 500", () => {
       expect(result.services[0]).toMatchObject({ name: "journal", region: "asia-northeast1" });
       expect(result.services).toHaveLength(search === "j" ? 500 : 1);
       expect(result.resourcesSearched).toBe(623);
-      expect(result.pagesSearched).toBe(17);
+      expect(result.pagesSearched).toBe(6);
       expect(result.hasMore).toBe(false);
       expect(result.error).toBeUndefined();
       expect(fetchMock.mock.calls.filter(([url]) => url.includes("serving.knative.dev"))).toHaveLength(1);
       expect(
         fetchMock.mock.calls.filter(([url]) => url.includes("/v2/") && url.includes("/asia-northeast1/")),
-      ).toHaveLength(13);
+      ).toHaveLength(2);
       expect(
         fetchMock.mock.calls.filter(([url]) => url.includes("/v2/") && url.includes("/us-central1/")),
       ).toHaveLength(1);
@@ -387,7 +580,7 @@ describe("resource pagination beyond 500", () => {
     const result = runtime.render(hook);
     expect(result.services).toHaveLength(1);
     expect(result.services[0]).toMatchObject({ name: "deployment-619", projectId });
-    expect(result.pagesSearched).toBe(14);
+    expect(result.pagesSearched).toBe(3);
     expect(result.resourcesSearched).toBe(620);
     expect(result.error).toBeUndefined();
     expect(fetchMock.mock.calls.some(([url]) => url.includes("stale-region"))).toBe(false);
@@ -433,7 +626,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items).toHaveLength(500);
       expect(result.isTruncated).toBe(true);
       expect(result.hasMore).toBe(false);
-      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 14 : 13);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 3 : 13);
       expect(result.resourcesSearched).toBe(620);
       query = "journal";
       runtime.render(hook);
@@ -505,7 +698,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items?.every(({ name }) => name.endsWith("619"))).toBe(true);
       expect(result.hasMore).toBe(false);
       expect(result.isSearching).toBe(false);
-      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 14 : count === 620 ? 13 : 26);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 3 : count === 620 ? 13 : 26);
       expect(result.error).toBeUndefined();
       const requests = fetchMock.mock.calls.length;
       query = "";
@@ -580,7 +773,7 @@ describe("resource pagination beyond 500", () => {
     await runtime.settle();
     let result = runtime.render(hook);
     expect(result.services).toEqual([]);
-    expect(result.pagesSearched).toBe(14);
+    expect(result.pagesSearched).toBe(3);
     expect(result.resourcesSearched).toBe(620);
     expect(result.isSearching).toBe(false);
     expect(result.hasMore).toBe(false);

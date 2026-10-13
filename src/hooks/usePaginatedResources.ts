@@ -53,6 +53,9 @@ export const usePaginatedResources = <T>(
           }
         },
         getName,
+        (matches) => {
+          if (requestGeneration === generation.current) setState(matches);
+        },
       );
     },
     [fetchPage, query],

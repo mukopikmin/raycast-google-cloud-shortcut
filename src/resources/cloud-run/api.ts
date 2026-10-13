@@ -5,8 +5,8 @@ import {
   CloudRunServicesResponse,
   CloudRunRegionalServicesResponse,
   createCloudRunDeployment,
+  CloudRunPageOptions,
 } from "./types";
-import { PageOptions } from "../../pagination/types";
 
 type CloudRunLocationsResponse = {
   locations?: { locationId: string }[];
@@ -14,12 +14,17 @@ type CloudRunLocationsResponse = {
 };
 
 /** @see https://docs.cloud.google.com/run/docs/reference/rest/v1/projects.locations/list */
-export const listCloudRunLocationsPage = async (projectId: string, accessToken: string, options: PageOptions) => {
+export const listCloudRunLocationsPage = async (
+  projectId: string,
+  accessToken: string,
+  options: CloudRunPageOptions,
+) => {
   const query = new URLSearchParams({ pageSize: String(options.pageSize) });
   if (options.pageToken) query.set("pageToken", options.pageToken);
   const body = await fetchGoogleApi<CloudRunLocationsResponse>(
     `https://run.googleapis.com/v1/projects/${projectId}/locations?${query}`,
     accessToken,
+    options.signal ? { signal: options.signal } : undefined,
   );
   return {
     regions: [...new Set((body.locations ?? []).map(({ locationId }) => locationId))]
@@ -34,13 +39,17 @@ export const listCloudRunRegionalServicesPage = async (
   projectId: string,
   region: string,
   accessToken: string,
-  options: PageOptions,
+  options: CloudRunPageOptions,
 ): Promise<CloudRunServicesPage> => {
-  const query = new URLSearchParams({ pageSize: String(options.pageSize) });
+  const query = new URLSearchParams({
+    pageSize: String(options.pageSize),
+    fields: "services(name,uid,uri,labels,buildConfig),nextPageToken",
+  });
   if (options.pageToken) query.set("pageToken", options.pageToken);
   const body = await fetchGoogleApi<CloudRunRegionalServicesResponse>(
     `https://run.googleapis.com/v2/projects/${projectId}/locations/${region}/services?${query}`,
     accessToken,
+    options.signal ? { signal: options.signal } : undefined,
   );
   return {
     deployments: (body.services ?? []).map((service) => {
@@ -101,7 +110,7 @@ type CloudRunWorkerPoolsResponse = {
 export const listCloudRunServicesPage = async (
   projectId: string,
   accessToken: string,
-  options: { pageSize: number; pageToken?: string },
+  options: CloudRunPageOptions,
 ): Promise<CloudRunServicesPage> => {
   const query = new URLSearchParams({ limit: options.pageSize.toString() });
   if (options.pageToken) {
@@ -111,6 +120,7 @@ export const listCloudRunServicesPage = async (
   const body = await fetchGoogleApi<CloudRunServicesResponse>(
     `https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/${projectId}/services?${query}`,
     accessToken,
+    options.signal ? { signal: options.signal } : undefined,
   );
 
   const services =

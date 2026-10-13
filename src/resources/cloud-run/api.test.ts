@@ -15,6 +15,16 @@ const fetchGoogleApiMock = vi.mocked(fetchGoogleApi);
 describe("Cloud Run API", () => {
   beforeEach(() => fetchGoogleApiMock.mockReset());
 
+  it.each(["global", "regional", "locations"])("passes cancellation to %s requests", async (kind) => {
+    fetchGoogleApiMock.mockResolvedValueOnce({});
+    const controller = new AbortController();
+    const options = { pageSize: 500, signal: controller.signal };
+    if (kind === "global") await listCloudRunServicesPage("project", "token", options);
+    if (kind === "regional") await listCloudRunRegionalServicesPage("project", "asia-northeast1", "token", options);
+    if (kind === "locations") await listCloudRunLocationsPage("project", "token", options);
+    expect(fetchGoogleApiMock.mock.calls[0][2]?.signal).toBe(controller.signal);
+  });
+
   it("discovers project regions without dropping the locations pagination token", async () => {
     fetchGoogleApiMock.mockResolvedValueOnce({
       locations: ["us-central1", "asia-northeast1", "us-central1", "global"].map((locationId) => ({ locationId })),
@@ -29,6 +39,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledWith(
       "https://run.googleapis.com/v1/projects/sample-project/locations?pageSize=50&pageToken=a%2Bb%2F%3D",
       "access-token",
+      undefined,
     );
   });
 
@@ -75,8 +86,9 @@ describe("Cloud Run API", () => {
       "Function Services",
     ]);
     expect(fetchGoogleApiMock).toHaveBeenCalledWith(
-      "https://run.googleapis.com/v2/projects/sample-project/locations/asia-northeast1/services?pageSize=50&pageToken=a%2Bb%2F%3D",
+      "https://run.googleapis.com/v2/projects/sample-project/locations/asia-northeast1/services?pageSize=50&fields=services%28name%2Cuid%2Curi%2Clabels%2CbuildConfig%29%2CnextPageToken&pageToken=a%2Bb%2F%3D",
       "access-token",
+      undefined,
     );
   });
 
@@ -116,6 +128,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledWith(
       "https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/sample-project/services?limit=50&continue=service-page",
       "access-token",
+      undefined,
     );
   });
 
@@ -137,6 +150,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledExactlyOnceWith(
       "https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/sample-project/services?limit=50",
       "access-token",
+      undefined,
     );
   });
 
@@ -202,6 +216,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledWith(
       "https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/sample-project/services?limit=50&continue=a%2Bb%2F%3D",
       "access-token",
+      undefined,
     );
   });
 
