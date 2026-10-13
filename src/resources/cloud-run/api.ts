@@ -123,6 +123,32 @@ export const listCloudRunServicesPage = async (
     options.signal ? { signal: options.signal } : undefined,
   );
 
+  return cloudRunServicesPage(body, projectId);
+};
+
+/**
+ * Global v1 listing, as used by gcloud's run.global_methods.ListServices.
+ * Leave limit unset instead of imposing the browsing snapshot's page size.
+ * @see https://docs.cloud.google.com/run/docs/reference/rest
+ */
+export const listCloudRunGlobalServicesPage = async (
+  projectId: string,
+  accessToken: string,
+  options: Pick<CloudRunPageOptions, "pageToken" | "signal">,
+): Promise<CloudRunServicesPage> => {
+  const query = new URLSearchParams({
+    fields: "items(metadata(name,uid,labels,annotations),status(url)),metadata(continue),unreachable",
+  });
+  if (options.pageToken) query.set("continue", options.pageToken);
+  const body = await fetchGoogleApi<CloudRunServicesResponse>(
+    `https://run.googleapis.com/v1/projects/${projectId}/locations/-/services?${query}`,
+    accessToken,
+    options.signal ? { signal: options.signal } : undefined,
+  );
+  return cloudRunServicesPage(body, projectId);
+};
+
+const cloudRunServicesPage = (body: CloudRunServicesResponse, projectId: string): CloudRunServicesPage => {
   const services =
     body.items?.map((service) => {
       const { name, uid, labels, annotations } = service.metadata;

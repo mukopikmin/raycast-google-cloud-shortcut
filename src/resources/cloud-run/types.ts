@@ -71,8 +71,6 @@ export type CloudRunServicesCursor = {
   controller: AbortController;
 };
 
-export type CloudRunRegionsCache = { scope: object; regions: string[]; expiresAt: number };
-
 export type CloudRunServicesResponse = {
   items?: {
     metadata: {

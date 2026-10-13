@@ -5,17 +5,15 @@ import { PageOptions, ResourcePage } from "../../pagination/types";
 import { normalizeSearch } from "../../pagination/search";
 import { RESOURCE_LIMIT } from "../../pagination/pages";
 import { GoogleApiError } from "../../auth/GoogleApiError";
-import { listCloudRunLocationsPage, listCloudRunRegionalServicesPage, listCloudRunServicesPage } from "./api";
 import {
-  CloudRunDeployment,
-  CloudRunPageOptions,
-  CloudRunRegionStream,
-  CloudRunRegionsCache,
-  CloudRunServicesCursor,
-} from "./types";
+  listCloudRunGlobalServicesPage,
+  listCloudRunLocationsPage,
+  listCloudRunRegionalServicesPage,
+  listCloudRunServicesPage,
+} from "./api";
+import { CloudRunDeployment, CloudRunPageOptions, CloudRunRegionStream, CloudRunServicesCursor } from "./types";
 
 export const CLOUD_RUN_SEARCH_CONCURRENCY = 6;
-const REGION_CACHE_TTL = 60_000;
 const getResourceId = (item: CloudRunDeployment) => item.id;
 const getSearchText = (item: CloudRunDeployment) => item.keywords.join(" ");
 const getName = (item: CloudRunDeployment) => item.name;
@@ -32,14 +30,13 @@ const regionStreams = (regions: string[], known: Set<string>): CloudRunRegionStr
 export const useCloudRunServices = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const searching = Boolean(normalizeSearch(searchText));
-  // An identity change invalidates discovery without storing credentials in the cache.
+  // Scope known-region priorities to the current project and credentials.
   const fetchRegion = useCallback(
     (region: string, options: CloudRunPageOptions) =>
       listCloudRunRegionalServicesPage(projectId, region, accessToken, options),
     [projectId, accessToken],
   );
   const cursor = useRef<CloudRunServicesCursor | undefined>(undefined);
-  const regionCache = useRef<CloudRunRegionsCache | undefined>(undefined);
   const knownRegions = useRef({ scope: fetchRegion, regions: new Set<string>() });
   useEffect(() => () => cursor.current?.controller.abort(), []);
 
@@ -49,15 +46,12 @@ export const useCloudRunServices = (projectId: string, searchText = "") => {
         cursor.current?.controller.abort();
         if (knownRegions.current.scope !== fetchRegion)
           knownRegions.current = { scope: fetchRegion, regions: new Set() };
-        const cache = regionCache.current;
-        const cachedRegions =
-          searching && cache?.scope === fetchRegion && cache.expiresAt > Date.now() ? cache.regions : [];
         cursor.current = {
-          phase: searching ? (cachedRegions.length ? "regional" : "locations") : "global",
-          regions: [...cachedRegions],
-          ready: regionStreams(cachedRegions, knownRegions.current.regions),
+          phase: "global",
+          regions: [],
+          ready: [],
           inFlight: new Map(),
-          seenRegions: new Set(cachedRegions),
+          seenRegions: new Set(),
           completedRegions: new Set(),
           continuation: 0,
           controller: new AbortController(),
@@ -79,11 +73,13 @@ export const useCloudRunServices = (projectId: string, searchText = "") => {
       try {
         checkCurrent();
         if (scan.phase === "global") {
-          const page = await listCloudRunServicesPage(projectId, accessToken, {
-            pageSize: options.pageSize,
+          const requestOptions = {
             pageToken: scan.globalNextPageToken,
             signal: scan.controller.signal,
-          });
+          };
+          const page = searching
+            ? await listCloudRunGlobalServicesPage(projectId, accessToken, requestOptions)
+            : await listCloudRunServicesPage(projectId, accessToken, { ...requestOptions, pageSize: options.pageSize });
           checkCurrent();
           checkToken(scan.globalNextPageToken, page.nextPageToken);
           resources = page.deployments;
@@ -91,8 +87,20 @@ export const useCloudRunServices = (projectId: string, searchText = "") => {
             if (region) knownRegions.current.regions.add(region);
           });
           unreachable = page.unreachable;
+          if (searching) {
+            const missingRegions = unreachable.filter((region) => !scan.seenRegions.has(region));
+            missingRegions.forEach((region) => scan.seenRegions.add(region));
+            scan.regions.push(...missingRegions);
+          }
           scan.globalNextPageToken = page.nextPageToken;
-          if (!page.nextPageToken) scan.phase = "locations";
+          if (!page.nextPageToken) {
+            if (searching) {
+              scan.ready = regionStreams(scan.regions, knownRegions.current.regions);
+              scan.phase = scan.ready.length ? "regional" : "done";
+            } else {
+              scan.phase = "locations";
+            }
+          }
         } else if (scan.phase === "locations") {
           const page = await listCloudRunLocationsPage(projectId, accessToken, {
             pageSize: searching ? RESOURCE_LIMIT : options.pageSize,
@@ -106,11 +114,6 @@ export const useCloudRunServices = (projectId: string, searchText = "") => {
           regions.forEach((region) => scan.seenRegions.add(region));
           scan.regions.push(...regions);
           if (!page.nextPageToken) {
-            regionCache.current = {
-              scope: fetchRegion,
-              regions: [...scan.regions],
-              expiresAt: Date.now() + REGION_CACHE_TTL,
-            };
             scan.ready = regionStreams(scan.regions, knownRegions.current.regions);
             scan.phase = scan.ready.length ? "regional" : "done";
           }
@@ -172,9 +175,5 @@ export const useCloudRunServices = (projectId: string, searchText = "") => {
     ...result,
     services: result.resources,
     unreachable: (result.unreachable ?? []).filter((region) => !cursor.current?.completedRegions.has(region)),
-    reload: async () => {
-      regionCache.current = undefined;
-      await result.reload();
-    },
   };
 };

@@ -120,7 +120,8 @@ const pageResponse = (url: string) => {
     return { locations: [{ locationId: "us-central1" }] };
   }
   const offset = Number(parsed.searchParams.get("pageToken") || parsed.searchParams.get("continue") || 0);
-  const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit"));
+  const globalSearch = parsed.pathname.includes("/locations/-/services");
+  const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit") || 620);
   const nextPageToken = offset + size < 620 ? String(offset + size) : undefined;
   const ids = Array.from({ length: Math.min(size, 620 - offset) }, (_, i) => String(offset + i));
   if (parsed.pathname.startsWith("/v2/")) {
@@ -159,7 +160,7 @@ const pageResponse = (url: string) => {
       metadata: { uid: id, name: `deployment-${id}`, labels: { "cloud.googleapis.com/location": "us-central1" } },
     })),
     metadata: { continue: parsed.pathname.includes("serving.knative.dev") ? undefined : nextPageToken },
-    unreachable: ["europe-west1"],
+    unreachable: globalSearch ? [] : ["europe-west1"],
   };
 };
 
@@ -237,13 +238,89 @@ describe("resource pagination beyond 500", () => {
     fetchMock.mockImplementation(async (url) => pageResponse(url));
   });
 
+  it("follows an empty global page and retries only its reported unreachable region", async () => {
+    const entry = {
+      metadata: { uid: "journal-id", name: "journal", labels: { "cloud.googleapis.com/location": "asia-northeast1" } },
+    };
+    fetchMock
+      .mockResolvedValueOnce({ items: [], metadata: { continue: "a+b/=" }, unreachable: ["asia-northeast1"] })
+      .mockResolvedValueOnce({ items: [entry] })
+      .mockResolvedValueOnce({
+        services: [{ uid: "journal-id", name: "projects/project/locations/asia-northeast1/services/journal" }],
+      });
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    await runtime.settle();
+    const result = runtime.render(hook);
+    expect(result.services.map(({ name }) => name)).toEqual(["journal"]);
+    expect(result.unreachable).toEqual([]);
+    expect(result.pagesSearched).toBe(3);
+    expect(result.resourcesSearched).toBe(2);
+    expect(result.hasMore).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(new URL(fetchMock.mock.calls[1][0]).searchParams.get("continue")).toBe("a+b/=");
+    expect(fetchMock.mock.calls[2][0]).toContain("/v2/projects/project/locations/asia-northeast1/services?");
+    expect(fetchMock.mock.calls.some(([url]) => new URL(url).pathname.endsWith("/locations"))).toBe(false);
+  });
+
+  it("shows global matches while retrying an unavailable region", async () => {
+    let resolveRegion!: (data: unknown) => void;
+    fetchMock
+      .mockResolvedValueOnce({
+        items: [
+          { metadata: { uid: "journal", name: "journal", labels: { "cloud.googleapis.com/location": "us-central1" } } },
+        ],
+        unreachable: ["asia-northeast1"],
+      })
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveRegion = resolve;
+          }),
+      );
+    const hook = () => useCloudRunServices("project", "journal");
+    runtime.render(hook);
+    try {
+      await vi.waitFor(() => expect(runtime.render(hook).services[0]?.name).toBe("journal"));
+      expect(runtime.render(hook).isSearching).toBe(true);
+      expect(runtime.render(hook).unreachable).toEqual(["asia-northeast1"]);
+    } finally {
+      resolveRegion({ services: [] });
+      await runtime.settle();
+    }
+    expect(runtime.render(hook).isSearching).toBe(false);
+    expect(runtime.render(hook).unreachable).toEqual([]);
+  });
+
+  it("aborts an old global request when the query changes", async () => {
+    let oldSignal!: AbortSignal;
+    fetchMock.mockImplementationOnce((_url, _token, init) => {
+      oldSignal = init!.signal as AbortSignal;
+      return new Promise((_resolve, reject) => {
+        oldSignal.addEventListener("abort", () => reject(Object.assign(new Error("Aborted"), { name: "AbortError" })), {
+          once: true,
+        });
+      });
+    });
+    let query = "old-query";
+    const hook = () => useCloudRunServices("project", query);
+    runtime.render(hook);
+    expect(oldSignal.aborted).toBe(false);
+    query = "619";
+    runtime.render(hook);
+    expect(oldSignal.aborted).toBe(true);
+    await runtime.settle();
+    expect(runtime.render(hook).services[0].name).toBe("deployment-619");
+    expect(runtime.render(hook).error).toBeUndefined();
+  });
+
   it("limits parallel requests, keeps each region sequential, and finds a match past two large pages", async () => {
     const regions = Array.from({ length: 21 }, (_, index) => `region-${String(index).padStart(2, "0")}`);
     const activeRegions = new Set<string>();
     let peak = 0;
     fetchMock.mockImplementation(async (url) => {
       const parsed = new URL(url);
-      if (parsed.pathname.endsWith("/locations")) return { locations: regions.map((locationId) => ({ locationId })) };
+      if (parsed.pathname.includes("/locations/-/services")) return { unreachable: regions };
       const region = parsed.pathname.split("/")[5];
       expect(activeRegions.has(region)).toBe(false);
       activeRegions.add(region);
@@ -284,7 +361,7 @@ describe("resource pagination beyond 500", () => {
   it("shows a fast match while another region is still loading", async () => {
     let resolveSlow!: (data: unknown) => void;
     fetchMock.mockImplementation(async (url) => {
-      if (url.includes("/locations?")) return { locations: [{ locationId: "a-slow" }, { locationId: "z-fast" }] };
+      if (url.includes("/locations/-/services")) return { unreachable: ["a-slow", "z-fast"] };
       if (url.includes("/a-slow/"))
         return new Promise((resolve) => {
           resolveSlow = resolve;
@@ -309,8 +386,8 @@ describe("resource pagination beyond 500", () => {
     const oldSignals: AbortSignal[] = [];
     let oldQuery = true;
     fetchMock.mockImplementation(async (url, _token, init) => {
-      if (url.includes("/locations?"))
-        return { locations: Array.from({ length: 8 }, (_, index) => ({ locationId: `region-${index}` })) };
+      if (url.includes("/locations/-/services"))
+        return { unreachable: Array.from({ length: 8 }, (_, index) => `region-${index}`) };
       if (oldQuery) {
         const signal = init!.signal as AbortSignal;
         oldSignals.push(signal);
@@ -336,15 +413,15 @@ describe("resource pagination beyond 500", () => {
     expect(result.services).toHaveLength(8);
     expect(result.services.every(({ name }) => name === "new-service")).toBe(true);
     expect(result.error).toBeUndefined();
-    expect(result.pagesSearched).toBe(8);
+    expect(result.pagesSearched).toBe(9);
   });
 
   it("stops outstanding parallel work on an authentication failure", async () => {
     const signals: AbortSignal[] = [];
     const failure = new GoogleApiError(401, "Unauthorized");
     fetchMock.mockImplementation(async (url, _token, init) => {
-      if (url.includes("/locations?"))
-        return { locations: Array.from({ length: 8 }, (_, index) => ({ locationId: `region-${index}` })) };
+      if (url.includes("/locations/-/services"))
+        return { unreachable: Array.from({ length: 8 }, (_, index) => `region-${index}`) };
       const signal = init!.signal as AbortSignal;
       signals.push(signal);
       if (url.includes("/region-0/")) throw failure;
@@ -363,72 +440,32 @@ describe("resource pagination beyond 500", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1 + CLOUD_RUN_SEARCH_CONCURRENCY);
   });
 
-  it.each(["project", "credentials", "expiry", "reload"])(
-    "reuses region discovery but refreshes it after %s changes",
+  it.each(["query", "project", "credentials", "reload"])(
+    "fetches a fresh global list after %s changes without regional discovery",
     async (change) => {
-      const clock = vi.spyOn(Date, "now").mockReturnValue(1000);
-      try {
-        let projectId = "project";
-        let query = "619";
-        const hook = () => useCloudRunServices(projectId, query);
+      let projectId = "project";
+      let query = "619";
+      const hook = () => useCloudRunServices(projectId, query);
+      runtime.render(hook);
+      await runtime.settle();
+      if (change === "query") query = "618";
+      if (change === "project") projectId = "second-project";
+      if (change === "credentials") credentials.accessToken = "new-token";
+      if (change === "reload") await runtime.render(hook).reload();
+      else {
         runtime.render(hook);
         await runtime.settle();
-        query = "618";
-        runtime.render(hook);
-        await runtime.settle();
-        expect(fetchMock.mock.calls.filter(([url]) => url.includes("/locations?"))).toHaveLength(1);
-        expect(runtime.render(hook).pagesSearched).toBe(2);
-        if (change === "project") projectId = "second-project";
-        if (change === "credentials") credentials.accessToken = "new-token";
-        if (change === "expiry") {
-          clock.mockReturnValue(61_001);
-          query = "617";
-        }
-        if (change === "reload") await runtime.render(hook).reload();
-        else {
-          runtime.render(hook);
-          await runtime.settle();
-        }
-        expect(fetchMock.mock.calls.filter(([url]) => url.includes("/locations?"))).toHaveLength(2);
-        expect(runtime.render(hook).services).toHaveLength(1);
-        expect(runtime.render(hook).error).toBeUndefined();
-      } finally {
-        clock.mockRestore();
       }
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls.every(([url]) => url.includes("/locations/-/services"))).toBe(true);
+      expect(runtime.render(hook).pagesSearched).toBe(1);
+      expect(runtime.render(hook).services).toHaveLength(1);
+      expect(runtime.render(hook).error).toBeUndefined();
     },
   );
 
-  it("checks regions with displayed services before empty regions", async () => {
-    fetchMock.mockImplementation(async (url) => {
-      if (url.includes("serving.knative.dev"))
-        return {
-          items: [
-            { metadata: { uid: "journal", name: "journal", labels: { "cloud.googleapis.com/location": "z-used" } } },
-          ],
-        };
-      if (url.includes("/locations?"))
-        return {
-          locations: [...Array.from({ length: 9 }, (_, index) => `a-empty-${index}`), "z-used"].map((locationId) => ({
-            locationId,
-          })),
-        };
-      return url.includes("/z-used/")
-        ? { services: [{ name: "projects/project/locations/z-used/services/journal" }] }
-        : { services: [] };
-    });
-    let query = "";
-    const hook = () => useCloudRunServices("project", query);
-    runtime.render(hook);
-    await runtime.settle();
-    query = "journal";
-    runtime.render(hook);
-    await runtime.settle();
-    expect(fetchMock.mock.calls.find(([url]) => url.includes("/v2/"))![0]).toContain("/z-used/");
-    expect(runtime.render(hook).services[0].name).toBe("journal");
-  });
-
   it.each(["j", "journal"])(
-    "finds journal for %s when the global response returns only 53 services without a token",
+    "finds journal globally for %s after the bounded snapshot returned only 53 services without a token",
     async (search) => {
       fetchMock.mockImplementation(async (url) => {
         const parsed = new URL(url);
@@ -436,9 +473,11 @@ describe("resource pagination beyond 500", () => {
           uid: `${region}-${index}`,
           name: `projects/project/locations/${region}/services/${region === "asia-northeast1" && index === 619 ? "journal" : `project-service-${index}`}`,
         });
-        if (parsed.pathname.includes("serving.knative.dev")) {
+        if (parsed.pathname.includes("serving.knative.dev") || parsed.pathname.includes("/locations/-/services")) {
           const entries = [
-            ...Array.from({ length: 50 }, (_, index) => service("asia-northeast1", index)),
+            ...Array.from({ length: parsed.searchParams.has("limit") ? 50 : 620 }, (_, index) =>
+              service("asia-northeast1", index),
+            ),
             ...Array.from({ length: 3 }, (_, index) => service("europe-west1", index)),
           ];
           return {
@@ -488,40 +527,35 @@ describe("resource pagination beyond 500", () => {
       expect(result.services[0]).toMatchObject({ name: "journal", region: "asia-northeast1" });
       expect(result.services).toHaveLength(search === "j" ? 500 : 1);
       expect(result.resourcesSearched).toBe(623);
-      expect(result.pagesSearched).toBe(6);
+      expect(result.pagesSearched).toBe(1);
       expect(result.hasMore).toBe(false);
       expect(result.error).toBeUndefined();
       expect(fetchMock.mock.calls.filter(([url]) => url.includes("serving.knative.dev"))).toHaveLength(1);
-      expect(
-        fetchMock.mock.calls.filter(([url]) => url.includes("/v2/") && url.includes("/asia-northeast1/")),
-      ).toHaveLength(2);
-      expect(
-        fetchMock.mock.calls.filter(([url]) => url.includes("/v2/") && url.includes("/us-central1/")),
-      ).toHaveLength(1);
-      const firstEuropeanRequest = fetchMock.mock.calls.find(
-        ([url]) => url.includes("/v2/") && url.includes("/europe-west1/"),
-      )![0];
-      expect(new URL(firstEuropeanRequest).searchParams.has("pageToken")).toBe(false);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[1][0]).toContain("/locations/-/services?");
+      expect(new URL(fetchMock.mock.calls[1][0]).searchParams.has("limit")).toBe(false);
     },
   );
 
-  it("continues location discovery after an empty locations page", async () => {
+  it("continues location discovery after an empty locations page during unfiltered browsing", async () => {
     fetchMock
+      .mockResolvedValueOnce({ items: [] })
       .mockResolvedValueOnce({ locations: [], nextPageToken: "more-locations" })
       .mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }] })
       .mockResolvedValueOnce({ services: [{ name: "projects/project/locations/asia-northeast1/services/journal" }] });
-    const hook = () => useCloudRunServices("project", "journal");
+    const hook = () => useCloudRunServices("project");
     runtime.render(hook);
     await runtime.settle();
+    for (let page = 0; page < 3; page++) await runtime.render(hook).loadMore();
     const result = runtime.render(hook);
     expect(result.services.map(({ name }) => name)).toEqual(["journal"]);
-    expect(result.pagesSearched).toBe(3);
-    expect(fetchMock.mock.calls[1][0]).toContain("pageToken=more-locations");
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock.mock.calls[2][0]).toContain("pageToken=more-locations");
   });
 
   it("preserves regional matches and reports a region that cannot be read", async () => {
     fetchMock
-      .mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }, { locationId: "europe-west1" }] })
+      .mockResolvedValueOnce({ unreachable: ["asia-northeast1", "europe-west1"] })
       .mockResolvedValueOnce({ services: [{ name: "projects/project/locations/asia-northeast1/services/journal" }] })
       .mockRejectedValueOnce(new GoogleApiError(403, "Region unavailable"));
     const hook = () => useCloudRunServices("project", "journal");
@@ -533,12 +567,11 @@ describe("resource pagination beyond 500", () => {
     expect(result.error).toBeUndefined();
   });
 
-  it.each(["locations", "authentication"])(
+  it.each(["global", "authentication"])(
     "propagates %s failures instead of reporting no service matches",
     async (stage) => {
-      const failure = new GoogleApiError(stage === "locations" ? 403 : 401, "Request failed");
-      if (stage === "authentication")
-        fetchMock.mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }] });
+      const failure = new GoogleApiError(stage === "global" ? 403 : 401, "Request failed");
+      if (stage === "authentication") fetchMock.mockResolvedValueOnce({ unreachable: ["asia-northeast1"] });
       fetchMock.mockRejectedValueOnce(failure);
       const hook = () => useCloudRunServices("project", "journal");
       runtime.render(hook);
@@ -547,44 +580,57 @@ describe("resource pagination beyond 500", () => {
     },
   );
 
-  it.each(["regional", "locations"])(
+  it.each(["global", "regional", "locations"])(
     "rejects repeated %s API tokens even though local continuation tokens advance",
     async (stage) => {
-      if (stage === "regional") fetchMock.mockResolvedValueOnce({ locations: [{ locationId: "asia-northeast1" }] });
-      fetchMock.mockResolvedValue({ services: [], locations: [], nextPageToken: "same-token" });
-      const hook = () => useCloudRunServices("project", "journal");
+      if (stage === "regional") fetchMock.mockResolvedValueOnce({ unreachable: ["asia-northeast1"] });
+      if (stage === "locations") fetchMock.mockResolvedValueOnce({ items: [] });
+      fetchMock.mockResolvedValue({
+        metadata: { continue: "same-token" },
+        services: [],
+        locations: [],
+        nextPageToken: "same-token",
+      });
+      const hook = () => useCloudRunServices("project", stage === "locations" ? "" : "journal");
       runtime.render(hook);
       await runtime.settle();
+      if (stage === "locations") {
+        await runtime.render(hook).loadMore();
+        await runtime.render(hook).loadMore();
+      }
       expect(runtime.render(hook).error?.message).toContain("repeated pagination token");
-      expect(fetchMock).toHaveBeenCalledTimes(stage === "regional" ? 3 : 2);
+      expect(fetchMock).toHaveBeenCalledTimes(stage === "global" ? 2 : 3);
     },
   );
 
-  it.each(["query", "project"])("ignores stale regional discovery when the %s changes", async (change) => {
-    let resolveOldPage!: (data: unknown) => void;
-    fetchMock.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          resolveOldPage = resolve;
-        }),
-    );
-    let projectId = "first-project";
-    let query = change === "project" ? "619" : "old-query";
-    const hook = () => useCloudRunServices(projectId, query);
-    runtime.render(hook);
-    if (change === "project") projectId = "second-project";
-    if (change === "query") query = "619";
-    runtime.render(hook);
-    resolveOldPage({ locations: [{ locationId: "stale-region" }] });
-    await runtime.settle();
-    const result = runtime.render(hook);
-    expect(result.services).toHaveLength(1);
-    expect(result.services[0]).toMatchObject({ name: "deployment-619", projectId });
-    expect(result.pagesSearched).toBe(3);
-    expect(result.resourcesSearched).toBe(620);
-    expect(result.error).toBeUndefined();
-    expect(fetchMock.mock.calls.some(([url]) => url.includes("stale-region"))).toBe(false);
-  });
+  it.each(["query", "project"])(
+    "ignores stale global results and fallback regions when the %s changes",
+    async (change) => {
+      let resolveOldPage!: (data: unknown) => void;
+      fetchMock.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveOldPage = resolve;
+          }),
+      );
+      let projectId = "first-project";
+      let query = change === "project" ? "619" : "old-query";
+      const hook = () => useCloudRunServices(projectId, query);
+      runtime.render(hook);
+      if (change === "project") projectId = "second-project";
+      if (change === "query") query = "619";
+      runtime.render(hook);
+      resolveOldPage({ unreachable: ["stale-region"] });
+      await runtime.settle();
+      const result = runtime.render(hook);
+      expect(result.services).toHaveLength(1);
+      expect(result.services[0]).toMatchObject({ name: "deployment-619", projectId });
+      expect(result.pagesSearched).toBe(1);
+      expect(result.resourcesSearched).toBe(620);
+      expect(result.error).toBeUndefined();
+      expect(fetchMock.mock.calls.some(([url]) => url.includes("stale-region"))).toBe(false);
+    },
+  );
 
   it.each(hooks.filter(({ count }) => count === 620))(
     "shows journal for j even when $name has hundreds of earlier matching resources",
@@ -593,7 +639,7 @@ describe("resource pagination beyond 500", () => {
         const parsed = new URL(url);
         if (parsed.pathname.endsWith("/locations")) return { locations: [{ locationId: "us-central1" }] };
         const offset = Number(parsed.searchParams.get("pageToken") || parsed.searchParams.get("continue") || 0);
-        const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit"));
+        const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit") || 620);
         const ids = Array.from({ length: Math.min(size, 620 - offset) }, (_, index) => String(offset + index));
         const name = (id: string) => (id === "619" ? "journal" : `project-service-${id}`);
         const next = offset + size < 620 ? String(offset + size) : undefined;
@@ -626,7 +672,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items).toHaveLength(500);
       expect(result.isTruncated).toBe(true);
       expect(result.hasMore).toBe(false);
-      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 3 : 13);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 1 : 13);
       expect(result.resourcesSearched).toBe(620);
       query = "journal";
       runtime.render(hook);
@@ -698,7 +744,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items?.every(({ name }) => name.endsWith("619"))).toBe(true);
       expect(result.hasMore).toBe(false);
       expect(result.isSearching).toBe(false);
-      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 3 : count === 620 ? 13 : 26);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 1 : count === 620 ? 13 : 26);
       expect(result.error).toBeUndefined();
       const requests = fetchMock.mock.calls.length;
       query = "";
@@ -773,7 +819,7 @@ describe("resource pagination beyond 500", () => {
     await runtime.settle();
     let result = runtime.render(hook);
     expect(result.services).toEqual([]);
-    expect(result.pagesSearched).toBe(3);
+    expect(result.pagesSearched).toBe(1);
     expect(result.resourcesSearched).toBe(620);
     expect(result.isSearching).toBe(false);
     expect(result.hasMore).toBe(false);

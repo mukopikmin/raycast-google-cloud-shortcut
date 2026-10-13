@@ -20,7 +20,7 @@ export const SearchDiagnosticsAction = (props: Props) => (
     title="Copy Search Diagnostics"
     content={JSON.stringify(
       {
-        implementation: "parallel-regional-search-with-progressive-results",
+        implementation: "global-search-with-unreachable-region-fallback",
         projectId: props.projectId,
         resource: props.resourceName,
         query: props.searchText,

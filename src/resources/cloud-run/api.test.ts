@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoogleApi } from "../../auth/api";
 import {
   listCloudRunJobsPage,
+  listCloudRunGlobalServicesPage,
   listCloudRunLocationsPage,
   listCloudRunRegionalServicesPage,
   listCloudRunServicesPage,
@@ -14,6 +15,39 @@ const fetchGoogleApiMock = vi.mocked(fetchGoogleApi);
 
 describe("Cloud Run API", () => {
   beforeEach(() => fetchGoogleApiMock.mockReset());
+
+  it("uses the v1 wildcard global listing without a resource limit and preserves continuation and warnings", async () => {
+    fetchGoogleApiMock.mockResolvedValueOnce({
+      items: [
+        {
+          metadata: {
+            name: "journal",
+            uid: "journal-id",
+            labels: { "cloud.googleapis.com/location": "asia-northeast1" },
+          },
+        },
+      ],
+      metadata: { continue: "next+page/=" },
+      unreachable: ["europe-west1"],
+    });
+    const controller = new AbortController();
+    const page = await listCloudRunGlobalServicesPage("project", "token", {
+      pageToken: "previous+page/=",
+      signal: controller.signal,
+    });
+    const url = new URL(fetchGoogleApiMock.mock.calls[0][0]);
+    expect(url.pathname).toBe("/v1/projects/project/locations/-/services");
+    expect(url.searchParams.has("limit")).toBe(false);
+    expect(url.searchParams.has("pageSize")).toBe(false);
+    expect(url.searchParams.get("continue")).toBe("previous+page/=");
+    expect(url.searchParams.get("fields")).toContain("metadata(continue),unreachable");
+    expect(fetchGoogleApiMock.mock.calls[0][2]?.signal).toBe(controller.signal);
+    expect(page).toMatchObject({
+      deployments: [{ name: "journal", region: "asia-northeast1" }],
+      nextPageToken: "next+page/=",
+      unreachable: ["europe-west1"],
+    });
+  });
 
   it.each(["global", "regional", "locations"])("passes cancellation to %s requests", async (kind) => {
     fetchGoogleApiMock.mockResolvedValueOnce({});
