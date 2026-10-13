@@ -4,6 +4,7 @@ import { CloudRunDeploymentList, type CloudRunDeploymentListResult } from "./Clo
 import { CloudRunServicesList } from "./CloudRunServicesList";
 import { useCloudRunServices } from "./useCloudRunServices";
 import { createCloudRunDeployment } from "./types";
+import { SearchDiagnosticsAction } from "../../components/SearchDiagnosticsAction";
 
 vi.mock("react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("react")>()),
@@ -68,6 +69,7 @@ describe("Cloud Run partial service results", () => {
       resources: [service],
       isSearching: false,
       pagesSearched: 0,
+      resourcesSearched: 0,
       nextPageToken: "page-2",
       unreachable: ["europe-west1"],
       reload: vi.fn(async () => undefined),
@@ -125,5 +127,36 @@ describe("Cloud Run partial service results", () => {
     );
     expect(rendered.some(({ props }) => props.id === "load-more-cloud-run-services")).toBe(false);
     expect(rendered.some(({ props }) => props.title === "Reload from Start")).toBe(true);
+  });
+
+  it("exposes the project, checked counts, and unavailable regions even when no service matches", () => {
+    const rendered = elements(
+      CloudRunDeploymentList({
+        ...result,
+        projectId: "project-1",
+        resourceName: "Services",
+        searchText: "journal",
+        deployments: [],
+        hasMore: false,
+        pagesSearched: 13,
+        resourcesSearched: 620,
+        unreachable: ["asia-northeast1"],
+      }),
+    );
+    const action = rendered.find((element) => element.type === SearchDiagnosticsAction) as
+      ReactElement<Parameters<typeof SearchDiagnosticsAction>[0]> | undefined;
+    expect(action).toBeDefined();
+    const diagnostics = JSON.parse(SearchDiagnosticsAction(action!.props).props.content);
+    expect(diagnostics).toMatchObject({
+      projectId: "project-1",
+      query: "journal",
+      status: "complete",
+      pagesChecked: 13,
+      resourcesChecked: 620,
+      displayedResults: 0,
+      hasNextPage: false,
+      unavailableRegions: ["asia-northeast1"],
+    });
+    expect(rendered.some(({ props }) => props.id === "cloud-run-search-progress")).toBe(false);
   });
 });

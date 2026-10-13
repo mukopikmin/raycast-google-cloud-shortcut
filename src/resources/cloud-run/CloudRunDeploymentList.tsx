@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { SearchDiagnosticsAction } from "../../components/SearchDiagnosticsAction";
 import { CloudRunDeployment } from "./types";
 
 export type CloudRunDeploymentListResult = {
@@ -17,9 +18,11 @@ export type CloudRunDeploymentListResult = {
   unreachable?: string[];
   isSearching?: boolean;
   pagesSearched?: number;
+  resourcesSearched?: number;
 };
 
 type Props = CloudRunDeploymentListResult & {
+  projectId?: string;
   resourceName: string;
   secondaryAction?: (deployment: CloudRunDeployment) => React.ReactNode;
   searchText?: string;
@@ -42,6 +45,8 @@ export const CloudRunDeploymentList = ({
   onSearchTextChange,
   isSearching = false,
   pagesSearched = 0,
+  resourcesSearched = 0,
+  projectId,
 }: Props) => {
   const [localSearchText, setLocalSearchText] = useState("");
   const searchText = controlledSearchText ?? localSearchText;
@@ -57,6 +62,22 @@ export const CloudRunDeploymentList = ({
   ) : null;
   const reloadAction =
     isTruncated && reload ? <Action title="Reload from Start" icon={Icon.ArrowClockwise} onAction={reload} /> : null;
+  const diagnosticsAction =
+    projectId && searching ? (
+      <SearchDiagnosticsAction
+        projectId={projectId}
+        resourceName={`Cloud Run ${resourceName}`}
+        searchText={searchText}
+        isLoading={isLoading || isLoadingMore}
+        isSearching={isSearching}
+        pagesSearched={pagesSearched}
+        resourcesSearched={resourcesSearched}
+        displayedCount={deployments?.length ?? 0}
+        hasMore={hasMore}
+        isTruncated={isTruncated}
+        unreachable={unreachable}
+      />
+    ) : null;
 
   return (
     <List
@@ -88,13 +109,16 @@ export const CloudRunDeploymentList = ({
                 ? searching
                   ? "More than 500 resources match. Refine the search to find a specific service."
                   : "Earlier displayed results are omitted. Search to find them, or reload from start."
-                : undefined
+                : searching && !isLoading
+                  ? `Checked ${resourcesSearched} ${resourceName.toLowerCase()} across ${pagesSearched} API pages.`
+                  : undefined
         }
         actions={
-          loadMoreAction || reloadAction ? (
+          loadMoreAction || reloadAction || diagnosticsAction ? (
             <ActionPanel>
               {loadMoreAction}
               {reloadAction}
+              {diagnosticsAction}
             </ActionPanel>
           ) : undefined
         }
@@ -105,6 +129,7 @@ export const CloudRunDeploymentList = ({
           title={`Searching all ${resourceName}...`}
           icon={Icon.MagnifyingGlass}
           accessories={[{ text: `${pagesSearched} API pages checked` }]}
+          actions={diagnosticsAction ? <ActionPanel>{diagnosticsAction}</ActionPanel> : undefined}
         />
       )}
       {unreachable.length > 0 && (
@@ -131,6 +156,7 @@ export const CloudRunDeploymentList = ({
               />
               {loadMoreAction}
               {reloadAction}
+              {diagnosticsAction}
             </ActionPanel>
           }
         />
@@ -151,6 +177,7 @@ export const CloudRunDeploymentList = ({
               {secondaryAction?.(deployment)}
               {loadMoreAction}
               {reloadAction}
+              {diagnosticsAction}
             </ActionPanel>
           }
         />
@@ -167,7 +194,12 @@ export const CloudRunDeploymentList = ({
               ? "Loading more replaces the oldest displayed results"
               : undefined
           }
-          actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
+          actions={
+            <ActionPanel>
+              {loadMoreAction}
+              {diagnosticsAction}
+            </ActionPanel>
+          }
         />
       )}
       {isTruncated && (
@@ -186,7 +218,14 @@ export const CloudRunDeploymentList = ({
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
-          actions={reloadAction ? <ActionPanel>{reloadAction}</ActionPanel> : undefined}
+          actions={
+            reloadAction || diagnosticsAction ? (
+              <ActionPanel>
+                {reloadAction}
+                {diagnosticsAction}
+              </ActionPanel>
+            ) : undefined
+          }
         />
       )}
     </List>

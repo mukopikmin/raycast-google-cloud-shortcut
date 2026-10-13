@@ -207,6 +207,7 @@ type Result = {
   isLoadingMore: boolean;
   isSearching?: boolean;
   pagesSearched?: number;
+  resourcesSearched?: number;
   loadMore: () => Promise<void>;
   reload?: () => Promise<void>;
   error: Error | undefined;
@@ -251,12 +252,14 @@ describe("resource pagination beyond 500", () => {
       expect(result.isTruncated).toBe(true);
       expect(result.hasMore).toBe(false);
       expect(result.pagesSearched).toBe(13);
+      expect(result.resourcesSearched).toBe(620);
       query = "journal";
       runtime.render(hook);
       await runtime.settle();
       result = runtime.render(hook);
       expect(result.items?.map(({ name }) => name)).toEqual(["journal"]);
       expect(result.isTruncated).toBe(false);
+      expect(result.resourcesSearched).toBe(620);
     },
   );
 
@@ -380,7 +383,37 @@ describe("resource pagination beyond 500", () => {
     expect(result.secrets.map(({ name }) => name)).toEqual(["secret-0"]);
     expect(result.error).toBeUndefined();
     expect(result.isSearching).toBe(false);
+    expect(result.pagesSearched).toBe(13);
+    expect(result.resourcesSearched).toBe(620);
     expect(fetchMock).toHaveBeenCalledTimes(15);
+  });
+
+  it("counts nonmatching resources in an empty search and resets counts on a new search", async () => {
+    let query = "missing-service";
+    const hook = () => useCloudRunServices("project", query);
+    runtime.render(hook);
+    await runtime.settle();
+    let result = runtime.render(hook);
+    expect(result.services).toEqual([]);
+    expect(result.pagesSearched).toBe(13);
+    expect(result.resourcesSearched).toBe(620);
+    expect(result.isSearching).toBe(false);
+    expect(result.hasMore).toBe(false);
+
+    fetchMock.mockResolvedValueOnce({ items: [] });
+    query = "another-missing-service";
+    runtime.render(hook);
+    await runtime.settle();
+    result = runtime.render(hook);
+    expect(result.pagesSearched).toBe(1);
+    expect(result.resourcesSearched).toBe(0);
+    query = "";
+    runtime.render(hook);
+    await runtime.settle();
+    result = runtime.render(hook);
+    expect(result.pagesSearched).toBe(0);
+    expect(result.resourcesSearched).toBe(0);
+    expect(result.services).toHaveLength(50);
   });
 
   it("rejects load-more actions retained from a different project", async () => {

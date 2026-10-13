@@ -62,7 +62,7 @@ export const collectMatchingResourcePage = async <T>(
   getId: (resource: T) => string,
   getSearchText: (resource: T) => string,
   isCurrent: () => boolean,
-  onPageChecked: () => void,
+  onPageChecked: (page: ResourcePage<T>) => void,
   getName: (resource: T) => string = getSearchText,
 ): Promise<ResourcePage<T>> => {
   let matches: ResourcePageState<T> = { resources: [], isTruncated: false };
@@ -80,11 +80,11 @@ export const collectMatchingResourcePage = async <T>(
     const page = await fetchPage({ ...options, pageToken });
     checkCurrent();
     if (!query) {
-      onPageChecked();
+      onPageChecked(page);
       return page;
     }
     matches = mergeResourceSearchPages([matches, page], query, getId, getSearchText, getName);
-    onPageChecked();
+    onPageChecked(page);
     if (!page.nextPageToken) {
       return { ...matches, nextPageToken: undefined };
     }

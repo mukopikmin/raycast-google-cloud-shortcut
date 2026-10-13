@@ -20,6 +20,7 @@ const SecretManagerListComponent = (props: Props) => {
 
   return (
     <PaginatedResourceList
+      projectId={props.projectId}
       searchText={searchText}
       onSearchTextChange={setSearchText}
       {...pagination}

@@ -17,6 +17,7 @@ export const usePaginatedResources = <T>(
   const loadingMore = useRef(false);
   const generation = useRef(0);
   const [pagesSearched, setPagesSearched] = useState(0);
+  const [resourcesSearched, setResourcesSearched] = useState(0);
   const query = normalizeSearch(searchText);
   const activeQuery = useRef(query);
   const activeFetch = useRef(fetchPage);
@@ -37,6 +38,7 @@ export const usePaginatedResources = <T>(
       setState(emptyResourcePageState<T>());
       setLoadMoreError(undefined);
       setPagesSearched(0);
+      setResourcesSearched(0);
       return collectMatchingResourcePage(
         fetch,
         { pageSize: RESOURCE_PAGE_SIZE },
@@ -44,8 +46,11 @@ export const usePaginatedResources = <T>(
         getId,
         getSearchText,
         () => requestGeneration === generation.current,
-        () => {
-          if (search) setPagesSearched((count) => count + 1);
+        (page) => {
+          if (search) {
+            setPagesSearched((count) => count + 1);
+            setResourcesSearched((count) => count + page.resources.length);
+          }
         },
         getName,
       );
@@ -69,6 +74,7 @@ export const usePaginatedResources = <T>(
     setIsLoadingMore(true);
     setLoadMoreError(undefined);
     setPagesSearched(0);
+    setResourcesSearched(0);
     try {
       const page = await collectMatchingResourcePage(
         fetchPage,
@@ -77,8 +83,11 @@ export const usePaginatedResources = <T>(
         getId,
         getSearchText,
         () => requestGeneration === generation.current,
-        () => {
-          if (query) setPagesSearched((count) => count + 1);
+        (page) => {
+          if (query) {
+            setPagesSearched((count) => count + 1);
+            setResourcesSearched((count) => count + page.resources.length);
+          }
         },
         getName,
       );
@@ -105,6 +114,7 @@ export const usePaginatedResources = <T>(
     isLoadingMore,
     isSearching: Boolean(query) && (isLoading || isLoadingMore || awaitingRequest),
     pagesSearched,
+    resourcesSearched,
     hasMore: Boolean(visibleState.nextPageToken),
     loadMore,
     reload: async () => {

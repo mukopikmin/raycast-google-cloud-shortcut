@@ -2,8 +2,10 @@ import { useState, type ReactNode } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { RESOURCE_LIMIT } from "../pagination/pages";
 import { ResourcePagination } from "../pagination/types";
+import { SearchDiagnosticsAction } from "./SearchDiagnosticsAction";
 
 type Props = ResourcePagination & {
+  projectId?: string;
   resourceName: string;
   loadedCount: number;
   isShowingDetail?: boolean;
@@ -27,24 +29,42 @@ export const PaginatedResourceList = ({
   onSearchTextChange,
   isSearching = false,
   pagesSearched = 0,
+  resourcesSearched = 0,
+  projectId,
 }: Props) => {
   const [localSearchText, setLocalSearchText] = useState("");
   const searchText = controlledSearchText ?? localSearchText;
+  const searching = Boolean(searchText.trim());
   const canLoadMore = hasMore;
   const action = canLoadMore ? (
     <Action title={`Load More ${resourceName}`} icon={Icon.ArrowDown} onAction={loadMore} />
   ) : null;
   const reloadAction =
     isTruncated && reload ? <Action title="Reload from Start" icon={Icon.ArrowClockwise} onAction={reload} /> : null;
+  const diagnosticsAction =
+    projectId && searching ? (
+      <SearchDiagnosticsAction
+        projectId={projectId}
+        resourceName={resourceName}
+        searchText={searchText}
+        isLoading={isLoading || isLoadingMore}
+        isSearching={isSearching}
+        pagesSearched={pagesSearched}
+        resourcesSearched={resourcesSearched}
+        displayedCount={loadedCount}
+        hasMore={hasMore}
+        isTruncated={isTruncated}
+      />
+    ) : null;
   const actions =
-    action || reloadAction ? (
+    action || reloadAction || diagnosticsAction ? (
       <>
         {action}
         {reloadAction}
+        {diagnosticsAction}
       </>
     ) : null;
   const name = resourceName.toLowerCase();
-  const searching = Boolean(searchText.trim());
 
   return (
     <List
@@ -75,7 +95,9 @@ export const PaginatedResourceList = ({
                 ? searchText
                   ? "More matching results may exist. Load more to continue searching."
                   : `More ${name} may exist. Search to find them, or load more.`
-                : undefined
+                : searching && !isLoading && projectId
+                  ? `Checked ${resourcesSearched} ${name} across ${pagesSearched} API pages.`
+                  : undefined
         }
         actions={actions ? <ActionPanel>{actions}</ActionPanel> : undefined}
       />
@@ -85,6 +107,7 @@ export const PaginatedResourceList = ({
           title={`Searching all ${resourceName}...`}
           icon={Icon.MagnifyingGlass}
           accessories={[{ text: `${pagesSearched} API pages checked` }]}
+          actions={diagnosticsAction ? <ActionPanel>{diagnosticsAction}</ActionPanel> : undefined}
         />
       )}
       {children(actions)}

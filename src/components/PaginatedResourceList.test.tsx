@@ -1,6 +1,7 @@
 import { Children, isValidElement, type ReactElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PaginatedResourceList } from "./PaginatedResourceList";
+import { SearchDiagnosticsAction } from "./SearchDiagnosticsAction";
 import { SecretManagerList } from "../resources/secret-manager/SecretManagerList";
 import { useSecretManager } from "../resources/secret-manager/useSecretManager";
 
@@ -50,6 +51,7 @@ const result: ReturnType<typeof useSecretManager> = {
   isLoadingMore: false,
   isSearching: false,
   pagesSearched: 0,
+  resourcesSearched: 0,
   hasMore: true,
   isTruncated: true,
   loadMore,
@@ -104,5 +106,31 @@ describe("Secret Manager pagination controls", () => {
     expect(useSecretManager).toHaveBeenCalledWith("project", "secret-619");
     expect(rendered.some(({ props }) => props.id === "resource-search-progress")).toBe(true);
     expect(rendered.some(({ props }) => props.title?.startsWith("No "))).toBe(false);
+  });
+
+  it("keeps diagnostics accessible when a completed Secret Manager search is empty", () => {
+    const rendered = renderList({
+      ...result,
+      secrets: [],
+      resources: [],
+      nextPageToken: undefined,
+      hasMore: false,
+      isTruncated: false,
+      pagesSearched: 13,
+      resourcesSearched: 620,
+    });
+    const action = rendered.find((element) => element.type === SearchDiagnosticsAction) as
+      ReactElement<Parameters<typeof SearchDiagnosticsAction>[0]> | undefined;
+    expect(action).toBeDefined();
+    const diagnostics = JSON.parse(SearchDiagnosticsAction(action!.props).props.content);
+    expect(diagnostics).toMatchObject({
+      projectId: "project",
+      query: "secret-619",
+      status: "complete",
+      pagesChecked: 13,
+      resourcesChecked: 620,
+      displayedResults: 0,
+      hasNextPage: false,
+    });
   });
 });

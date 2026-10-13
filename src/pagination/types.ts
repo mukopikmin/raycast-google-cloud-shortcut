@@ -23,4 +23,5 @@ export type ResourcePagination = {
   reload?: () => Promise<void>;
   isSearching?: boolean;
   pagesSearched?: number;
+  resourcesSearched?: number;
 };

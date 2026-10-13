@@ -13,6 +13,7 @@ const CloudRunServicesListComponent = ({ projectId }: Props) => {
 
   return (
     <CloudRunDeploymentList
+      projectId={projectId}
       searchText={searchText}
       onSearchTextChange={setSearchText}
       {...result}
