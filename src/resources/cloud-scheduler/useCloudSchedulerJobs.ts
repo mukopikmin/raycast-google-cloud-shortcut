@@ -1,11 +1,48 @@
-import { useCallback, useState } from "react";
+import { collectMatchingResourcePage, mergeResourceSearchPages, normalizeSearch } from "../../pagination/search";
+import { PageOptions } from "../../pagination/types";
+import { toReadableCron } from "./cron";
+import { appendResourcePage } from "../../pagination/pages";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { usePromise } from "@raycast/utils";
 import { CloudSchedulerJob } from "./types";
-import { CloudSchedulerJobsPage, listCloudSchedulerJobsPage } from "./api";
+import { listCloudSchedulerJobsPage } from "./api";
 import { useGoogleApi } from "../../auth/google";
 
-const CLOUD_SCHEDULER_JOB_LIMIT = 500;
-const CLOUD_SCHEDULER_JOB_PAGE_SIZE = CLOUD_SCHEDULER_JOB_LIMIT;
+const CLOUD_SCHEDULER_JOB_PAGE_SIZE = 50;
+const getName = (resource: CloudSchedulerJob) => resource.name;
+const getResourceId = (resource: CloudSchedulerJob) => `${resource.region}/${resource.name}`;
+const getSearchText = (resource: CloudSchedulerJob) =>
+  [
+    resource.name,
+    resource.region,
+    resource.description,
+    resource.schedule,
+    toReadableCron(resource.schedule),
+    resource.timeZone,
+  ].join(" ");
+
+const searchSchedulerPage = (
+  projectId: string,
+  locationId: string,
+  accessToken: string,
+  options: PageOptions & { legacyAppEngineCron?: boolean },
+  query: string,
+  isCurrent: () => boolean,
+  onPageChecked: () => void,
+) =>
+  collectMatchingResourcePage(
+    async (pageOptions) => {
+      const page = await listCloudSchedulerJobsPage(projectId, locationId, accessToken, { ...options, ...pageOptions });
+      return { resources: page.jobs, nextPageToken: page.nextPageToken };
+    },
+    options,
+    query,
+    getResourceId,
+    getSearchText,
+    isCurrent,
+    onPageChecked,
+    getName,
+  );
 
 type SuccessResult = {
   scheduledJobs: CloudSchedulerJob[];
@@ -14,7 +51,10 @@ type SuccessResult = {
   hasMore: boolean;
   isTruncated: boolean;
   loadMore: () => Promise<void>;
+  isSearching: boolean;
+  pagesSearched: number;
   error: undefined;
+  reload: () => Promise<void>;
 };
 
 type LoadingResult = {
@@ -24,6 +64,8 @@ type LoadingResult = {
   hasMore: false;
   isTruncated: false;
   loadMore: () => Promise<void>;
+  isSearching: boolean;
+  pagesSearched: number;
   error: undefined;
 };
 
@@ -34,6 +76,8 @@ type ErrorResult = {
   hasMore: false;
   isTruncated: false;
   loadMore: () => Promise<void>;
+  isSearching: boolean;
+  pagesSearched: number;
   error: Error;
 };
 
@@ -44,149 +88,181 @@ type PaginationTokens = {
   legacyNextPageToken?: string;
 };
 
-const mergeJobs = (jobs: CloudSchedulerJob[], nextJobs: CloudSchedulerJob[]): CloudSchedulerJob[] => {
-  const jobsByName = new Map<string, CloudSchedulerJob>();
-  for (const job of [...jobs, ...nextJobs]) {
-    jobsByName.set(job.name, job);
-  }
-  return Array.from(jobsByName.values());
-};
-
-const listFirstNonEmptyCloudSchedulerJobsPage = async (
+export const useCloudSchedulerJobs = (
   projectId: string,
   locationId: string,
-  accessToken: string,
-  options: { pageSize: number; pageToken?: string; legacyAppEngineCron?: boolean },
-): Promise<CloudSchedulerJobsPage> => {
-  let pageToken = options.pageToken;
-  const seenPageTokens = new Set<string>();
-
-  for (;;) {
-    const page = await listCloudSchedulerJobsPage(projectId, locationId, accessToken, {
-      ...options,
-      pageToken,
-    });
-
-    if (page.jobs.length > 0 || !page.nextPageToken || seenPageTokens.has(page.nextPageToken)) {
-      return page;
-    }
-
-    seenPageTokens.add(page.nextPageToken);
-    pageToken = page.nextPageToken;
-  }
-};
-
-export const useCloudSchedulerJobs = (projectId: string, locationId: string): UseCloudSchedulerJobsResult => {
+  searchText = "",
+): UseCloudSchedulerJobsResult => {
   const { accessToken } = useGoogleApi();
   const [scheduledJobs, setScheduledJobs] = useState<CloudSchedulerJob[]>([]);
   const [paginationTokens, setPaginationTokens] = useState<PaginationTokens>({});
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState<Error | undefined>();
+  const loadingMore = useRef(false);
+  const generation = useRef(0);
+  const query = normalizeSearch(searchText);
+  const activeQuery = useRef(query);
+  const [pagesSearched, setPagesSearched] = useState(0);
+  const activeProject = useRef({ projectId, locationId, accessToken });
+  useEffect(
+    () => () => {
+      generation.current += 1;
+    },
+    [],
+  );
 
   const loadMore = useCallback(async () => {
     if (
       (!paginationTokens.defaultNextPageToken && !paginationTokens.legacyNextPageToken) ||
-      isLoadingMore ||
-      isTruncated
+      loadingMore.current ||
+      activeQuery.current !== query ||
+      activeProject.current.projectId !== projectId ||
+      activeProject.current.locationId !== locationId ||
+      activeProject.current.accessToken !== accessToken
     ) {
       return;
     }
 
+    const requestGeneration = generation.current;
+    loadingMore.current = true;
     setIsLoadingMore(true);
     setLoadMoreError(undefined);
+    setPagesSearched(0);
     try {
+      const isCurrent = () => requestGeneration === generation.current;
+      const onPageChecked = () => {
+        if (query) setPagesSearched((count) => count + 1);
+      };
       const defaultPage = paginationTokens.defaultNextPageToken
-        ? await listFirstNonEmptyCloudSchedulerJobsPage(projectId, locationId, accessToken, {
-            pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
-            pageToken: paginationTokens.defaultNextPageToken,
-          })
-        : { jobs: [] };
+        ? await searchSchedulerPage(
+            projectId,
+            locationId,
+            accessToken,
+            {
+              pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
+              pageToken: paginationTokens.defaultNextPageToken,
+            },
+            query,
+            isCurrent,
+            onPageChecked,
+          )
+        : { resources: [] };
 
-      let legacyPage: { jobs: CloudSchedulerJob[]; nextPageToken?: string } = { jobs: [] };
+      let legacyPage: { resources: CloudSchedulerJob[]; nextPageToken?: string } = { resources: [] };
       if (paginationTokens.legacyNextPageToken) {
         try {
-          legacyPage = await listFirstNonEmptyCloudSchedulerJobsPage(projectId, locationId, accessToken, {
-            pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
-            pageToken: paginationTokens.legacyNextPageToken,
-            legacyAppEngineCron: true,
-          });
+          legacyPage = await searchSchedulerPage(
+            projectId,
+            locationId,
+            accessToken,
+            {
+              pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
+              pageToken: paginationTokens.legacyNextPageToken,
+              legacyAppEngineCron: true,
+            },
+            query,
+            isCurrent,
+            onPageChecked,
+          );
         } catch (error) {
-          if (scheduledJobs.length === 0 && defaultPage.jobs.length === 0) {
+          if (scheduledJobs.length === 0 && defaultPage.resources.length === 0 && !defaultPage.nextPageToken) {
             throw error;
           }
         }
       }
 
-      const nextJobs = mergeJobs(scheduledJobs, [...defaultPage.jobs, ...legacyPage.jobs]);
-      if (nextJobs.length >= CLOUD_SCHEDULER_JOB_LIMIT) {
-        setScheduledJobs(nextJobs.slice(0, CLOUD_SCHEDULER_JOB_LIMIT));
-        setPaginationTokens({});
-        setIsTruncated(
-          Boolean(defaultPage.nextPageToken) ||
-            Boolean(legacyPage.nextPageToken) ||
-            nextJobs.length > CLOUD_SCHEDULER_JOB_LIMIT,
-        );
-      } else {
-        setScheduledJobs(nextJobs);
-        setPaginationTokens({
-          defaultNextPageToken: defaultPage.nextPageToken,
-          legacyNextPageToken: legacyPage.nextPageToken,
-        });
-      }
+      if (requestGeneration !== generation.current) return;
+      const next = appendResourcePage(
+        { resources: scheduledJobs, isTruncated },
+        { resources: [...defaultPage.resources, ...legacyPage.resources] },
+        getResourceId,
+      );
+      setScheduledJobs(next.resources);
+      setIsTruncated(next.isTruncated);
+      setPaginationTokens({
+        defaultNextPageToken: defaultPage.nextPageToken,
+        legacyNextPageToken: legacyPage.nextPageToken,
+      });
     } catch (error) {
+      if (requestGeneration !== generation.current) return;
       setLoadMoreError(error instanceof Error ? error : new Error(String(error)));
     } finally {
-      setIsLoadingMore(false);
+      if (requestGeneration === generation.current) {
+        loadingMore.current = false;
+        setIsLoadingMore(false);
+      }
     }
-  }, [accessToken, isLoadingMore, isTruncated, locationId, paginationTokens, projectId, scheduledJobs]);
+  }, [accessToken, isTruncated, locationId, paginationTokens, projectId, query, scheduledJobs]);
 
   const noopLoadMore = useCallback(async () => undefined, []);
 
-  const { data, isLoading, error } = usePromise(
-    async (projId: string, locId: string, token: string) => {
+  const { isLoading, error, revalidate } = usePromise(
+    async (projId: string, locId: string, token: string, search: string) => {
+      const requestGeneration = ++generation.current;
+      activeQuery.current = search;
+      activeProject.current = { projectId: projId, locationId: locId, accessToken: token };
+      setPagesSearched(0);
+      loadingMore.current = false;
+      setIsLoadingMore(false);
       setScheduledJobs([]);
       setPaginationTokens({});
       setIsTruncated(false);
       setLoadMoreError(undefined);
 
-      const defaultPage = await listFirstNonEmptyCloudSchedulerJobsPage(projId, locId, token, {
-        pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
-      });
-
-      let legacyPage: { jobs: CloudSchedulerJob[]; nextPageToken?: string } = { jobs: [] };
-      try {
-        legacyPage = await listFirstNonEmptyCloudSchedulerJobsPage(projId, locId, token, {
+      const isCurrent = () => requestGeneration === generation.current;
+      const onPageChecked = () => {
+        if (search) setPagesSearched((count) => count + 1);
+      };
+      const defaultPage = await searchSchedulerPage(
+        projId,
+        locId,
+        token,
+        {
           pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
-          legacyAppEngineCron: true,
-        });
+        },
+        search,
+        isCurrent,
+        onPageChecked,
+      );
+
+      let legacyPage: { resources: CloudSchedulerJob[]; nextPageToken?: string } = { resources: [] };
+      try {
+        legacyPage = await searchSchedulerPage(
+          projId,
+          locId,
+          token,
+          {
+            pageSize: CLOUD_SCHEDULER_JOB_PAGE_SIZE,
+            legacyAppEngineCron: true,
+          },
+          search,
+          isCurrent,
+          onPageChecked,
+        );
       } catch (error) {
-        if (defaultPage.jobs.length === 0) {
+        if (defaultPage.resources.length === 0 && !defaultPage.nextPageToken) {
           throw error;
         }
       }
 
-      const jobs = mergeJobs([], [...defaultPage.jobs, ...legacyPage.jobs]);
-      const initialJobs = jobs.slice(0, CLOUD_SCHEDULER_JOB_LIMIT);
-      setScheduledJobs(initialJobs);
-      setPaginationTokens(
-        jobs.length >= CLOUD_SCHEDULER_JOB_LIMIT
-          ? {}
-          : {
-              defaultNextPageToken: defaultPage.nextPageToken,
-              legacyNextPageToken: legacyPage.nextPageToken,
-            },
-      );
-      setIsTruncated(
-        jobs.length >= CLOUD_SCHEDULER_JOB_LIMIT &&
-          (Boolean(defaultPage.nextPageToken) ||
-            Boolean(legacyPage.nextPageToken) ||
-            jobs.length > CLOUD_SCHEDULER_JOB_LIMIT),
-      );
-
-      return initialJobs;
+      if (requestGeneration !== generation.current) return;
+      const initial = search
+        ? mergeResourceSearchPages([defaultPage, legacyPage], search, getResourceId, getSearchText, getName)
+        : appendResourcePage(
+            { resources: [], isTruncated: false },
+            { resources: [...defaultPage.resources, ...legacyPage.resources] },
+            getResourceId,
+          );
+      setScheduledJobs(initial.resources);
+      setPaginationTokens({
+        defaultNextPageToken: defaultPage.nextPageToken,
+        legacyNextPageToken: legacyPage.nextPageToken,
+      });
+      setIsTruncated(initial.isTruncated);
+      return initial.resources;
     },
-    [projectId, locationId, accessToken],
+    [projectId, locationId, accessToken, query],
   );
 
   const resultError = error || loadMoreError;
@@ -199,11 +275,13 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
       hasMore: false,
       isTruncated: false,
       loadMore: noopLoadMore,
+      isSearching: Boolean(query) && isLoading,
+      pagesSearched,
       error: resultError,
     };
   }
 
-  const loadedJobs = scheduledJobs.length > 0 ? scheduledJobs : (data ?? []);
+  const loadedJobs = scheduledJobs;
 
   if (isLoading && loadedJobs.length === 0) {
     return {
@@ -213,6 +291,8 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
       hasMore: false,
       isTruncated: false,
       loadMore: noopLoadMore,
+      isSearching: Boolean(query) && isLoading,
+      pagesSearched,
       error: undefined,
     };
   }
@@ -224,6 +304,11 @@ export const useCloudSchedulerJobs = (projectId: string, locationId: string): Us
     hasMore: Boolean(paginationTokens.defaultNextPageToken || paginationTokens.legacyNextPageToken),
     isTruncated,
     loadMore,
+    isSearching: Boolean(query) && (isLoading || isLoadingMore),
+    pagesSearched,
+    reload: async () => {
+      await revalidate();
+    },
     error: undefined,
   };
 };

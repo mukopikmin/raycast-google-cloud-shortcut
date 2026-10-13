@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoogleApi } from "../../auth/api";
-import { listCloudRunJobsPage, listCloudRunServicesPage, listCloudRunWorkerPoolsPage } from "./api";
+import {
+  listCloudRunJobsPage,
+  listCloudRunGlobalServicesPage,
+  listCloudRunLocationsPage,
+  listCloudRunRegionalServicesPage,
+  listCloudRunServicesPage,
+  listCloudRunWorkerPoolsPage,
+} from "./api";
 
 vi.mock("../../auth/api", () => ({ fetchGoogleApi: vi.fn() }));
 
@@ -8,6 +15,116 @@ const fetchGoogleApiMock = vi.mocked(fetchGoogleApi);
 
 describe("Cloud Run API", () => {
   beforeEach(() => fetchGoogleApiMock.mockReset());
+
+  it("uses the v1 wildcard global listing without a resource limit and preserves continuation and warnings", async () => {
+    fetchGoogleApiMock.mockResolvedValueOnce({
+      items: [
+        {
+          metadata: {
+            name: "journal",
+            uid: "journal-id",
+            labels: { "cloud.googleapis.com/location": "asia-northeast1" },
+          },
+        },
+      ],
+      metadata: { continue: "next+page/=" },
+      unreachable: ["europe-west1"],
+    });
+    const controller = new AbortController();
+    const page = await listCloudRunGlobalServicesPage("project", "token", {
+      pageToken: "previous+page/=",
+      signal: controller.signal,
+    });
+    const url = new URL(fetchGoogleApiMock.mock.calls[0][0]);
+    expect(url.pathname).toBe("/v1/projects/project/locations/-/services");
+    expect(url.searchParams.has("limit")).toBe(false);
+    expect(url.searchParams.has("pageSize")).toBe(false);
+    expect(url.searchParams.get("continue")).toBe("previous+page/=");
+    expect(url.searchParams.get("fields")).toContain("metadata(continue),unreachable");
+    expect(fetchGoogleApiMock.mock.calls[0][2]?.signal).toBe(controller.signal);
+    expect(page).toMatchObject({
+      deployments: [{ name: "journal", region: "asia-northeast1" }],
+      nextPageToken: "next+page/=",
+      unreachable: ["europe-west1"],
+    });
+  });
+
+  it.each(["global", "regional", "locations"])("passes cancellation to %s requests", async (kind) => {
+    fetchGoogleApiMock.mockResolvedValueOnce({});
+    const controller = new AbortController();
+    const options = { pageSize: 500, signal: controller.signal };
+    if (kind === "global") await listCloudRunServicesPage("project", "token", options);
+    if (kind === "regional") await listCloudRunRegionalServicesPage("project", "asia-northeast1", "token", options);
+    if (kind === "locations") await listCloudRunLocationsPage("project", "token", options);
+    expect(fetchGoogleApiMock.mock.calls[0][2]?.signal).toBe(controller.signal);
+  });
+
+  it("discovers project regions without dropping the locations pagination token", async () => {
+    fetchGoogleApiMock.mockResolvedValueOnce({
+      locations: ["us-central1", "asia-northeast1", "us-central1", "global"].map((locationId) => ({ locationId })),
+      nextPageToken: "next-locations",
+    });
+    await expect(
+      listCloudRunLocationsPage("sample-project", "access-token", { pageSize: 50, pageToken: "a+b/=" }),
+    ).resolves.toEqual({
+      regions: ["asia-northeast1", "us-central1"],
+      nextPageToken: "next-locations",
+    });
+    expect(fetchGoogleApiMock).toHaveBeenCalledWith(
+      "https://run.googleapis.com/v1/projects/sample-project/locations?pageSize=50&pageToken=a%2Bb%2F%3D",
+      "access-token",
+      undefined,
+    );
+  });
+
+  it("pages regional v2 services and preserves service names, URLs, and function classification", async () => {
+    fetchGoogleApiMock.mockResolvedValueOnce({
+      services: [
+        {
+          name: "projects/sample-project/locations/asia-northeast1/services/journal",
+          uid: "journal-id",
+          uri: "https://journal.example.com",
+        },
+        {
+          name: "projects/sample-project/locations/asia-northeast1/services/handler",
+          buildConfig: { functionTarget: "handleRequest" },
+        },
+        { name: "projects/sample-project/locations/asia-northeast1/services/default-target", buildConfig: {} },
+        {
+          name: "projects/sample-project/locations/asia-northeast1/services/managed-function",
+          labels: { "goog-managed-by": "cloudfunctions" },
+        },
+      ],
+      nextPageToken: "next-services",
+    });
+    const page = await listCloudRunRegionalServicesPage("sample-project", "asia-northeast1", "access-token", {
+      pageSize: 50,
+      pageToken: "a+b/=",
+    });
+    expect(page.nextPageToken).toBe("next-services");
+    expect(page.deployments[0]).toMatchObject({
+      id: "journal-id",
+      name: "journal",
+      region: "asia-northeast1",
+      deployType: "Container Services",
+      uri: "https://journal.example.com",
+      url: "https://console.cloud.google.com/run/detail/asia-northeast1/journal?project=sample-project",
+    });
+    expect(page.deployments[1]).toMatchObject({
+      id: "projects/sample-project/locations/asia-northeast1/services/handler",
+      deployType: "Function Services",
+      kind: "cloud-run-service",
+    });
+    expect(page.deployments.slice(2).map(({ deployType }) => deployType)).toEqual([
+      "Function Services",
+      "Function Services",
+    ]);
+    expect(fetchGoogleApiMock).toHaveBeenCalledWith(
+      "https://run.googleapis.com/v2/projects/sample-project/locations/asia-northeast1/services?pageSize=50&fields=services%28name%2Cuid%2Curi%2Clabels%2CbuildConfig%29%2CnextPageToken&pageToken=a%2Bb%2F%3D",
+      "access-token",
+      undefined,
+    );
+  });
 
   it("lists services globally and preserves their region, URL, and pagination token", async () => {
     fetchGoogleApiMock.mockResolvedValueOnce({
@@ -45,6 +162,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledWith(
       "https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/sample-project/services?limit=50&continue=service-page",
       "access-token",
+      undefined,
     );
   });
 
@@ -66,6 +184,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledExactlyOnceWith(
       "https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/sample-project/services?limit=50",
       "access-token",
+      undefined,
     );
   });
 
@@ -131,6 +250,7 @@ describe("Cloud Run API", () => {
     expect(fetchGoogleApiMock).toHaveBeenCalledWith(
       "https://run.googleapis.com/apis/serving.knative.dev/v1/namespaces/sample-project/services?limit=50&continue=a%2Bb%2F%3D",
       "access-token",
+      undefined,
     );
   });
 

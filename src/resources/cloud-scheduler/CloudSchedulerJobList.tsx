@@ -1,95 +1,48 @@
 import { useState } from "react";
+import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSchedulerJobs } from "./useCloudSchedulerJobs";
 import { toReadableCron } from "./cron";
 import { ErrorDetail } from "../../components/ErrorDetail";
-import { useLoadMoreOnSearch } from "../../hooks/useLoadMoreOnSearch";
 import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = { projectId: string; locationId: string };
 
 const CloudSchedulerJobListComponent = ({ projectId, locationId }: Props) => {
   const [searchText, setSearchText] = useState("");
-  const { scheduledJobs, isLoading, isLoadingMore, hasMore, isTruncated, loadMore, error } = useCloudSchedulerJobs(
-    projectId,
-    locationId,
-  );
-
-  const canLoadMore = hasMore && !isTruncated;
-  useLoadMoreOnSearch({ searchText, canLoadMore, isLoading, isLoadingMore, loadMore });
+  const { scheduledJobs, error, ...pagination } = useCloudSchedulerJobs(projectId, locationId, searchText);
 
   if (error) {
     return <ErrorDetail error={error} />;
   }
 
-  const loadMoreAction = canLoadMore ? (
-    <Action title="Load More Jobs" icon={Icon.ArrowDown} onAction={loadMore} />
-  ) : undefined;
-
   return (
-    <List
-      isLoading={isLoading || isLoadingMore}
-      pagination={
-        canLoadMore
-          ? {
-              pageSize: 500,
-              hasMore: canLoadMore,
-              onLoadMore: () => {
-                void loadMore();
-              },
-            }
-          : undefined
-      }
-      filtering
+    <PaginatedResourceList
+      searchText={searchText}
       onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search loaded Cloud Scheduler jobs..."
+      {...pagination}
+      resourceName="Jobs"
+      loadedCount={scheduledJobs?.length ?? 0}
     >
-      <List.EmptyView
-        icon={Icon.MagnifyingGlass}
-        title={searchText && canLoadMore ? "No loaded jobs match this search" : "No Cloud Scheduler jobs found"}
-        description={
-          searchText && canLoadMore
-            ? "More jobs may exist. Load more jobs to expand the searchable set."
-            : isTruncated
-              ? "The Cloud Scheduler job list is truncated to keep memory usage bounded."
-              : undefined
-        }
-        actions={loadMoreAction ? <ActionPanel>{loadMoreAction}</ActionPanel> : undefined}
-      />
-      {scheduledJobs?.map((schedulerJob) => (
-        <List.Item
-          key={schedulerJob.name}
-          id={schedulerJob.name}
-          icon={Icon.Box}
-          title={schedulerJob.name}
-          subtitle={toReadableCron(schedulerJob.schedule)}
-          accessories={[{ text: schedulerJob.timeZone }].filter((a) => a.text)}
-          actions={
-            <ActionPanel>
-              <Action.OpenInBrowser url={schedulerJob.url} />
-              {loadMoreAction}
-            </ActionPanel>
-          }
-        />
-      ))}
-      {canLoadMore && (
-        <List.Item
-          id="load-more-cloud-scheduler-jobs"
-          title="Load More Jobs"
-          icon={Icon.ArrowDown}
-          accessories={[{ text: `${scheduledJobs?.length ?? 0} loaded` }]}
-          actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
-        />
-      )}
-      {isTruncated && (
-        <List.Item
-          id="cloud-scheduler-jobs-truncated"
-          title="Cloud Scheduler Job List Truncated"
-          icon={Icon.ExclamationMark}
-          accessories={[{ text: `${scheduledJobs?.length ?? 0} loaded` }]}
-        />
-      )}
-    </List>
+      {(loadMoreAction) =>
+        scheduledJobs?.map((schedulerJob) => (
+          <List.Item
+            key={schedulerJob.name}
+            id={schedulerJob.name}
+            icon={Icon.Box}
+            title={schedulerJob.name}
+            subtitle={toReadableCron(schedulerJob.schedule)}
+            accessories={[{ text: schedulerJob.timeZone }].filter((a) => a.text)}
+            actions={
+              <ActionPanel>
+                <Action.OpenInBrowser url={schedulerJob.url} />
+                {loadMoreAction}
+              </ActionPanel>
+            }
+          />
+        ))
+      }
+    </PaginatedResourceList>
   );
 };
 

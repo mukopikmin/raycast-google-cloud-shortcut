@@ -1,6 +1,7 @@
+import { appendResourcePage, RESOURCE_LIMIT } from "../../pagination/pages";
 import { CloudRunServicesPage, CloudRunServicesState } from "./types";
 
-export const CLOUD_RUN_SERVICE_LIMIT = 500;
+export const CLOUD_RUN_SERVICE_LIMIT = RESOURCE_LIMIT;
 
 export const emptyCloudRunServicesState = (): CloudRunServicesState => ({
   services: [],
@@ -12,14 +13,14 @@ export const appendCloudRunServicesPage = (
   state: CloudRunServicesState,
   page: CloudRunServicesPage,
 ): CloudRunServicesState => {
-  const services = [
-    ...new Map([...state.services, ...page.deployments].map((service) => [service.id, service])).values(),
-  ];
-  const atLimit = services.length >= CLOUD_RUN_SERVICE_LIMIT;
+  const { resources, ...pagination } = appendResourcePage(
+    { ...state, resources: state.services },
+    { resources: page.deployments, nextPageToken: page.nextPageToken },
+    (service) => service.id,
+  );
   return {
-    services: services.slice(0, CLOUD_RUN_SERVICE_LIMIT),
-    nextPageToken: atLimit ? undefined : page.nextPageToken,
+    ...pagination,
+    services: resources,
     unreachable: [...new Set([...state.unreachable, ...page.unreachable])].sort(),
-    isTruncated: services.length > CLOUD_RUN_SERVICE_LIMIT || (atLimit && Boolean(page.nextPageToken)),
   };
 };
