@@ -1,4 +1,4 @@
-import { collectMatchingResourcePage, normalizeSearch } from "../../pagination/search";
+import { collectMatchingResourcePage, mergeResourceSearchPages, normalizeSearch } from "../../pagination/search";
 import { PageOptions } from "../../pagination/types";
 import { toReadableCron } from "./cron";
 import { appendResourcePage } from "../../pagination/pages";
@@ -9,6 +9,7 @@ import { listCloudSchedulerJobsPage } from "./api";
 import { useGoogleApi } from "../../auth/google";
 
 const CLOUD_SCHEDULER_JOB_PAGE_SIZE = 50;
+const getName = (resource: CloudSchedulerJob) => resource.name;
 const getResourceId = (resource: CloudSchedulerJob) => `${resource.region}/${resource.name}`;
 const getSearchText = (resource: CloudSchedulerJob) =>
   [
@@ -40,6 +41,7 @@ const searchSchedulerPage = (
     getSearchText,
     isCurrent,
     onPageChecked,
+    getName,
   );
 
 type SuccessResult = {
@@ -245,11 +247,13 @@ export const useCloudSchedulerJobs = (
       }
 
       if (requestGeneration !== generation.current) return;
-      const initial = appendResourcePage(
-        { resources: [], isTruncated: false },
-        { resources: [...defaultPage.resources, ...legacyPage.resources] },
-        getResourceId,
-      );
+      const initial = search
+        ? mergeResourceSearchPages([defaultPage, legacyPage], search, getResourceId, getSearchText, getName)
+        : appendResourcePage(
+            { resources: [], isTruncated: false },
+            { resources: [...defaultPage.resources, ...legacyPage.resources] },
+            getResourceId,
+          );
       setScheduledJobs(initial.resources);
       setPaginationTokens({
         defaultNextPageToken: defaultPage.nextPageToken,

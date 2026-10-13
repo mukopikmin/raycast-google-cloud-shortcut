@@ -1,4 +1,4 @@
-import { collectMatchingResourcePage, normalizeSearch } from "../../pagination/search";
+import { collectMatchingResourcePage, mergeResourceSearchPages, normalizeSearch } from "../../pagination/search";
 import { PageOptions } from "../../pagination/types";
 import { appendResourcePage } from "../../pagination/pages";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -8,6 +8,7 @@ import { listPubSubSubscriptionsPage, listPubSubTopicsPage } from "./api";
 import { PubSubResource } from "./types";
 
 const PUBSUB_PAGE_SIZE = 50;
+const getName = (resource: PubSubResource) => resource.name;
 const getResourceId = (resource: PubSubResource) => `${resource.resourceType}/${resource.name}`;
 const getSearchText = (resource: PubSubResource) => resource.keywords.join(" ");
 
@@ -35,6 +36,7 @@ const searchPubSubPage = (
     getSearchText,
     isCurrent,
     onPageChecked,
+    getName,
   );
 
 type SuccessResult = {
@@ -197,11 +199,13 @@ export const usePubSubResources = (projectId: string, searchText = ""): UsePubSu
       ]);
 
       if (requestGeneration !== generation.current) return;
-      const initial = appendResourcePage(
-        { resources: [], isTruncated: false },
-        { resources: [...topicsPage.resources, ...subscriptionsPage.resources] },
-        getResourceId,
-      );
+      const initial = search
+        ? mergeResourceSearchPages([topicsPage, subscriptionsPage], search, getResourceId, getSearchText, getName)
+        : appendResourcePage(
+            { resources: [], isTruncated: false },
+            { resources: [...topicsPage.resources, ...subscriptionsPage.resources] },
+            getResourceId,
+          );
       setResources(initial.resources);
       setIsTruncated(initial.isTruncated);
       setTopicNextPageToken(topicsPage.nextPageToken);

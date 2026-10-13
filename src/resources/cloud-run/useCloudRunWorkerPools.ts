@@ -8,6 +8,8 @@ import { CloudRunDeployment } from "./types";
 const getResourceId = (item: CloudRunDeployment) => item.id;
 const getSearchText = (item: CloudRunDeployment) => item.keywords.filter(Boolean).join(" ");
 
+const getName = (item: CloudRunDeployment) => item.name;
+
 export const useCloudRunWorkerPools = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -17,6 +19,6 @@ export const useCloudRunWorkerPools = (projectId: string, searchText = "") => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, workerPools: result.resources };
 };

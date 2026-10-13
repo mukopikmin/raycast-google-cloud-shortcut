@@ -8,6 +8,8 @@ import { CloudStorageBucket } from "./types";
 const getResourceId = (item: CloudStorageBucket) => item.id;
 const getSearchText = (item: CloudStorageBucket) => [item.name, item.location].filter(Boolean).join(" ");
 
+const getName = (item: CloudStorageBucket) => item.name;
+
 export const useCloudStorage = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -17,6 +19,6 @@ export const useCloudStorage = (projectId: string, searchText = "") => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, buckets: result.resources };
 };

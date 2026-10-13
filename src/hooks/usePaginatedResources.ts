@@ -9,6 +9,7 @@ export const usePaginatedResources = <T>(
   getId: (resource: T) => string,
   getSearchText: (resource: T) => string,
   searchText = "",
+  getName: (resource: T) => string = getSearchText,
 ) => {
   const [state, setState] = useState(emptyResourcePageState<T>);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -46,6 +47,7 @@ export const usePaginatedResources = <T>(
         () => {
           if (search) setPagesSearched((count) => count + 1);
         },
+        getName,
       );
     },
     [fetchPage, query],
@@ -78,6 +80,7 @@ export const usePaginatedResources = <T>(
         () => {
           if (query) setPagesSearched((count) => count + 1);
         },
+        getName,
       );
       if (requestGeneration === generation.current) {
         setState((current) => appendResourcePage(current, page, getId));
@@ -92,7 +95,7 @@ export const usePaginatedResources = <T>(
         setIsLoadingMore(false);
       }
     }
-  }, [fetchPage, getId, getSearchText, query, isLoading, state.nextPageToken]);
+  }, [fetchPage, getId, getSearchText, getName, query, isLoading, state.nextPageToken]);
 
   const awaitingRequest = activeQuery.current !== query || activeFetch.current !== fetchPage;
   const visibleState = awaitingRequest ? emptyResourcePageState<T>() : state;

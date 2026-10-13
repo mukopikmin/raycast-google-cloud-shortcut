@@ -11,6 +11,8 @@ const getSearchText = (item: ComputeEngineInstance) =>
     .filter(Boolean)
     .join(" ");
 
+const getName = (item: ComputeEngineInstance) => item.name;
+
 export const useComputeEngineInstances = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -20,6 +22,6 @@ export const useComputeEngineInstances = (projectId: string, searchText = "") =>
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, instances: result.resources };
 };

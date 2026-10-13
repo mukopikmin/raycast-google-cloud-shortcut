@@ -8,6 +8,8 @@ import { WorkloadIdentityPool } from "./types";
 const getResourceId = (item: WorkloadIdentityPool) => item.id;
 const getSearchText = (item: WorkloadIdentityPool) => item.keywords.filter(Boolean).join(" ");
 
+const getName = (item: WorkloadIdentityPool) => item.name;
+
 export const useWorkloadIdentityPools = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -17,6 +19,6 @@ export const useWorkloadIdentityPools = (projectId: string, searchText = "") => 
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, pools: result.resources };
 };

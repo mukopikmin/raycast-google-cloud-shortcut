@@ -8,6 +8,8 @@ import { CloudFunction } from "./types";
 const getResourceId = (item: CloudFunction) => item.id;
 const getSearchText = (item: CloudFunction) => item.keywords.filter(Boolean).join(" ");
 
+const getName = (item: CloudFunction) => item.name;
+
 export const useCloudFunctions = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -17,6 +19,6 @@ export const useCloudFunctions = (projectId: string, searchText = "") => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, functions: result.resources };
 };

@@ -8,6 +8,8 @@ import { SecretManagerSecret } from "./types";
 const getResourceId = (item: SecretManagerSecret) => item.id;
 const getSearchText = (item: SecretManagerSecret) => [item.name].filter(Boolean).join(" ");
 
+const getName = (item: SecretManagerSecret) => item.name;
+
 export const useSecretManager = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -17,6 +19,6 @@ export const useSecretManager = (projectId: string, searchText = "") => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, secrets: result.resources };
 };

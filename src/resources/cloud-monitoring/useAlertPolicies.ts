@@ -8,6 +8,8 @@ import { AlertPolicy } from "./types";
 const getResourceId = (item: AlertPolicy) => item.id;
 const getSearchText = (item: AlertPolicy) => item.keywords.filter(Boolean).join(" ");
 
+const getName = (item: AlertPolicy) => item.displayName;
+
 export const useAlertPolicies = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -17,6 +19,6 @@ export const useAlertPolicies = (projectId: string, searchText = "") => {
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, alertPolicies: result.resources };
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { collectMatchingResourcePage, matchesResourceSearch } from "./search";
+import { collectMatchingResourcePage, matchesResourceSearch, mergeResourceSearchPages } from "./search";
 import { PageOptions, ResourcePage } from "./types";
 
 type Resource = { id: string; name: string };
@@ -20,6 +20,22 @@ const dataset = (count: number, name: (id: number) => string) =>
   });
 
 describe("resource search across API pages", () => {
+  it("finds journal for j even after hundreds of earlier matching names", async () => {
+    const fetchPage = dataset(1250, (id) => (id === 1199 ? "journal" : `project-service-${id}`));
+    const result = await collectMatchingResourcePage(
+      fetchPage,
+      { pageSize: 50 },
+      "j",
+      getId,
+      getSearchText,
+      current,
+      checked,
+    );
+    expect(result.resources.some(({ name }) => name === "journal")).toBe(true);
+    expect(result.resources[0].name).toBe("journal");
+    expect(result.resources.length).toBeLessThanOrEqual(500);
+    expect(fetchPage).toHaveBeenCalledTimes(25);
+  });
   it("finds a resource after the first 500 without retaining nonmatching pages", async () => {
     const fetchPage = dataset(1250, (id) => (id === 1199 ? "target-resource" : `other-${id}`));
     const result = await collectMatchingResourcePage(
@@ -52,7 +68,7 @@ describe("resource search across API pages", () => {
     expect(fetchPage).toHaveBeenCalledOnce();
   });
 
-  it("stops at a page of sparse matches and resumes without losing results", async () => {
+  it("collects sparse matches from every page without stopping at the first 50", async () => {
     const fetchPage = dataset(1250, (id) => `${id % 10 === 0 ? "match" : "other"}-${id}`);
     const first = await collectMatchingResourcePage(
       fetchPage,
@@ -63,21 +79,10 @@ describe("resource search across API pages", () => {
       current,
       checked,
     );
-    expect(first.resources).toHaveLength(50);
-    expect(first.nextPageToken).toBe("500");
-    expect(fetchPage).toHaveBeenCalledTimes(10);
-    const second = await collectMatchingResourcePage(
-      fetchPage,
-      { pageSize: 50, pageToken: first.nextPageToken },
-      "match",
-      getId,
-      getSearchText,
-      current,
-      checked,
-    );
-    expect(second.resources[0].id).toBe("500");
-    expect(second.resources).toHaveLength(50);
-    expect(second.nextPageToken).toBe("1000");
+    expect(first.resources).toHaveLength(125);
+    expect(first.nextPageToken).toBeUndefined();
+    expect(first.resources.some(({ id }) => id === "1240")).toBe(true);
+    expect(fetchPage).toHaveBeenCalledTimes(25);
   });
 
   it("reports no matches only after all accessible pages have been checked", async () => {
@@ -153,5 +158,39 @@ describe("resource search across API pages", () => {
   it("matches all search terms across names and metadata without case sensitivity", () => {
     expect(matchesResourceSearch("production-api US-CENTRAL1", "  API  us-central1 ")).toBe(true);
     expect(matchesResourceSearch("production-api US-CENTRAL1", "api europe-west1")).toBe(false);
+  });
+
+  it("ranks exact names ahead of prefixes, substrings, and metadata-only matches", () => {
+    const resources = [
+      { id: "metadata", name: "a", metadata: "j" },
+      { id: "substring", name: "project-a", metadata: "" },
+      { id: "prefix", name: "journal", metadata: "" },
+      { id: "exact", name: "j", metadata: "" },
+    ];
+    const result = mergeResourceSearchPages(
+      [{ resources }],
+      "j",
+      getId,
+      (resource) => `${resource.name} ${resource.metadata}`,
+      (resource) => resource.name,
+    );
+    expect(result.resources.map(({ id }) => id)).toEqual(["exact", "prefix", "substring", "metadata"]);
+  });
+
+  it("retains a late exact match when more than 500 prefix matches came first", async () => {
+    const fetchPage = dataset(1250, (id) => (id === 1199 ? "journal" : `journal-backup-${id}`));
+    const result = await collectMatchingResourcePage(
+      fetchPage,
+      { pageSize: 50 },
+      "journal",
+      getId,
+      getSearchText,
+      current,
+      checked,
+    );
+    expect(result.resources[0]).toEqual({ id: "1199", name: "journal" });
+    expect(result.resources).toHaveLength(500);
+    expect(result.isTruncated).toBe(true);
+    expect(fetchPage).toHaveBeenCalledTimes(25);
   });
 });

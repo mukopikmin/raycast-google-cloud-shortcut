@@ -46,6 +46,7 @@ export const CloudRunDeploymentList = ({
   const [localSearchText, setLocalSearchText] = useState("");
   const searchText = controlledSearchText ?? localSearchText;
   const canLoadMore = hasMore;
+  const searching = Boolean(searchText.trim());
 
   if (error) {
     return <ErrorDetail error={error} />;
@@ -84,7 +85,9 @@ export const CloudRunDeploymentList = ({
             : searchText && hasMore
               ? "More matching results may exist. Load more to continue searching."
               : isTruncated
-                ? "Earlier displayed results are omitted. Search again to find them, or reload from start."
+                ? searching
+                  ? "More than 500 resources match. Refine the search to find a specific service."
+                  : "Earlier displayed results are omitted. Search to find them, or reload from start."
                 : undefined
         }
         actions={
@@ -170,8 +173,16 @@ export const CloudRunDeploymentList = ({
       {isTruncated && (
         <List.Item
           id={`cloud-run-${resourceName.toLowerCase().replaceAll(" ", "-")}-truncated`}
-          title={`Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`}
-          subtitle="Search again to find earlier results, or reload from start."
+          title={
+            searching
+              ? `Showing Top ${RESOURCE_LIMIT} Matches`
+              : `Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`
+          }
+          subtitle={
+            searching
+              ? "Refine the search to narrow the results."
+              : "Search to find earlier results, or reload from start."
+          }
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}

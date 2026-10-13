@@ -7,6 +7,7 @@ export type ResourcePage<T> = {
   resources: T[];
   nextPageToken?: string;
   unreachable?: string[];
+  isTruncated?: boolean;
 };
 
 export type ResourcePageState<T> = ResourcePage<T> & {

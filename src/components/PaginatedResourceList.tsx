@@ -44,6 +44,7 @@ export const PaginatedResourceList = ({
       </>
     ) : null;
   const name = resourceName.toLowerCase();
+  const searching = Boolean(searchText.trim());
 
   return (
     <List
@@ -67,7 +68,9 @@ export const PaginatedResourceList = ({
           isSearching
             ? `${pagesSearched} API pages checked. Searching includes resources outside the displayed results.`
             : isTruncated
-              ? "Earlier displayed results are omitted. Search again to find them, or reload from start."
+              ? searching
+                ? "More than 500 resources match. Refine the search to find a specific resource."
+                : "Earlier displayed results are omitted. Search to find them, or reload from start."
               : canLoadMore
                 ? searchText
                   ? "More matching results may exist. Load more to continue searching."
@@ -99,8 +102,16 @@ export const PaginatedResourceList = ({
       {isTruncated && (
         <List.Item
           id="resources-truncated"
-          title={`Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`}
-          subtitle="Search again to find earlier results, or reload from start."
+          title={
+            searching
+              ? `Showing Top ${RESOURCE_LIMIT} Matches`
+              : `Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`
+          }
+          subtitle={
+            searching
+              ? "Refine the search to narrow the results."
+              : "Search to find earlier results, or reload from start."
+          }
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${loadedCount} loaded` }]}

@@ -9,6 +9,8 @@ const getResourceId = (item: KubernetesEngineCluster) => item.id;
 const getSearchText = (item: KubernetesEngineCluster) =>
   [item.name, item.location, item.endpoint, item.status, item.version].filter(Boolean).join(" ");
 
+const getName = (item: KubernetesEngineCluster) => item.name;
+
 export const useKubernetesEngineClusters = (projectId: string, searchText = "") => {
   const { accessToken } = useGoogleApi();
   const fetchPage = useCallback(
@@ -18,6 +20,6 @@ export const useKubernetesEngineClusters = (projectId: string, searchText = "") 
     },
     [projectId, accessToken],
   );
-  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText);
+  const result = usePaginatedResources(fetchPage, getResourceId, getSearchText, searchText, getName);
   return { ...result, clusters: result.resources };
 };

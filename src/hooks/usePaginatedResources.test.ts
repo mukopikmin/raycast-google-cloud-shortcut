@@ -220,6 +220,89 @@ describe("resource pagination beyond 500", () => {
     fetchMock.mockImplementation(async (url) => pageResponse(url));
   });
 
+  it.each(hooks.filter(({ count }) => count === 620))(
+    "shows journal for j even when $name has hundreds of earlier matching resources",
+    async ({ hook: featureHook }) => {
+      fetchMock.mockImplementation(async (url) => {
+        const parsed = new URL(url);
+        const offset = Number(parsed.searchParams.get("pageToken") || parsed.searchParams.get("continue") || 0);
+        const size = Number(parsed.searchParams.get("pageSize") || parsed.searchParams.get("limit"));
+        const ids = Array.from({ length: Math.min(size, 620 - offset) }, (_, index) => String(offset + index));
+        const name = (id: string) => (id === "619" ? "journal" : `project-service-${id}`);
+        const next = offset + size < 620 ? String(offset + size) : undefined;
+        if (parsed.hostname === "secretmanager.googleapis.com") {
+          return { secrets: ids.map((id) => ({ name: `projects/project/secrets/${name(id)}` })), nextPageToken: next };
+        }
+        return {
+          items: ids.map((id) => ({
+            metadata: { uid: id, name: name(id), labels: { "cloud.googleapis.com/location": "us-central1" } },
+          })),
+          metadata: { continue: next },
+          unreachable: [],
+        };
+      });
+      let query = "j";
+      const hook = () => featureHook(query);
+      runtime.render(hook);
+      await runtime.settle();
+      let result = runtime.render(hook);
+      expect(result.items?.[0].name).toBe("journal");
+      expect(result.items).toHaveLength(500);
+      expect(result.isTruncated).toBe(true);
+      expect(result.hasMore).toBe(false);
+      expect(result.pagesSearched).toBe(13);
+      query = "journal";
+      runtime.render(hook);
+      await runtime.settle();
+      result = runtime.render(hook);
+      expect(result.items?.map(({ name }) => name)).toEqual(["journal"]);
+      expect(result.isTruncated).toBe(false);
+    },
+  );
+
+  it.each(hooks.filter(({ count }) => count === 1240))(
+    "ranks a late journal result across both $name without discarding its stream",
+    async ({ hook: featureHook, name: featureName }) => {
+      fetchMock.mockImplementation(async (url) => {
+        const parsed = new URL(url);
+        const offset = Number(parsed.searchParams.get("pageToken") || 0);
+        const size = Number(parsed.searchParams.get("pageSize"));
+        const ids = Array.from({ length: Math.min(size, 620 - offset) }, (_, index) => String(offset + index));
+        const nextPageToken = offset + size < 620 ? String(offset + size) : undefined;
+        if (featureName === "Pub/Sub streams") {
+          const topics = parsed.pathname.endsWith("topics");
+          const kind = topics ? "topics" : "subscriptions";
+          return {
+            [kind]: ids.map((id) => ({
+              name: `projects/project/${kind}/${topics && id === "619" ? "journal" : `project-${kind}-${id}`}`,
+              topic: "projects/project/topics/topic",
+            })),
+            nextPageToken,
+          };
+        }
+        const legacy = parsed.searchParams.has("legacyAppEngineCron");
+        return {
+          jobs: ids.map((id) => ({
+            name: `projects/project/locations/us-central1/jobs/${!legacy && id === "619" ? "journal" : `project-${legacy ? "legacy" : "default"}-${id}`}`,
+            schedule: "0 * * * *",
+            timeZone: "UTC",
+            description: "",
+          })),
+          nextPageToken,
+        };
+      });
+      const hook = () => featureHook("j");
+      runtime.render(hook);
+      await runtime.settle();
+      const result = runtime.render(hook);
+      expect(result.items?.[0].name).toBe("journal");
+      expect(result.items).toHaveLength(500);
+      expect(result.isTruncated).toBe(true);
+      expect(result.pagesSearched).toBe(26);
+      expect(result.error).toBeUndefined();
+    },
+  );
+
   it.each(hooks)("finds an unrequested $name resource beyond item 500", async ({ hook: featureHook, count }) => {
     let query = "";
     const hook = () => featureHook(query);

@@ -46,11 +46,11 @@ These are technical guidelines to be applied consistently across this entire pro
   - Avoid eager all-page fetching for unfiltered resource lists. Initial loads without a search query should fetch only the first page.
   - API helpers should expose page-level functions that return both the resources and the pagination token, e.g. `{ resources, nextPageToken }`.
   - Hooks should own pagination state, including loaded resources, `nextPageToken`, `isLoadingMore`, `hasMore`, `isTruncated`, `loadMore`, and `error`.
-  - Add explicit load-more behavior in the list UI instead of automatically following every page token.
+  - Use explicit load-more behavior for unfiltered resource browsing. Active searches scan all API pages as described below.
   - Enforce a hard cap on retained resources, currently 500 items per resource list, to keep memory usage bounded.
   - If an API has multiple pagination streams for one list, keep each token explicit in hook state and merge/deduplicate loaded resources deterministically.
-  - Search must include resources outside the retained window. Restart from the first API page when the query changes, discard nonmatching resources, and continue until a page of matches is collected or the API is exhausted. Cancel superseded searches and keep retained results bounded.
-  - Search placeholders and progress states must distinguish searching from a completed search with no matches. Additional pages of matching results should use explicit load-more behavior.
+  - Search must include resources outside the retained window. Restart from the first API page when the query changes, discard nonmatching resources, and scan every API page, retaining only the best 500 matching candidates. Rank exact and prefix name matches ahead of substring and metadata matches. Cancel superseded searches and keep retained results bounded.
+  - Search placeholders and progress states must distinguish searching from a completed search with no matches. When more than 500 resources match, explain the search-result limit and ask users to refine the query.
   - When results are truncated by the hard cap, show an explicit truncated state in the UI.
   - Preserve existing partial-success behavior when converting progressive pagination to bounded pagination.
 
