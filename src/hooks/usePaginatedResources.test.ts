@@ -672,7 +672,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items).toHaveLength(500);
       expect(result.isTruncated).toBe(true);
       expect(result.hasMore).toBe(false);
-      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 1 : 13);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 1 : 2);
       expect(result.resourcesSearched).toBe(620);
       query = "journal";
       runtime.render(hook);
@@ -722,7 +722,7 @@ describe("resource pagination beyond 500", () => {
       expect(result.items?.[0].name).toBe("journal");
       expect(result.items).toHaveLength(500);
       expect(result.isTruncated).toBe(true);
-      expect(result.pagesSearched).toBe(26);
+      expect(result.pagesSearched).toBe(6);
       expect(result.error).toBeUndefined();
     },
   );
@@ -744,14 +744,14 @@ describe("resource pagination beyond 500", () => {
       expect(result.items?.every(({ name }) => name.endsWith("619"))).toBe(true);
       expect(result.hasMore).toBe(false);
       expect(result.isSearching).toBe(false);
-      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 1 : count === 620 ? 13 : 26);
+      expect(result.pagesSearched).toBe(featureName === "Cloud Run services" ? 1 : count === 620 ? 2 : 6);
       expect(result.error).toBeUndefined();
       const requests = fetchMock.mock.calls.length;
       query = "";
       runtime.render(hook);
       await runtime.settle();
       const unfiltered = runtime.render(hook);
-      expect(unfiltered.items?.length).toBe(count === 620 ? 50 : 100);
+      expect(unfiltered.items?.length).toBe(500);
       expect(unfiltered.isSearching).toBe(false);
       expect(fetchMock.mock.calls.length - requests).toBe(count === 620 ? 1 : 2);
     },
@@ -801,15 +801,15 @@ describe("resource pagination beyond 500", () => {
     query = "secret-0";
     runtime.render(hook);
     await staleLoadMore();
-    resolveOldPage(pageResponse("https://secretmanager.googleapis.com/v1/projects/project/secrets?pageSize=50"));
+    resolveOldPage(pageResponse("https://secretmanager.googleapis.com/v1/projects/project/secrets?pageSize=500"));
     await runtime.settle();
     const result = runtime.render(hook);
     expect(result.secrets.map(({ name }) => name)).toEqual(["secret-0"]);
     expect(result.error).toBeUndefined();
     expect(result.isSearching).toBe(false);
-    expect(result.pagesSearched).toBe(13);
+    expect(result.pagesSearched).toBe(2);
     expect(result.resourcesSearched).toBe(620);
-    expect(fetchMock).toHaveBeenCalledTimes(15);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it("counts nonmatching resources in an empty search and resets counts on a new search", async () => {
@@ -837,7 +837,7 @@ describe("resource pagination beyond 500", () => {
     result = runtime.render(hook);
     expect(result.pagesSearched).toBe(0);
     expect(result.resourcesSearched).toBe(0);
-    expect(result.services).toHaveLength(50);
+    expect(result.services).toHaveLength(500);
   });
 
   it("rejects load-more actions retained from a different project", async () => {
@@ -851,14 +851,14 @@ describe("resource pagination beyond 500", () => {
     await runtime.settle();
     await previousLoadMore();
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(runtime.render(hook).secrets).toHaveLength(50);
+    expect(runtime.render(hook).secrets).toHaveLength(500);
   });
 
   it.each(hooks)("keeps all $count $name resources reachable and supports restarting", async ({ hook, count }) => {
     runtime.render(hook);
     await runtime.settle();
     let result: Result = runtime.render(hook);
-    expect(result.items?.length).toBe(count === 620 ? 50 : 100);
+    expect(result.items?.length).toBe(500);
     expect(fetchMock).toHaveBeenCalledTimes(count === 620 ? 1 : 2);
     const seen = new Set(result.items?.map(key));
     for (let page = 0; result.hasMore && page < 20; page++) {
@@ -877,7 +877,7 @@ describe("resource pagination beyond 500", () => {
     expect(fetchMock).toHaveBeenCalledTimes(requests);
     await result.reload?.();
     result = runtime.render(hook);
-    expect(result.items?.length).toBe(count === 620 ? 50 : 100);
+    expect(result.items?.length).toBe(500);
     expect(result.hasMore).toBe(true);
     expect(result.isTruncated).toBe(false);
   });
@@ -900,11 +900,11 @@ describe("resource pagination beyond 500", () => {
     expect(runtime.render(hook).isLoadingMore).toBe(true);
     await result.reload();
     resolvePage(
-      pageResponse("https://secretmanager.googleapis.com/v1/projects/project/secrets?pageSize=50&pageToken=50"),
+      pageResponse("https://secretmanager.googleapis.com/v1/projects/project/secrets?pageSize=500&pageToken=500"),
     );
     await first;
     result = runtime.render(hook);
-    expect(result.secrets).toHaveLength(50);
+    expect(result.secrets).toHaveLength(500);
     expect(result.secrets[0].name).toBe("secret-0");
     expect(result.isLoadingMore).toBe(false);
   });
@@ -918,12 +918,12 @@ describe("resource pagination beyond 500", () => {
     await runtime.render(hook).loadMore();
     let result = runtime.render(hook);
     expect(result.error).toBe(failure);
-    expect(result.secrets).toHaveLength(50);
+    expect(result.secrets).toHaveLength(500);
     expect(result.hasMore).toBe(true);
     await result.loadMore();
     result = runtime.render(hook);
     expect(result.error).toBeUndefined();
-    expect(result.secrets).toHaveLength(100);
+    expect(result.secrets).toHaveLength(500);
   });
 
   it("preserves Cloud Scheduler partial success when legacy jobs cannot be read", async () => {
@@ -943,7 +943,7 @@ describe("resource pagination beyond 500", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     await result.loadMore();
     result = runtime.render(hook);
-    expect(result.scheduledJobs).toHaveLength(50);
+    expect(result.scheduledJobs).toHaveLength(250);
     expect(result.hasMore).toBe(true);
     expect(result.error).toBeUndefined();
   });

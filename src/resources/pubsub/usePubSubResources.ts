@@ -1,13 +1,14 @@
 import { collectMatchingResourcePage, mergeResourceSearchPages, normalizeSearch } from "../../pagination/search";
 import { PageOptions } from "../../pagination/types";
-import { appendResourcePage } from "../../pagination/pages";
+import { appendResourcePage, RESOURCE_PAGE_SIZE } from "../../pagination/pages";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { usePromise } from "@raycast/utils";
 import { useGoogleApi } from "../../auth/google";
 import { listPubSubSubscriptionsPage, listPubSubTopicsPage } from "./api";
 import { PubSubResource } from "./types";
 
-const PUBSUB_PAGE_SIZE = 50;
+// Both streams must fit in the retained window before either token advances.
+const PUBSUB_PAGE_SIZE = RESOURCE_PAGE_SIZE / 2;
 const getName = (resource: PubSubResource) => resource.name;
 const getResourceId = (resource: PubSubResource) => `${resource.resourceType}/${resource.name}`;
 const getSearchText = (resource: PubSubResource) => resource.keywords.join(" ");

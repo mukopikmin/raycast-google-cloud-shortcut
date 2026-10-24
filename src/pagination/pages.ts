@@ -1,7 +1,7 @@
 import { ResourcePage, ResourcePageState } from "./types";
 
-export const RESOURCE_PAGE_SIZE = 50;
 export const RESOURCE_LIMIT = 500;
+export const RESOURCE_PAGE_SIZE = RESOURCE_LIMIT;
 
 export const emptyResourcePageState = <T>(): ResourcePageState<T> => ({ resources: [], isTruncated: false });
 
