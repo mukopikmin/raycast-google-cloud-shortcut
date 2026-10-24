@@ -1,14 +1,15 @@
 import { collectMatchingResourcePage, mergeResourceSearchPages, normalizeSearch } from "../../pagination/search";
 import { PageOptions } from "../../pagination/types";
 import { toReadableCron } from "./cron";
-import { appendResourcePage } from "../../pagination/pages";
+import { appendResourcePage, RESOURCE_PAGE_SIZE } from "../../pagination/pages";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { usePromise } from "@raycast/utils";
 import { CloudSchedulerJob } from "./types";
 import { listCloudSchedulerJobsPage } from "./api";
 import { useGoogleApi } from "../../auth/google";
 
-const CLOUD_SCHEDULER_JOB_PAGE_SIZE = 50;
+// Reserve room for both the default and legacy streams in each retained window.
+const CLOUD_SCHEDULER_JOB_PAGE_SIZE = RESOURCE_PAGE_SIZE / 2;
 const getName = (resource: CloudSchedulerJob) => resource.name;
 const getResourceId = (resource: CloudSchedulerJob) => `${resource.region}/${resource.name}`;
 const getSearchText = (resource: CloudSchedulerJob) =>
