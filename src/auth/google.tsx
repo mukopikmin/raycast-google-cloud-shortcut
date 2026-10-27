@@ -1,4 +1,7 @@
-import { getAccessToken, OAuthService, withAccessToken } from "@raycast/utils";
+import type { ComponentType } from "react";
+import { List } from "@raycast/api";
+import { OAuthService, usePromise } from "@raycast/utils";
+import { ErrorDetail } from "../components/ErrorDetail";
 import { createGoogleSession } from "./session";
 
 const OAUTH_CLIENT_ID = "943687027492-ljl37fkhv85e5h6uuevj16dvq4n721ga.apps.googleusercontent.com";
@@ -18,14 +21,40 @@ const provider = OAuthService.google({
 const session = createGoogleSession(provider, OAUTH_CLIENT_ID);
 
 export const google = { client: provider.client, authorize: session.authorize };
-export const withGoogleAccessToken = withAccessToken(google);
 export const refreshGoogleAccessToken = session.refresh;
 
+export const withGoogleAccessToken = <Props extends object>(Component: ComponentType<Props>) => {
+  const WrappedComponent = (props: Props) => {
+    // Keep authorization failures in view state instead of throwing a rejected
+    // promise during rendering. Recheck credentials whenever a list is opened.
+    const { data: accessToken, isLoading, error, revalidate } = usePromise(google.authorize, [], { onError: () => {} });
+
+    if (isLoading) return <List isLoading />;
+    if (error) {
+      return (
+        <ErrorDetail
+          error={error}
+          onRetry={async () => {
+            await revalidate();
+          }}
+        />
+      );
+    }
+    if (!accessToken) return <List isLoading />;
+
+    return <Component {...props} />;
+  };
+
+  WrappedComponent.displayName = `withGoogleAccessToken(${Component.displayName || Component.name})`;
+  return WrappedComponent;
+};
+
 export const useGoogleApi = (): AuthorizedGoogleApiClient => {
-  const { token } = getAccessToken();
+  const accessToken = session.getAccessToken();
+  if (!accessToken) throw new Error("useGoogleApi must be used inside withGoogleAccessToken.");
 
   return {
     authorized: true,
-    accessToken: session.getAccessToken() ?? token,
+    accessToken,
   };
 };
