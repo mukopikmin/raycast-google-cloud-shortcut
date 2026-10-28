@@ -49,7 +49,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
   return {
     services: availableServices.map((service): SearchableService | NonSearchableService => {
       const title = `Show ${service.name} Resources`;
-      const keywords = [service.name, service.category];
+      const keywords = [service.name, service.category, ...(service.aliases ?? [])];
 
       if (isSearchEnabledService(service)) {
         switch (service.name) {
@@ -95,7 +95,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               isSearchEnabled: true,
               searchAction: <Action.Push title={title} target={<CloudStorageBucketList projectId={projectId} />} />,
             };
-          case "Cloud Functions":
+          case "Cloud Run functions (1st gen)":
             return {
               ...service,
               keywords,

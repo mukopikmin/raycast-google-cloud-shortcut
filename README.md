@@ -56,6 +56,8 @@ Service results are fetched again for each query. The initial unfiltered list us
 
 This extension supports quick navigation to Google Cloud services. For some services, you can also search and navigate directly to resources such as instances, buckets, clusters, jobs, or queues.
 
+Former product names such as Cloud Functions, Dataproc, Composer, Dataplex, and Vertex AI remain searchable aliases. Cloud Run functions (1st gen) lists first-generation functions; newer function services appear under Cloud Run Services.
+
 Cloud Logging shortcuts are available for selected resource types. The table below shows the current support status for both resource search and Cloud Logging shortcuts.
 
 | Service Name | Category | Resource Search | Cloud Logging Shortcut |
@@ -65,7 +67,7 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Cloud Run Services | Compute | Services | Yes |
 | Cloud Run Jobs | Compute | Jobs | Yes |
 | Cloud Run Worker Pools | Compute | Worker Pools | Yes |
-| Cloud Functions | Compute | Functions (gen1) | Yes |
+| Cloud Run functions (1st gen) | Compute | Functions (gen1) | Yes |
 | App Engine | Compute | Services | Yes |
 | Batch | Compute | - | - |
 | Cloud Storage | Storage | Buckets | - |
@@ -106,12 +108,12 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Infrastructure Manager | DevOps | - | - |
 | BigQuery | Data Analytics | - | - |
 | BigQuery Data Transfer | Data Analytics | - | - |
-| Dataproc | Data Analytics | - | - |
+| Managed Service for Apache Spark (Dataproc Clusters) | Data Analytics | - | - |
 | Dataflow | Data Analytics | - | - |
-| Composer | Data Analytics | - | - |
+| Managed Service for Apache Airflow | Data Analytics | - | - |
 | Data Fusion | Data Analytics | - | - |
-| Dataplex | Data Analytics | - | - |
-| Vertex AI | Machine Learning | - | - |
+| Knowledge Catalog | Data Analytics | - | - |
+| Gemini Enterprise Agent Platform | Machine Learning | - | - |
 | API & Services | Billing | - | - |
 | API Library | Billing | - | - |
 | Credentials | Billing | - | - |
