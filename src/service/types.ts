@@ -2,12 +2,14 @@ export type Service = SearchEnabledService | SearchDisabledService;
 
 export type SearchEnabledService = {
   name: SearchEnabledServiceName;
+  aliases?: string[];
   category: Category;
   url: string;
 };
 
 export type SearchDisabledService = {
   name: SearchDisabledServiceName;
+  aliases?: string[];
   category: Category;
   url: string;
 };
@@ -19,7 +21,7 @@ export const searchEnabledServiceNames = [
   "Cloud SQL",
   "AlloyDB",
   "Cloud Storage",
-  "Cloud Functions",
+  "Cloud Run functions (1st gen)",
   "Cloud Tasks",
   "Secret Manager",
   "Service Accounts",
@@ -62,12 +64,12 @@ export const searchDisabledServiceNames = [
   "Cloud Profiler",
   "Eventarc",
   "Infrastructure Manager",
-  "Dataproc",
+  "Managed Service for Apache Spark (Dataproc Clusters)",
   "Dataflow",
-  "Composer",
+  "Managed Service for Apache Airflow",
   "Data Fusion",
-  "Dataplex",
-  "Vertex AI",
+  "Knowledge Catalog",
+  "Gemini Enterprise Agent Platform",
   "API & Services",
   "API Library",
   "Credentials",

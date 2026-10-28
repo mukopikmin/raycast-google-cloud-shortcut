@@ -156,24 +156,26 @@ describe("createCloudLoggingUrl", () => {
     });
   });
 
-  it("creates a Cloud SQL instance log query", () => {
-    const target: CloudLoggingTarget = {
-      kind: "cloud-sql-instance",
-      projectId: "sample-project",
-      instanceId: "orders-db",
-      region: "us-central1",
-    };
+  it.each(["us-central1", "europe-west1", "asia-east1", "asia-northeast1"])(
+    "scopes Cloud SQL logs to the instance without depending on the region label in %s",
+    (region) => {
+      const target: CloudLoggingTarget = {
+        kind: "cloud-sql-instance",
+        projectId: "sample-project",
+        instanceId: "orders-db",
+        region,
+      };
 
-    expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
-      query: [
-        'resource.type="cloudsql_database"',
-        'resource.labels.project_id="sample-project"',
-        'resource.labels.database_id="sample-project:orders-db"',
-        'resource.labels.region="us-central1"',
-      ].join("\n"),
-      projectId: "sample-project",
-    });
-  });
+      expect(parseCloudLoggingUrl(createCloudLoggingUrl(target))).toEqual({
+        query: [
+          'resource.type="cloudsql_database"',
+          'resource.labels.project_id="sample-project"',
+          'resource.labels.database_id="sample-project:orders-db"',
+        ].join("\n"),
+        projectId: "sample-project",
+      });
+    },
+  );
 
   it("creates a Workflows log query", () => {
     const target: CloudLoggingTarget = {
