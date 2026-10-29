@@ -1,4 +1,6 @@
 import { Action, ActionPanel, Detail, Icon } from "@raycast/api";
+import { GoogleAuthenticationRequiredError } from "../auth/GoogleAuthenticationRequiredError";
+import { launchAuthenticatedCommand } from "../auth/launch";
 
 type Props = {
   error: Error;
@@ -6,6 +8,8 @@ type Props = {
 };
 
 export const ErrorDetail = ({ error, onRetry }: Props) => {
+  const needsSignIn = error instanceof GoogleAuthenticationRequiredError;
+  const retry = needsSignIn ? () => launchAuthenticatedCommand() : onRetry;
   const markdown = `
 # Error Fetching Data
 
@@ -18,9 +22,9 @@ Please make sure you have authenticated and selected the right project.
     <Detail
       markdown={markdown.trim()}
       actions={
-        onRetry ? (
+        retry ? (
           <ActionPanel>
-            <Action title="Retry" icon={Icon.ArrowClockwise} onAction={onRetry} />
+            <Action title={needsSignIn ? "Sign in to Google" : "Retry"} icon={Icon.ArrowClockwise} onAction={retry} />
           </ActionPanel>
         ) : undefined
       }

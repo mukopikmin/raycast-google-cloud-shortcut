@@ -20,41 +20,48 @@ const provider = OAuthService.google({
 
 const session = createGoogleSession(provider, OAUTH_CLIENT_ID);
 
-export const google = { client: provider.client, authorize: session.authorize };
 export const refreshGoogleAccessToken = session.refresh;
 
-export const withGoogleAccessToken = <Props extends object>(Component: ComponentType<Props>) => {
-  const WrappedComponent = (props: Props) => {
-    // Keep authorization failures in view state instead of throwing a rejected
-    // promise during rendering. Recheck credentials whenever a list is opened.
-    const { data: accessToken, isLoading, error, revalidate } = usePromise(google.authorize, [], { onError: () => {} });
+const withGoogleSession =
+  (authorize: () => Promise<string>) =>
+  <Props extends object>(Component: ComponentType<Props>) => {
+    const WrappedComponent = (props: Props) => {
+      // Keep authorization failures in view state instead of throwing a rejected
+      // promise during rendering. Recheck credentials whenever a list is opened.
+      const { data: accessToken, isLoading, error, revalidate } = usePromise(authorize, [], { onError: () => {} });
 
-    if (isLoading) return <List isLoading />;
-    if (error) {
-      return (
-        <ErrorDetail
-          error={error}
-          onRetry={async () => {
-            await revalidate();
-          }}
-        />
-      );
-    }
-    if (!accessToken) return <List isLoading />;
+      if (isLoading) return <List isLoading />;
+      if (error) {
+        return (
+          <ErrorDetail
+            error={error}
+            onRetry={async () => {
+              await revalidate();
+            }}
+          />
+        );
+      }
+      if (!accessToken) return <List isLoading />;
 
-    return <Component {...props} />;
+      return <Component {...props} />;
+    };
+
+    WrappedComponent.displayName = `withGoogleAccessToken(${Component.displayName || Component.name})`;
+    return WrappedComponent;
   };
 
-  WrappedComponent.displayName = `withGoogleAccessToken(${Component.displayName || Component.name})`;
-  return WrappedComponent;
+export const withGoogleCommandAccessToken = withGoogleSession(session.authorize);
+export const withGoogleAccessToken = withGoogleSession(session.authorizeSilently);
+
+export const getGoogleAccessToken = (): string => {
+  const accessToken = session.getAccessToken();
+  if (!accessToken) throw new Error("useGoogleApi must be used inside withGoogleAccessToken.");
+  return accessToken;
 };
 
 export const useGoogleApi = (): AuthorizedGoogleApiClient => {
-  const accessToken = session.getAccessToken();
-  if (!accessToken) throw new Error("useGoogleApi must be used inside withGoogleAccessToken.");
-
   return {
     authorized: true,
-    accessToken,
+    accessToken: getGoogleAccessToken(),
   };
 };

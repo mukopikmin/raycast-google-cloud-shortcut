@@ -1,6 +1,7 @@
 import type { OAuth } from "@raycast/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createGoogleSession } from "./session";
+import { GoogleAuthenticationRequiredError } from "./GoogleAuthenticationRequiredError";
 
 const tokenSet = (accessToken = "old-access", expired = true, refreshToken: string | undefined = "refresh") =>
   ({ accessToken, refreshToken, isExpired: () => expired }) as OAuth.TokenSet;
@@ -52,30 +53,54 @@ describe("Google session recovery", () => {
     expect(authorize).not.toHaveBeenCalled();
   });
 
-  it.each(["authorize", "refresh"] as const)(
-    "returns the new login token after invalid_rapt via %s",
+  it("returns the new login token after invalid_rapt at the command entry", async () => {
+    fetchMock.mockResolvedValue(
+      Response.json({ error: "invalid_grant", error_subtype: "invalid_rapt" }, { status: 400 }),
+    );
+    const session = createGoogleSession({ client, authorize }, "client");
+    await expect(session.authorize()).resolves.toBe("reauthorized-access");
+    expect(session.getAccessToken()).toBe("reauthorized-access");
+    expect(client.removeTokens).toHaveBeenCalledOnce();
+    expect(authorize).toHaveBeenCalledOnce();
+  });
+
+  it.each(["authorizeSilently", "refresh"] as const)(
+    "requests command-level authentication instead of opening OAuth from %s",
     async (method) => {
-      fetchMock.mockResolvedValue(
+      fetchMock.mockImplementation(async () =>
         Response.json({ error: "invalid_grant", error_subtype: "invalid_rapt" }, { status: 400 }),
       );
       const session = createGoogleSession({ client, authorize }, "client");
-      await expect(session[method]()).resolves.toBe("reauthorized-access");
-      expect(session.getAccessToken()).toBe("reauthorized-access");
-      expect(client.removeTokens).toHaveBeenCalledOnce();
+      await expect(session[method]()).rejects.toBeInstanceOf(GoogleAuthenticationRequiredError);
+      expect(client.removeTokens).not.toHaveBeenCalled();
+      expect(authorize).not.toHaveBeenCalled();
+      // Only the command entry is allowed to show the native OAuth overlay.
+      await expect(session.authorize()).resolves.toBe("reauthorized-access");
       expect(authorize).toHaveBeenCalledOnce();
     },
   );
 
+  it.each(["authorizeSilently", "refresh"] as const)(
+    "does not open OAuth for missing tokens via %s",
+    async (method) => {
+      stored = undefined;
+      const session = createGoogleSession({ client, authorize }, "client");
+      await expect(session[method]()).rejects.toBeInstanceOf(GoogleAuthenticationRequiredError);
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(authorize).not.toHaveBeenCalled();
+    },
+  );
+
   it("shares simultaneous recovery and reuses the token for late 401 responses", async () => {
-    fetchMock.mockResolvedValue(Response.json({ error: "invalid_grant" }, { status: 400 }));
+    fetchMock.mockResolvedValue(Response.json({ access_token: "refreshed-access" }));
     const session = createGoogleSession({ client, authorize }, "client");
     await expect(Promise.all([session.refresh("old-access"), session.refresh("old-access")])).resolves.toEqual([
-      "reauthorized-access",
-      "reauthorized-access",
+      "refreshed-access",
+      "refreshed-access",
     ]);
-    await expect(session.refresh("old-access")).resolves.toBe("reauthorized-access");
+    await expect(session.refresh("old-access")).resolves.toBe("refreshed-access");
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(authorize).toHaveBeenCalledOnce();
+    expect(authorize).not.toHaveBeenCalled();
   });
 
   it.each([429, 500])("preserves credentials on transient HTTP %s errors and allows retry", async (status) => {

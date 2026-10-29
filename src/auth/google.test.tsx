@@ -2,7 +2,8 @@ import type { OAuth } from "@raycast/api";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorDetail } from "../components/ErrorDetail";
-import { refreshGoogleAccessToken, useGoogleApi, withGoogleAccessToken } from "./google";
+import { refreshGoogleAccessToken, useGoogleApi, withGoogleAccessToken, withGoogleCommandAccessToken } from "./google";
+import { GoogleAuthenticationRequiredError } from "./GoogleAuthenticationRequiredError";
 
 const provider = vi.hoisted(() => ({
   client: { getTokens: vi.fn(), setTokens: vi.fn(), removeTokens: vi.fn() },
@@ -56,7 +57,9 @@ const tokenSet = (accessToken = "valid-access", expired = false) =>
 
 const ResourceList = ({ projectId }: { projectId: string }) => <>{`${projectId}:${useGoogleApi().accessToken}`}</>;
 const WrappedList = withGoogleAccessToken(ResourceList);
+const WrappedCommand = withGoogleCommandAccessToken(ResourceList);
 const render = () => WrappedList({ projectId: "project" });
+const renderCommand = () => WrappedCommand({ projectId: "project" });
 const fetchMock = vi.fn<typeof fetch>();
 
 describe("resource list authorization", () => {
@@ -97,15 +100,15 @@ describe("resource list authorization", () => {
     expect(useGoogleApi().accessToken).toBe("recovered");
   });
 
-  it("recovers from expired session credentials before the first resource fetch", async () => {
+  it("recovers from expired session credentials at the command root before mounting resources", async () => {
     provider.client.getTokens.mockResolvedValue(tokenSet("expired", true));
     fetchMock.mockResolvedValueOnce(
       Response.json({ error: "invalid_grant", error_subtype: "invalid_rapt" }, { status: 400 }),
     );
     provider.authorize.mockResolvedValueOnce("reauthorized-access");
-    render();
+    renderCommand();
     await runtime.settle();
-    expect(render().type).toBe(ResourceList);
+    expect(renderCommand().type).toBe(ResourceList);
     expect(useGoogleApi().accessToken).toBe("reauthorized-access");
     expect(provider.client.removeTokens).toHaveBeenCalledOnce();
     expect(provider.authorize).toHaveBeenCalledOnce();
@@ -114,17 +117,50 @@ describe("resource list authorization", () => {
   it("keeps cancelled reauthorization recoverable when the list is reopened", async () => {
     provider.client.getTokens.mockResolvedValue(undefined);
     provider.authorize.mockRejectedValueOnce(new Error("Authorization cancelled"));
-    render();
+    renderCommand();
     await runtime.settle();
-    expect(render()).toMatchObject({ type: ErrorDetail, props: { error: { message: "Authorization cancelled" } } });
+    expect(renderCommand()).toMatchObject({
+      type: ErrorDetail,
+      props: { error: { message: "Authorization cancelled" } },
+    });
 
     runtime.reset();
     provider.authorize.mockResolvedValueOnce("new-login");
-    render();
+    renderCommand();
     await runtime.settle();
-    expect(render().type).toBe(ResourceList);
+    expect(renderCommand().type).toBe(ResourceList);
     expect(useGoogleApi().accessToken).toBe("new-login");
     expect(provider.authorize).toHaveBeenCalledTimes(2);
+  });
+
+  it("never opens the native OAuth overlay in a pushed resource view", async () => {
+    provider.client.getTokens.mockResolvedValue(tokenSet("expired", true));
+    fetchMock.mockResolvedValueOnce(Response.json({ error: "invalid_grant" }, { status: 400 }));
+    render();
+    await runtime.settle();
+    const failure = render() as ReactElement<Parameters<typeof ErrorDetail>[0]>;
+    expect(failure.type).toBe(ErrorDetail);
+    expect(failure.props.error).toBeInstanceOf(GoogleAuthenticationRequiredError);
+    expect(provider.authorize).not.toHaveBeenCalled();
+    expect(provider.client.removeTokens).not.toHaveBeenCalled();
+  });
+
+  it("keeps resource views unmounted until command-level sign-in finishes", async () => {
+    provider.client.getTokens.mockResolvedValue(undefined);
+    let completeSignIn!: (token: string) => void;
+    provider.authorize.mockImplementationOnce(
+      () =>
+        new Promise<string>((resolve) => {
+          completeSignIn = resolve;
+        }),
+    );
+    renderCommand();
+    await vi.waitFor(() => expect(provider.authorize).toHaveBeenCalledOnce());
+    expect(renderCommand()).toMatchObject({ type: "List", props: { isLoading: true } });
+    completeSignIn("signed-in");
+    await runtime.settle();
+    expect(renderCommand().type).toBe(ResourceList);
+    expect(useGoogleApi().accessToken).toBe("signed-in");
   });
 
   it("rechecks expiration when another resource list is opened", async () => {

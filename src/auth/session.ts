@@ -1,4 +1,5 @@
 import type { OAuth } from "@raycast/api";
+import { GoogleAuthenticationRequiredError } from "./GoogleAuthenticationRequiredError";
 
 type OAuthProvider = {
   client: Pick<OAuth.PKCEClient, "getTokens" | "setTokens" | "removeTokens">;
@@ -11,7 +12,7 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
   let pending: Promise<string> | undefined;
   let accessToken: string | undefined;
 
-  const acquire = async (forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
+  const acquire = async (interactive: boolean, forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
     const tokens = await provider.client.getTokens();
     if (tokens?.accessToken) {
       if (rejectedToken && tokens.accessToken !== rejectedToken && !tokens.isExpired()) {
@@ -44,16 +45,18 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
         }
       }
 
-      // Expired/rejected credentials cannot be refreshed. Start a fresh PKCE flow
-      // and return its result, including for session-policy errors (invalid_rapt).
+      // The native OAuth overlay must be opened by the command entry, never by
+      // a pushed resource view or an API request in that view.
+      if (!interactive) throw new GoogleAuthenticationRequiredError();
       await provider.client.removeTokens();
     }
+    if (!interactive) throw new GoogleAuthenticationRequiredError();
     return provider.authorize();
   };
 
-  const run = (forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
+  const run = (interactive: boolean, forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
     if (!pending) {
-      pending = acquire(forceRefresh, rejectedToken)
+      pending = acquire(interactive, forceRefresh, rejectedToken)
         .then((token) => {
           accessToken = token;
           return token;
@@ -66,8 +69,9 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
   };
 
   return {
-    authorize: () => run(false),
-    refresh: (rejectedToken?: string) => run(true, rejectedToken),
+    authorize: () => run(true, false),
+    authorizeSilently: () => run(false, false),
+    refresh: (rejectedToken?: string) => run(false, true, rejectedToken),
     getAccessToken: () => accessToken,
   };
 };
