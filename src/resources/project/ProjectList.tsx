@@ -4,14 +4,21 @@ import { ServiceList } from "../../service/ServiceList";
 import { useProjects } from "./useProjects";
 import { useProjectHistory } from "./useProjectHistory";
 import { sortProjectsByRecency } from "./history";
+import { isGoogleAuthenticationError } from "../../auth/GoogleAuthenticationError";
 
 export const ProjectList = () => {
-  const { projects, isLoading, error, refreshProjects } = useProjects();
+  const { projects, isLoading, error, refreshProjects, signInAndRefreshProjects } = useProjects();
   const history = useProjectHistory();
   const displayError = error || history.error;
 
   if (displayError) {
-    return <ErrorDetail error={displayError} />;
+    return (
+      <ErrorDetail
+        error={displayError}
+        onRetry={refreshProjects}
+        onSignIn={isGoogleAuthenticationError(displayError) ? signInAndRefreshProjects : undefined}
+      />
+    );
   }
 
   return (

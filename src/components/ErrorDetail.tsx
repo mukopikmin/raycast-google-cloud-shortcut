@@ -1,17 +1,37 @@
-import { Detail } from "@raycast/api";
+import { Action, ActionPanel, Detail, Icon } from "@raycast/api";
+import { useContext } from "react";
+import { isGoogleAuthenticationError } from "../auth/GoogleAuthenticationError";
+import { GoogleAuthenticationContext } from "../auth/GoogleAuthenticationContext";
 
 type Props = {
   error: Error;
+  onRetry?: () => Promise<void>;
+  onSignIn?: () => Promise<void>;
 };
 
-export const ErrorDetail = ({ error }: Props) => {
+export const ErrorDetail = ({ error, onRetry, onSignIn }: Props) => {
+  const needsSignIn = isGoogleAuthenticationError(error);
+  const recoverSession = useContext(GoogleAuthenticationContext);
+  const signIn = onSignIn ?? (needsSignIn ? recoverSession : undefined);
   const markdown = `
-# Error Fetching Data
+# ${signIn ? "Google Sign-In" : "Error Fetching Data"}
 
 **Message:**
 ${error.message}
 
-Please make sure you have authenticated and selected the right project.
+${signIn ? "Press Enter to sign in to Google." : "Please make sure you have authenticated and selected the right project."}
   `;
-  return <Detail markdown={markdown.trim()} />;
+  return (
+    <Detail
+      markdown={markdown.trim()}
+      actions={
+        signIn || onRetry ? (
+          <ActionPanel>
+            {signIn && <Action title="Sign in to Google" icon={Icon.Person} onAction={signIn} />}
+            {onRetry && <Action title="Retry" icon={Icon.ArrowClockwise} onAction={onRetry} />}
+          </ActionPanel>
+        ) : undefined
+      }
+    />
+  );
 };
