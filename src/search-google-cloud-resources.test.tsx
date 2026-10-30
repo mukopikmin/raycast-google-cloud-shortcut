@@ -17,8 +17,10 @@ import { GoogleAuthenticationError } from "./auth/GoogleAuthenticationError";
 import type { GoogleCloudLaunchContext } from "./auth/launch";
 
 const mocks = vi.hoisted(() => ({
-  authorize: vi.fn(),
-  launch: vi.fn<typeof launchCommand>(async () => undefined),
+  readToken: vi.fn(),
+  launch: vi.fn<typeof launchCommand>(async (options) => {
+    if (options.name === "search-google-cloud-resources") throw new Error("command cannot launch itself");
+  }),
   push: vi.fn(),
   effects: [] as (() => void)[],
   restored: { current: false },
@@ -41,8 +43,8 @@ vi.mock("@raycast/api", () => ({
   useNavigation: () => ({ push: mocks.push }),
 }));
 vi.mock("./auth/google", () => ({
-  withGoogleCommandAccessToken: (component: FunctionComponent) => (props: object) => {
-    mocks.authorize();
+  withGoogleAccessToken: (component: FunctionComponent) => (props: object) => {
+    mocks.readToken();
     return createElement(component, props);
   },
 }));
@@ -74,7 +76,7 @@ const flushEffects = () => mocks.effects.splice(0).forEach((effect) => effect())
 describe("OAuth at the command entry", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.authorize.mockReset();
+    mocks.readToken.mockReset();
     mocks.effects.length = 0;
     mocks.restored.current = false;
     command();
@@ -85,29 +87,29 @@ describe("OAuth at the command entry", () => {
     const actions = elements(ServiceList({ projectId: "project-1" }));
     expect(actions.filter(({ type }) => type === "OpenInBrowser")).toHaveLength(3);
     expect(actions.filter(({ props }) => props.onAction)).toHaveLength(2);
-    expect(mocks.authorize).not.toHaveBeenCalled();
+    expect(mocks.readToken).not.toHaveBeenCalled();
     expect(mocks.launch).not.toHaveBeenCalled();
   });
 
   it.each([
     ["Cloud Run Services", "services"],
     ["Cloud Tasks", "regions"],
-  ] as const)("relaunches at the root before opening %s", async (name, resource) => {
+  ] as const)("routes through the separate authentication command before opening %s", async (name, resource) => {
     const action = elements(ServiceList({ projectId: "project-1" })).find(
       ({ props }) => props.title === `Show ${name} Resources`,
     );
     await action?.props.onAction?.();
     expect(mocks.launch).toHaveBeenCalledWith({
-      name: "search-google-cloud-resources",
+      name: "authenticate-google-cloud",
       type: LaunchType.UserInitiated,
       context: { authentication: { type: "resources", projectId: "project-1", serviceName: name } },
     });
     expect(mocks.push).not.toHaveBeenCalled();
-    expect(mocks.authorize).not.toHaveBeenCalled();
+    expect(mocks.readToken).not.toHaveBeenCalled();
 
     const entry = command({ authentication: { type: "resources", projectId: "project-1", serviceName: name } });
     const authenticated = render(entry);
-    expect(mocks.authorize).toHaveBeenCalledOnce();
+    expect(mocks.readToken).toHaveBeenCalledOnce();
     expect(mocks.push).not.toHaveBeenCalled();
     expect(render(authenticated).type).toBe(ProjectList);
     flushEffects();
@@ -129,11 +131,11 @@ describe("OAuth at the command entry", () => {
     const actions = elements(ErrorDetail({ error }));
     await actions.find(({ props }) => props.title === "Sign in to Google")!.props.onAction!();
     expect(mocks.launch).toHaveBeenCalledWith({
-      name: "search-google-cloud-resources",
+      name: "authenticate-google-cloud",
       type: LaunchType.UserInitiated,
       context: { authentication: request, forceSignIn: true },
     });
-    expect(mocks.authorize).not.toHaveBeenCalled();
+    expect(mocks.readToken).not.toHaveBeenCalled();
   });
 
   it("does not offer sign-in for a non-authentication data error", () => {
@@ -144,15 +146,15 @@ describe("OAuth at the command entry", () => {
 
   it("refreshes projects only after command-level authentication", () => {
     const authenticated = render(command({ authentication: { type: "refresh-projects" } }));
-    expect(mocks.authorize).toHaveBeenCalledOnce();
+    expect(mocks.readToken).toHaveBeenCalledOnce();
     expect(render(authenticated).props).toEqual({ refreshOnLoad: true });
     flushEffects();
     expect(mocks.push).not.toHaveBeenCalled();
   });
 
-  it("passes an explicit sign-in request to the authenticated command", () => {
+  it("uses saved credentials after returning from the authentication command", () => {
     const request = { type: "resources", projectId: "project-1", serviceName: "Cloud Run Services" } as const;
-    expect(command({ authentication: request, forceSignIn: true }).props).toEqual({ request, forceSignIn: true });
+    expect(command({ authentication: request, forceSignIn: true }).props).toEqual({ request });
   });
 
   it("resets the recovery destination for a normal command launch", async () => {
@@ -161,7 +163,7 @@ describe("OAuth at the command entry", () => {
     const actions = elements(ErrorDetail({ error: new GoogleAuthenticationRequiredError() }));
     await actions.find(({ props }) => props.title === "Sign in to Google")!.props.onAction!();
     expect(mocks.launch).toHaveBeenCalledWith({
-      name: "search-google-cloud-resources",
+      name: "authenticate-google-cloud",
       type: LaunchType.UserInitiated,
       context: { authentication: { type: "refresh-projects" }, forceSignIn: true },
     });

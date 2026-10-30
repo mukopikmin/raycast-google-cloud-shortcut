@@ -141,4 +141,15 @@ describe("Google session recovery", () => {
     expect(client.removeTokens).not.toHaveBeenCalled();
     expect(authorize).toHaveBeenCalledOnce();
   });
+
+  it("lets a separate command read saved credentials without repeating interactive authorization", async () => {
+    const signInSession = createGoogleSession({ client, authorize }, "client");
+    await expect(signInSession.signIn()).resolves.toBe("reauthorized-access");
+    const resourceSession = createGoogleSession({ client, authorize }, "client");
+    expect(resourceSession.getAccessToken()).toBeUndefined();
+    await expect(resourceSession.authorizeSilently()).resolves.toBe("reauthorized-access");
+    expect(resourceSession.getAccessToken()).toBe("reauthorized-access");
+    expect(authorize).toHaveBeenCalledOnce();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

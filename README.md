@@ -16,6 +16,10 @@ TBD
 2. Run `npm install` to install dependencies.
 3. Run `npm run dev` to build the extension and install it in your local Raycast.
 
+## Signing In
+
+Resource access and project refresh open **Sign in to Google Cloud** when authentication is needed, then return to the selected resource list or the refreshed project list. You can also run this command directly to sign in again. Browsing cached projects and opening Console shortcuts do not require signing in.
+
 ## Refreshing Projects
 
 If a project is missing, renamed, or no longer available, refresh the cached project list:
