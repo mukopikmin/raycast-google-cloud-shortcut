@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Detail, Icon } from "@raycast/api";
+import { useContext } from "react";
 import { isGoogleAuthenticationError } from "../auth/GoogleAuthenticationError";
-import { launchAuthenticatedCommand } from "../auth/launch";
+import { GoogleAuthenticationContext } from "../auth/GoogleAuthenticationContext";
 
 type Props = {
   error: Error;
@@ -10,7 +11,8 @@ type Props = {
 
 export const ErrorDetail = ({ error, onRetry, onSignIn }: Props) => {
   const needsSignIn = isGoogleAuthenticationError(error);
-  const signIn = onSignIn ?? (needsSignIn ? () => launchAuthenticatedCommand(undefined, true) : undefined);
+  const recoverSession = useContext(GoogleAuthenticationContext);
+  const signIn = onSignIn ?? (needsSignIn ? recoverSession : undefined);
   const markdown = `
 # ${signIn ? "Google Sign-In" : "Error Fetching Data"}
 

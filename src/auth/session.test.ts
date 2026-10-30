@@ -52,7 +52,7 @@ describe("Google session recovery", () => {
     expect(authorize).not.toHaveBeenCalled();
   });
 
-  it("returns the new login token after invalid_rapt at the command entry", async () => {
+  it("returns the new login token after invalid_rapt during interactive authorization", async () => {
     fetchMock.mockResolvedValue(
       Response.json({ error: "invalid_grant", error_subtype: "invalid_rapt" }, { status: 400 }),
     );
@@ -64,7 +64,7 @@ describe("Google session recovery", () => {
   });
 
   it.each(["authorizeSilently", "refresh"] as const)(
-    "requests command-level authentication instead of opening OAuth from %s",
+    "reports a sign-in requirement instead of opening OAuth from %s",
     async (method) => {
       fetchMock.mockImplementation(async () =>
         Response.json({ error: "invalid_grant", error_subtype: "invalid_rapt" }, { status: 400 }),
@@ -73,7 +73,7 @@ describe("Google session recovery", () => {
       await expect(session[method]()).rejects.toBeInstanceOf(GoogleAuthenticationRequiredError);
       expect(client.removeTokens).not.toHaveBeenCalled();
       expect(authorize).not.toHaveBeenCalled();
-      // Only the command entry is allowed to show the native OAuth overlay.
+      // Only the interactive authorizer is allowed to show the native OAuth overlay.
       await expect(session.authorize()).resolves.toBe("reauthorized-access");
       expect(authorize).toHaveBeenCalledOnce();
     },
@@ -142,7 +142,7 @@ describe("Google session recovery", () => {
     expect(authorize).toHaveBeenCalledOnce();
   });
 
-  it("lets a separate command read saved credentials without repeating interactive authorization", async () => {
+  it("shares saved credentials across session instances without repeating interactive authorization", async () => {
     const signInSession = createGoogleSession({ client, authorize }, "client");
     await expect(signInSession.signIn()).resolves.toBe("reauthorized-access");
     const resourceSession = createGoogleSession({ client, authorize }, "client");

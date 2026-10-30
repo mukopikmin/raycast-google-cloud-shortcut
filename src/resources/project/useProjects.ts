@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getGoogleAccessToken } from "../../auth/google";
-import { launchAuthenticatedCommand } from "../../auth/launch";
+import { authorizeGoogleAccessToken, signInToGoogle } from "../../auth/google";
 import { listProjects } from "./api";
 import { cacheProjects, listCachedProjects } from "./cache";
 import { Project } from "./types";
@@ -10,6 +9,7 @@ type LoadingResult = {
   isLoading: true;
   error: undefined;
   refreshProjects: () => Promise<void>;
+  signInAndRefreshProjects: () => Promise<void>;
 };
 
 type SuccessResult = {
@@ -17,6 +17,7 @@ type SuccessResult = {
   isLoading: false;
   error: undefined;
   refreshProjects: () => Promise<void>;
+  signInAndRefreshProjects: () => Promise<void>;
 };
 
 type ErrorResult = {
@@ -24,21 +25,25 @@ type ErrorResult = {
   isLoading: false;
   error: Error;
   refreshProjects: () => Promise<void>;
+  signInAndRefreshProjects: () => Promise<void>;
 };
 
 type UseProjectsResult = LoadingResult | SuccessResult | ErrorResult;
 
-export const useProjects = (refreshOnLoad = false): UseProjectsResult => {
+export const useProjects = (): UseProjectsResult => {
   const [projects, setProjects] = useState<Project[] | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
 
-  const refreshProjects = useCallback(async () => {
+  const loadProjects = useCallback(async (freshSignIn: boolean) => {
     setIsLoading(true);
     setError(undefined);
 
     try {
-      await launchAuthenticatedCommand({ type: "refresh-projects" });
+      const accessToken = await (freshSignIn ? signInToGoogle() : authorizeGoogleAccessToken());
+      const fetchedProjects = await listProjects(accessToken);
+      await cacheProjects(fetchedProjects);
+      setProjects(fetchedProjects);
     } catch (error) {
       setProjects(undefined);
       setError(error instanceof Error ? error : new Error(String(error)));
@@ -47,20 +52,15 @@ export const useProjects = (refreshOnLoad = false): UseProjectsResult => {
     }
   }, []);
 
+  const refreshProjects = useCallback(() => loadProjects(false), [loadProjects]);
+  const signInAndRefreshProjects = useCallback(() => loadProjects(true), [loadProjects]);
+
   useEffect(() => {
     (async () => {
       setIsLoading(true);
       setError(undefined);
 
       try {
-        if (refreshOnLoad) {
-          const fetchedProjects = await listProjects(getGoogleAccessToken());
-          await cacheProjects(fetchedProjects);
-          setProjects(fetchedProjects);
-          setIsLoading(false);
-          return;
-        }
-
         const cachedProjects = await listCachedProjects();
 
         if (cachedProjects !== undefined) {
@@ -76,7 +76,7 @@ export const useProjects = (refreshOnLoad = false): UseProjectsResult => {
         setIsLoading(false);
       }
     })();
-  }, [refreshOnLoad, refreshProjects]);
+  }, [refreshProjects]);
 
   if (error) {
     return {
@@ -84,6 +84,7 @@ export const useProjects = (refreshOnLoad = false): UseProjectsResult => {
       isLoading: false,
       error,
       refreshProjects,
+      signInAndRefreshProjects,
     };
   }
 
@@ -93,11 +94,13 @@ export const useProjects = (refreshOnLoad = false): UseProjectsResult => {
         isLoading: true,
         error: undefined,
         refreshProjects,
+        signInAndRefreshProjects,
       }
     : {
         projects: projects ?? [],
         isLoading: false,
         error: undefined,
         refreshProjects,
+        signInAndRefreshProjects,
       };
 };

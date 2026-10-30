@@ -24,13 +24,6 @@
         "gcp",
         "gc"
       ]
-    },
-    {
-      "name": "authenticate-google-cloud",
-      "title": "Sign in to Google Cloud",
-      "subtitle": "Google Cloud Shortcut",
-      "description": "Sign in to Google and return to Google Cloud resources.",
-      "mode": "view"
     }
   ],
   "dependencies": {

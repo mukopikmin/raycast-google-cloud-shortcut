@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useProjects } from "./useProjects";
-import { getGoogleAccessToken } from "../../auth/google";
-import { launchAuthenticatedCommand } from "../../auth/launch";
+import { authorizeGoogleAccessToken, signInToGoogle } from "../../auth/google";
+import { GoogleAuthenticationError } from "../../auth/GoogleAuthenticationError";
 import { cacheProjects, listCachedProjects } from "./cache";
 import { listProjects } from "./api";
 
@@ -11,14 +11,20 @@ const mocks = vi.hoisted(() => ({
   setProjects: vi.fn(),
   setLoading: vi.fn(),
   setError: vi.fn(),
+  launch: vi.fn(async () => {
+    throw new Error("command cannot launch itself");
+  }),
 }));
 vi.mock("react", () => ({
   useState: (initial: unknown) => [initial, [mocks.setProjects, mocks.setLoading, mocks.setError][mocks.stateIndex++]],
   useCallback: (callback: unknown) => callback,
   useEffect: (effect: () => void) => mocks.effects.push(effect),
 }));
-vi.mock("../../auth/google", () => ({ getGoogleAccessToken: vi.fn(() => "access") }));
-vi.mock("../../auth/launch", () => ({ launchAuthenticatedCommand: vi.fn(async () => undefined) }));
+vi.mock("@raycast/api", () => ({ launchCommand: mocks.launch }));
+vi.mock("../../auth/google", () => ({
+  authorizeGoogleAccessToken: vi.fn(async () => "access"),
+  signInToGoogle: vi.fn(async () => "new-access"),
+}));
 vi.mock("./cache", () => ({ cacheProjects: vi.fn(async () => undefined), listCachedProjects: vi.fn() }));
 vi.mock("./api", () => ({ listProjects: vi.fn() }));
 
@@ -28,7 +34,7 @@ const flushEffects = async () => {
 };
 const projects = [{ id: "project-1", name: "Project One" }];
 
-describe("cached project browsing", () => {
+describe("project browsing and authentication", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.effects.length = 0;
@@ -45,56 +51,65 @@ describe("cached project browsing", () => {
       await flushEffects();
       expect(mocks.setProjects).toHaveBeenCalledWith(cached);
       expect(mocks.setLoading).toHaveBeenLastCalledWith(false);
-      expect(getGoogleAccessToken).not.toHaveBeenCalled();
+      expect(authorizeGoogleAccessToken).not.toHaveBeenCalled();
       expect(listProjects).not.toHaveBeenCalled();
-      expect(launchAuthenticatedCommand).not.toHaveBeenCalled();
+      expect(mocks.launch).not.toHaveBeenCalled();
     },
   );
 
-  it("requests an authenticated launch when there is no project cache", async () => {
+  it("authenticates and fetches projects on uncached startup without launching another command", async () => {
     vi.mocked(listCachedProjects).mockResolvedValue(undefined);
     useProjects();
     await flushEffects();
-    expect(launchAuthenticatedCommand).toHaveBeenCalledExactlyOnceWith({ type: "refresh-projects" });
-    expect(getGoogleAccessToken).not.toHaveBeenCalled();
-    expect(listProjects).not.toHaveBeenCalled();
-  });
-
-  it("explicit refresh also requests authentication at the command entry", async () => {
-    const { refreshProjects } = useProjects();
-    await refreshProjects();
-    expect(launchAuthenticatedCommand).toHaveBeenCalledExactlyOnceWith({ type: "refresh-projects" });
-    expect(getGoogleAccessToken).not.toHaveBeenCalled();
-  });
-
-  it("fetches and replaces the cache after an authenticated refresh launch", async () => {
-    useProjects(true);
-    await flushEffects();
+    expect(authorizeGoogleAccessToken).toHaveBeenCalledOnce();
     expect(listProjects).toHaveBeenCalledExactlyOnceWith("access");
     expect(cacheProjects).toHaveBeenCalledWith(projects);
     expect(mocks.setProjects).toHaveBeenCalledWith(projects);
-    expect(listCachedProjects).not.toHaveBeenCalled();
-    expect(launchAuthenticatedCommand).not.toHaveBeenCalled();
+    expect(mocks.launch).not.toHaveBeenCalled();
   });
 
-  it("exposes refresh errors without overwriting cached projects", async () => {
+  it("refreshes projects in the current command", async () => {
+    const { refreshProjects } = useProjects();
+    await refreshProjects();
+    expect(listProjects).toHaveBeenCalledExactlyOnceWith("access");
+    expect(cacheProjects).toHaveBeenCalledWith(projects);
+    expect(mocks.setProjects).toHaveBeenCalledWith(projects);
+    expect(signInToGoogle).not.toHaveBeenCalled();
+    expect(mocks.launch).not.toHaveBeenCalled();
+  });
+
+  it("exposes API errors without overwriting cached projects", async () => {
     const error = new Error("API unavailable");
     vi.mocked(listProjects).mockRejectedValueOnce(error);
-    useProjects(true);
-    await flushEffects();
+    await useProjects().refreshProjects();
     expect(mocks.setError).toHaveBeenLastCalledWith(error);
     expect(mocks.setLoading).toHaveBeenLastCalledWith(false);
     expect(cacheProjects).not.toHaveBeenCalled();
   });
 
-  it("returns a launch failure instead of fetching with expired credentials", async () => {
-    const error = new Error("Command unavailable");
-    vi.mocked(launchAuthenticatedCommand).mockRejectedValueOnce(error);
-    const { refreshProjects } = useProjects();
-    await refreshProjects();
+  it("starts fresh sign-in and retries project loading after an authentication failure", async () => {
+    const error = new GoogleAuthenticationError("Refresh failed");
+    vi.mocked(authorizeGoogleAccessToken).mockRejectedValueOnce(error);
+    const actions = useProjects();
+    await actions.refreshProjects();
     expect(mocks.setError).toHaveBeenLastCalledWith(error);
-    expect(mocks.setLoading).toHaveBeenLastCalledWith(false);
-    expect(getGoogleAccessToken).not.toHaveBeenCalled();
     expect(listProjects).not.toHaveBeenCalled();
+    await actions.signInAndRefreshProjects();
+    expect(signInToGoogle).toHaveBeenCalledOnce();
+    expect(listProjects).toHaveBeenCalledExactlyOnceWith("new-access");
+    expect(mocks.setProjects).toHaveBeenCalledWith(projects);
+    expect(mocks.launch).not.toHaveBeenCalled();
+  });
+
+  it("keeps a cancelled sign-in recoverable without replacing cached data", async () => {
+    const error = new GoogleAuthenticationError("Authorization cancelled");
+    vi.mocked(signInToGoogle).mockRejectedValueOnce(error);
+    const actions = useProjects();
+    await actions.signInAndRefreshProjects();
+    expect(mocks.setError).toHaveBeenLastCalledWith(error);
+    expect(cacheProjects).not.toHaveBeenCalled();
+    await actions.signInAndRefreshProjects();
+    expect(listProjects).toHaveBeenCalledExactlyOnceWith("new-access");
+    expect(mocks.launch).not.toHaveBeenCalled();
   });
 });

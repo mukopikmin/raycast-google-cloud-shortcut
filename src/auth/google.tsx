@@ -1,9 +1,10 @@
-import { useState, type ComponentType } from "react";
+import { useCallback, useState, type ComponentType } from "react";
 import { List } from "@raycast/api";
 import { OAuthService, usePromise } from "@raycast/utils";
 import { ErrorDetail } from "../components/ErrorDetail";
 import { createGoogleSession } from "./session";
 import { createGoogleAuthorization, GOOGLE_SCOPE } from "./authorize";
+import { GoogleAuthenticationContext } from "./GoogleAuthenticationContext";
 
 const OAUTH_CLIENT_ID = "943687027492-ljl37fkhv85e5h6uuevj16dvq4n721ga.apps.googleusercontent.com";
 
@@ -25,53 +26,50 @@ const session = createGoogleSession(
 );
 
 export const refreshGoogleAccessToken = session.refresh;
+export const authorizeGoogleAccessToken = session.authorize;
+export const signInToGoogle = session.signIn;
 
-const withGoogleSession =
-  (authorize: () => Promise<string>, signIn?: () => Promise<string>) =>
-  <Props extends object>(Component: ComponentType<Props>) => {
-    const WrappedComponent = (props: Props & { forceSignIn?: boolean }) => {
-      const [signInAttempt, setSignInAttempt] = useState(0);
-      const attempt = signInAttempt + (props.forceSignIn ? 1 : 0);
-      // Keep authorization failures in view state instead of throwing a rejected
-      // promise during rendering. Recheck credentials whenever a list is opened.
-      const { data, isLoading, error, revalidate } = usePromise(
-        async (attempt: number) => ({
-          accessToken: await (signIn && attempt > 0 ? signIn() : authorize()),
-          attempt,
-        }),
-        [attempt],
-        { onError: () => {} },
+export const withGoogleAccessToken = <Props extends object>(Component: ComponentType<Props>) => {
+  const WrappedComponent = (props: Props) => {
+    const [signInAttempt, setSignInAttempt] = useState(0);
+    const signIn = useCallback(async () => {
+      setSignInAttempt((attempt) => attempt + 1);
+    }, []);
+    // Keep authorization failures in view state instead of throwing a rejected
+    // promise during rendering. Recheck credentials whenever a list is opened.
+    const { data, isLoading, error, revalidate } = usePromise(
+      async (attempt: number) => ({
+        accessToken: await (attempt > 0 ? session.signIn() : session.authorize()),
+        attempt,
+      }),
+      [signInAttempt],
+      { onError: () => {} },
+    );
+
+    if (isLoading || (data && data.attempt !== signInAttempt)) return <List isLoading />;
+    if (error) {
+      return (
+        <ErrorDetail
+          error={error}
+          onSignIn={signIn}
+          onRetry={async () => {
+            await revalidate();
+          }}
+        />
       );
+    }
+    if (!data?.accessToken) return <List isLoading />;
 
-      if (isLoading || (data && data.attempt !== attempt)) return <List isLoading />;
-      if (error) {
-        return (
-          <ErrorDetail
-            error={error}
-            onSignIn={
-              signIn
-                ? async () => {
-                    setSignInAttempt((attempt) => attempt + 1);
-                  }
-                : undefined
-            }
-            onRetry={async () => {
-              await revalidate();
-            }}
-          />
-        );
-      }
-      if (!data?.accessToken) return <List isLoading />;
-
-      return <Component {...props} />;
-    };
-
-    WrappedComponent.displayName = `withGoogleAccessToken(${Component.displayName || Component.name})`;
-    return WrappedComponent;
+    return (
+      <GoogleAuthenticationContext.Provider value={signIn}>
+        <Component {...props} />
+      </GoogleAuthenticationContext.Provider>
+    );
   };
 
-export const withGoogleCommandAccessToken = withGoogleSession(session.authorize, session.signIn);
-export const withGoogleAccessToken = withGoogleSession(session.authorizeSilently);
+  WrappedComponent.displayName = `withGoogleAccessToken(${Component.displayName || Component.name})`;
+  return WrappedComponent;
+};
 
 export const getGoogleAccessToken = (): string => {
   const accessToken = session.getAccessToken();

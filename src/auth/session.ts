@@ -10,7 +10,7 @@ type OAuthProvider = {
 
 type Operation = "authorize" | "silent" | "refresh" | "sign-in";
 
-// API requests can refresh tokens silently. Only the command entry can sign in.
+// API requests refresh silently; views own interactive sign-in and recovery.
 export const createGoogleSession = (provider: OAuthProvider, clientId: string) => {
   let pending: Promise<string> | undefined;
   let accessToken: string | undefined;
@@ -50,8 +50,8 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
         }
       }
 
-      // The native OAuth overlay must be opened by the command entry, never by
-      // a pushed resource view or an API request in that view.
+      // API requests report a sign-in requirement to their view instead of
+      // opening an OAuth overlay during an in-flight data request.
       if (!interactive) throw new GoogleAuthenticationRequiredError();
     }
     if (!interactive) throw new GoogleAuthenticationRequiredError();

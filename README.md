@@ -18,7 +18,7 @@ TBD
 
 ## Signing In
 
-Resource access and project refresh open **Sign in to Google Cloud** when authentication is needed, then return to the selected resource list or the refreshed project list. You can also run this command directly to sign in again. Browsing cached projects and opening Console shortcuts do not require signing in.
+Resource access and project refresh ask you to sign in when authentication is needed. Sign-in completes in the current command, then the selected list loads. If authentication fails, use **Sign in to Google** in the error screen to start a fresh login. Browsing cached projects and opening Console shortcuts do not require signing in.
 
 ## Refreshing Projects
 
