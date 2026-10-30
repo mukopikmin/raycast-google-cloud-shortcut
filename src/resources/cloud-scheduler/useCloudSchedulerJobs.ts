@@ -7,7 +7,7 @@ import { usePromise } from "@raycast/utils";
 import { CloudSchedulerJob } from "./types";
 import { listCloudSchedulerJobsPage } from "./api";
 import { useGoogleApi } from "../../auth/google";
-import { GoogleAuthenticationRequiredError } from "../../auth/GoogleAuthenticationRequiredError";
+import { GoogleAuthenticationError } from "../../auth/GoogleAuthenticationError";
 
 const CLOUD_SCHEDULER_JOB_PAGE_SIZE = 50;
 const getName = (resource: CloudSchedulerJob) => resource.name;
@@ -167,7 +167,7 @@ export const useCloudSchedulerJobs = (
             onPageChecked,
           );
         } catch (error) {
-          if (error instanceof GoogleAuthenticationRequiredError) throw error;
+          if (error instanceof GoogleAuthenticationError) throw error;
           if (scheduledJobs.length === 0 && defaultPage.resources.length === 0 && !defaultPage.nextPageToken) {
             throw error;
           }
@@ -243,7 +243,7 @@ export const useCloudSchedulerJobs = (
           onPageChecked,
         );
       } catch (error) {
-        if (error instanceof GoogleAuthenticationRequiredError) throw error;
+        if (error instanceof GoogleAuthenticationError) throw error;
         if (defaultPage.resources.length === 0 && !defaultPage.nextPageToken) {
           throw error;
         }

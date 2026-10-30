@@ -13,6 +13,7 @@ import { ProjectList } from "./resources/project/ProjectList";
 import { ServiceList } from "./service/ServiceList";
 import { ErrorDetail } from "./components/ErrorDetail";
 import { GoogleAuthenticationRequiredError } from "./auth/GoogleAuthenticationRequiredError";
+import { GoogleAuthenticationError } from "./auth/GoogleAuthenticationError";
 import type { GoogleCloudLaunchContext } from "./auth/launch";
 
 const mocks = vi.hoisted(() => ({
@@ -30,7 +31,7 @@ vi.mock("react", async (importOriginal) => ({
   useState: () => [undefined, vi.fn()],
 }));
 vi.mock("@raycast/api", () => ({
-  Action: Object.assign("Action", { OpenInBrowser: "OpenInBrowser" }),
+  Action: Object.assign(() => null, { OpenInBrowser: "OpenInBrowser" }),
   ActionPanel: "ActionPanel",
   List: Object.assign("List", { Item: "Item" }),
   Detail: "Detail",
@@ -118,17 +119,27 @@ describe("OAuth at the command entry", () => {
     expect(mocks.push).toHaveBeenCalledTimes(2);
   });
 
-  it("keeps the requested destination for sign-in after a session expires in an open list", async () => {
+  it.each([
+    new GoogleAuthenticationRequiredError(),
+    new GoogleAuthenticationError("Token refresh failed"),
+    Object.assign(new Error("Token refresh failed"), { name: "GoogleAuthenticationError" }),
+  ])("keeps the requested destination for sign-in after an authentication error: %s", async (error) => {
     const request = { type: "resources", projectId: "project-1", serviceName: "Cloud Run Services" } as const;
     command({ authentication: request });
-    const actions = elements(ErrorDetail({ error: new GoogleAuthenticationRequiredError() }));
+    const actions = elements(ErrorDetail({ error }));
     await actions.find(({ props }) => props.title === "Sign in to Google")!.props.onAction!();
     expect(mocks.launch).toHaveBeenCalledWith({
       name: "search-google-cloud-resources",
       type: LaunchType.UserInitiated,
-      context: { authentication: request },
+      context: { authentication: request, forceSignIn: true },
     });
     expect(mocks.authorize).not.toHaveBeenCalled();
+  });
+
+  it("does not offer sign-in for a non-authentication data error", () => {
+    const actions = elements(ErrorDetail({ error: new Error("Resource unavailable") }));
+    expect(actions.some(({ props }) => props.title === "Sign in to Google")).toBe(false);
+    expect(mocks.launch).not.toHaveBeenCalled();
   });
 
   it("refreshes projects only after command-level authentication", () => {
@@ -139,6 +150,11 @@ describe("OAuth at the command entry", () => {
     expect(mocks.push).not.toHaveBeenCalled();
   });
 
+  it("passes an explicit sign-in request to the authenticated command", () => {
+    const request = { type: "resources", projectId: "project-1", serviceName: "Cloud Run Services" } as const;
+    expect(command({ authentication: request, forceSignIn: true }).props).toEqual({ request, forceSignIn: true });
+  });
+
   it("resets the recovery destination for a normal command launch", async () => {
     command({ authentication: { type: "resources", projectId: "previous", serviceName: "Cloud Tasks" } });
     command();
@@ -147,7 +163,7 @@ describe("OAuth at the command entry", () => {
     expect(mocks.launch).toHaveBeenCalledWith({
       name: "search-google-cloud-resources",
       type: LaunchType.UserInitiated,
-      context: { authentication: { type: "refresh-projects" } },
+      context: { authentication: { type: "refresh-projects" }, forceSignIn: true },
     });
   });
 });

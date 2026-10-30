@@ -18,8 +18,7 @@ describe("Google session recovery", () => {
     }),
   };
   const authorize = vi.fn(async () => {
-    // The SDK must only see a fresh login, never its broken refresh branch.
-    expect(stored).toBeUndefined();
+    // A fresh PKCE flow replaces saved credentials only after it succeeds.
     stored = tokenSet("reauthorized-access", false);
     return stored.accessToken;
   });
@@ -60,7 +59,7 @@ describe("Google session recovery", () => {
     const session = createGoogleSession({ client, authorize }, "client");
     await expect(session.authorize()).resolves.toBe("reauthorized-access");
     expect(session.getAccessToken()).toBe("reauthorized-access");
-    expect(client.removeTokens).toHaveBeenCalledOnce();
+    expect(client.removeTokens).not.toHaveBeenCalled();
     expect(authorize).toHaveBeenCalledOnce();
   });
 
@@ -131,5 +130,15 @@ describe("Google session recovery", () => {
     stored = undefined;
     await expect(createGoogleSession({ client, authorize }, "client").authorize()).resolves.toBe("reauthorized-access");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("explicit sign-in bypasses token validation and refresh", async () => {
+    stored = tokenSet("rejected-but-unexpired", false);
+    const session = createGoogleSession({ client, authorize }, "client");
+    await expect(session.signIn()).resolves.toBe("reauthorized-access");
+    expect(client.getTokens).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(client.removeTokens).not.toHaveBeenCalled();
+    expect(authorize).toHaveBeenCalledOnce();
   });
 });

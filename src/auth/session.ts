@@ -1,24 +1,29 @@
 import type { OAuth } from "@raycast/api";
 import { GoogleAuthenticationRequiredError } from "./GoogleAuthenticationRequiredError";
+import { GoogleAuthenticationError } from "./GoogleAuthenticationError";
 
 type OAuthProvider = {
-  client: Pick<OAuth.PKCEClient, "getTokens" | "setTokens" | "removeTokens">;
+  client: Pick<OAuth.PKCEClient, "getTokens" | "setTokens">;
+  // Starts fresh PKCE authorization rather than reusing stored tokens.
   authorize: () => Promise<string>;
 };
 
-// Own refresh handling: OAuthService can discard the result of reauthorization
-// after a failed refresh and return the expired access token instead.
+type Operation = "authorize" | "silent" | "refresh" | "sign-in";
+
+// API requests can refresh tokens silently. Only the command entry can sign in.
 export const createGoogleSession = (provider: OAuthProvider, clientId: string) => {
   let pending: Promise<string> | undefined;
   let accessToken: string | undefined;
 
-  const acquire = async (interactive: boolean, forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
+  const acquire = async (operation: Operation, rejectedToken?: string): Promise<string> => {
+    if (operation === "sign-in") return provider.authorize();
+    const interactive = operation === "authorize";
     const tokens = await provider.client.getTokens();
     if (tokens?.accessToken) {
       if (rejectedToken && tokens.accessToken !== rejectedToken && !tokens.isExpired()) {
         return tokens.accessToken;
       }
-      if (!forceRefresh && !tokens.isExpired()) return tokens.accessToken;
+      if (operation !== "refresh" && !tokens.isExpired()) return tokens.accessToken;
 
       if (tokens.refreshToken) {
         const response = await fetch("https://oauth2.googleapis.com/token", {
@@ -48,18 +53,21 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
       // The native OAuth overlay must be opened by the command entry, never by
       // a pushed resource view or an API request in that view.
       if (!interactive) throw new GoogleAuthenticationRequiredError();
-      await provider.client.removeTokens();
     }
     if (!interactive) throw new GoogleAuthenticationRequiredError();
     return provider.authorize();
   };
 
-  const run = (interactive: boolean, forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
+  const run = (operation: Operation, rejectedToken?: string): Promise<string> => {
     if (!pending) {
-      pending = acquire(interactive, forceRefresh, rejectedToken)
+      pending = acquire(operation, rejectedToken)
         .then((token) => {
           accessToken = token;
           return token;
+        })
+        .catch((error: unknown) => {
+          if (error instanceof GoogleAuthenticationError) throw error;
+          throw new GoogleAuthenticationError(error instanceof Error ? error.message : String(error), { cause: error });
         })
         .finally(() => {
           pending = undefined;
@@ -69,9 +77,10 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
   };
 
   return {
-    authorize: () => run(true, false),
-    authorizeSilently: () => run(false, false),
-    refresh: (rejectedToken?: string) => run(false, true, rejectedToken),
+    authorize: () => run("authorize"),
+    signIn: () => run("sign-in"),
+    authorizeSilently: () => run("silent"),
+    refresh: (rejectedToken?: string) => run("refresh", rejectedToken),
     getAccessToken: () => accessToken,
   };
 };

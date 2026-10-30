@@ -27,7 +27,11 @@ const AuthenticatedCommand = withGoogleCommandAccessToken(({ request }: { reques
 export const Command = ({ launchContext }: LaunchProps<{ launchContext: GoogleCloudLaunchContext }>) => {
   const request = launchContext?.authentication;
   setAuthenticationRequest(request);
-  return request ? <AuthenticatedCommand request={request} /> : <ProjectList />;
+  return request ? (
+    <AuthenticatedCommand request={request} forceSignIn={launchContext?.forceSignIn} />
+  ) : (
+    <ProjectList />
+  );
 };
 
 export default Command;
