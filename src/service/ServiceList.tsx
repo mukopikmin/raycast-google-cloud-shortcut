@@ -24,7 +24,9 @@ export const ServiceList = (props: Props) => {
           ].filter((a) => a.text || a.icon)}
           actions={
             <ActionPanel>
-              {service.isSearchEnabled && service.searchAction}
+              {service.isSearchEnabled && (
+                <Action.Push title={`Show ${service.name} Resources`} target={service.target} />
+              )}
               <Action.OpenInBrowser url={`${service.url}?project=${props.projectId}`} />
             </ActionPanel>
           }

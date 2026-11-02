@@ -1,4 +1,3 @@
-import { Action } from "@raycast/api";
 import { AlloyDbClusterList } from "../resources/alloydb/AlloyDbClusterList";
 import { CloudRunServicesList } from "../resources/cloud-run/CloudRunServicesList";
 import { CloudRunJobsList } from "../resources/cloud-run/CloudRunJobsList";
@@ -11,7 +10,7 @@ import { isSearchEnabledService, SearchDisabledService, SearchEnabledService } f
 import { availableServices } from "./constants";
 import { PubSubSubscriptionList } from "../resources/pubsub/PubSubSubscriptionList";
 import { WorkflowList } from "../resources/workflows/WorkflowList";
-import { withRegionSelect } from "../region/withRegionSelect";
+import { createRegionList } from "../region/createRegionList";
 import { CloudTasksQueueList } from "../resources/cloud-tasks/CloudTasksQueueList";
 import { listCloudTasksLocations } from "../resources/cloud-tasks/api";
 import { ArtifactRegistryRepositoryList } from "../resources/artifact-registry/ArtifactRegistryRepositoryList";
@@ -37,7 +36,7 @@ export type UserServiceResourceResult = {
 type SearchableService = SearchEnabledService & {
   keywords: string[];
   isSearchEnabled: true;
-  searchAction: React.ReactNode;
+  target: React.ReactNode;
 };
 
 type NonSearchableService = SearchDisabledService & {
@@ -48,7 +47,6 @@ type NonSearchableService = SearchDisabledService & {
 export const useServiceResource = (projectId: string): UserServiceResourceResult => {
   return {
     services: availableServices.map((service): SearchableService | NonSearchableService => {
-      const title = `Show ${service.name} Resources`;
       const keywords = [service.name, service.category];
 
       if (isSearchEnabledService(service)) {
@@ -58,58 +56,57 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudRunServicesList projectId={projectId} />} />,
+              target: <CloudRunServicesList projectId={projectId} />,
             };
           case "Cloud Run Jobs":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudRunJobsList projectId={projectId} />} />,
+              target: <CloudRunJobsList projectId={projectId} />,
             };
           case "Cloud Run Worker Pools":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudRunWorkerPoolsList projectId={projectId} />} />,
+              target: <CloudRunWorkerPoolsList projectId={projectId} />,
             };
           case "Cloud SQL":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudSqlInstanceList projectId={projectId} />} />,
+              target: <CloudSqlInstanceList projectId={projectId} />,
             };
           case "AlloyDB":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<AlloyDbClusterList projectId={projectId} />} />,
+              target: <AlloyDbClusterList projectId={projectId} />,
             };
           case "Cloud Storage":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudStorageBucketList projectId={projectId} />} />,
+              target: <CloudStorageBucketList projectId={projectId} />,
             };
           case "Cloud Functions":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudFunctionList projectId={projectId} />} />,
+              target: <CloudFunctionList projectId={projectId} />,
             };
           case "Cloud Tasks":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: withRegionSelect({
+              target: createRegionList({
                 projectId,
-                title,
                 target: CloudTasksQueueList,
                 fetchLocations: listCloudTasksLocations,
               }),
@@ -119,37 +116,36 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<SecretManagerList projectId={projectId} />} />,
+              target: <SecretManagerList projectId={projectId} />,
             };
           case "Service Accounts":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<ServiceAccountList projectId={projectId} />} />,
+              target: <ServiceAccountList projectId={projectId} />,
             };
           case "Pub/Sub":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<PubSubSubscriptionList projectId={projectId} />} />,
+              target: <PubSubSubscriptionList projectId={projectId} />,
             };
           case "Workflows":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<WorkflowList projectId={projectId} />} />,
+              target: <WorkflowList projectId={projectId} />,
             };
           case "Cloud Scheduler":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: withRegionSelect({
+              target: createRegionList({
                 projectId,
-                title,
                 target: CloudSchedulerJobList,
                 fetchLocations: listCloudSchedulerLocations,
               }),
@@ -159,9 +155,8 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: withRegionSelect({
+              target: createRegionList({
                 projectId,
-                title,
                 target: ArtifactRegistryRepositoryList,
                 fetchLocations: listArtifactRegistryLocations,
               }),
@@ -171,51 +166,49 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<ErrorReportingErrorList projectId={projectId} />} />,
+              target: <ErrorReportingErrorList projectId={projectId} />,
             };
           case "Cloud Monitoring":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<AlertPolicyList projectId={projectId} />} />,
+              target: <AlertPolicyList projectId={projectId} />,
             };
           case "App Engine":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<AppEngineServiceList projectId={projectId} />} />,
+              target: <AppEngineServiceList projectId={projectId} />,
             };
           case "Cloud Build":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<CloudBuildList projectId={projectId} />} />,
+              target: <CloudBuildList projectId={projectId} />,
             };
           case "Kubernetes Engine":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: (
-                <Action.Push title={title} target={<KubernetesEngineClusterList projectId={projectId} />} />
-              ),
+              target: <KubernetesEngineClusterList projectId={projectId} />,
             };
           case "Compute Engine":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<ComputeEngineInstanceList projectId={projectId} />} />,
+              target: <ComputeEngineInstanceList projectId={projectId} />,
             };
           case "Load Balancing":
             return {
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<LoadBalancerList projectId={projectId} />} />,
+              target: <LoadBalancerList projectId={projectId} />,
             };
           case "VPC Networks":
           case "IAM & Admin":
@@ -223,11 +216,11 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction:
+              target:
                 service.name === "VPC Networks" ? (
-                  <Action.Push title={title} target={<VpcNetworkList projectId={projectId} />} />
+                  <VpcNetworkList projectId={projectId} />
                 ) : (
-                  <Action.Push title={title} target={<IamList projectId={projectId} />} />
+                  <IamList projectId={projectId} />
                 ),
             };
           case "Workload Identity Federation":
@@ -235,7 +228,7 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               ...service,
               keywords,
               isSearchEnabled: true,
-              searchAction: <Action.Push title={title} target={<WorkloadIdentityPoolList projectId={projectId} />} />,
+              target: <WorkloadIdentityPoolList projectId={projectId} />,
             };
           default:
             service satisfies never;
