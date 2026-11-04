@@ -194,6 +194,11 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/cloudpubsub",
   },
   {
+    name: "API Gateway",
+    category: "Integration",
+    url: "https://console.cloud.google.com/api-gateway",
+  },
+  {
     name: "Eventarc",
     category: "Integration",
     url: "https://console.cloud.google.com/eventarc",

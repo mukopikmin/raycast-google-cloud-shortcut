@@ -101,6 +101,7 @@ Cloud Logging shortcuts are available for selected resource types. The table bel
 | Cloud Trace | Operations | - | - |
 | Cloud Profiler | Operations | - | - |
 | Pub/Sub | Integration | Topics & Subscriptions | - |
+| API Gateway | Integration | Gateways | - |
 | Eventarc | Integration | - | - |
 | Workflows | Integration | Workflows | Yes |
 | Cloud Scheduler | Integration | Jobs | - |
