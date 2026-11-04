@@ -1,3 +1,4 @@
+import { ApiGatewayList } from "../resources/api-gateway/ApiGatewayList";
 import { AlloyDbClusterList } from "../resources/alloydb/AlloyDbClusterList";
 import { CloudRunServicesList } from "../resources/cloud-run/CloudRunServicesList";
 import { CloudRunJobsList } from "../resources/cloud-run/CloudRunJobsList";
@@ -51,6 +52,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
 
       if (isSearchEnabledService(service)) {
         switch (service.name) {
+          case "API Gateway":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              target: <ApiGatewayList projectId={projectId} />,
+            };
           case "Cloud Run Services":
             return {
               ...service,

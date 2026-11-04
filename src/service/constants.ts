@@ -189,6 +189,11 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/profiler",
   },
   {
+    name: "API Gateway",
+    category: "Integration",
+    url: "https://console.cloud.google.com/api-gateway/gateways",
+  },
+  {
     name: "Pub/Sub",
     category: "Integration",
     url: "https://console.cloud.google.com/cloudpubsub",

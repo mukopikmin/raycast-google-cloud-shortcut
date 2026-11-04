@@ -40,6 +40,7 @@ describe("availableServices", () => {
       "Error Reporting": "https://console.cloud.google.com/errors",
       "Cloud Trace": "https://console.cloud.google.com/traces/explorer",
       "Cloud Profiler": "https://console.cloud.google.com/profiler",
+      "API Gateway": "https://console.cloud.google.com/api-gateway/gateways",
       "Pub/Sub": "https://console.cloud.google.com/cloudpubsub",
       Eventarc: "https://console.cloud.google.com/eventarc",
       Workflows: "https://console.cloud.google.com/workflows",

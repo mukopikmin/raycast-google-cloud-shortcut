@@ -13,6 +13,7 @@ export type SearchDisabledService = {
 };
 
 export const searchEnabledServiceNames = [
+  "API Gateway",
   "Cloud Run Services",
   "Cloud Run Jobs",
   "Cloud Run Worker Pools",
