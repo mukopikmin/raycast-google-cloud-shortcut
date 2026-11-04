@@ -41,6 +41,7 @@ describe("availableServices", () => {
       "Cloud Trace": "https://console.cloud.google.com/traces/explorer",
       "Cloud Profiler": "https://console.cloud.google.com/profiler",
       "Pub/Sub": "https://console.cloud.google.com/cloudpubsub",
+      "API Gateway": "https://console.cloud.google.com/api-gateway",
       Eventarc: "https://console.cloud.google.com/eventarc",
       Workflows: "https://console.cloud.google.com/workflows",
       "Cloud Scheduler": "https://console.cloud.google.com/cloudscheduler",
