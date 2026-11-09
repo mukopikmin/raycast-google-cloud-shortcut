@@ -24,6 +24,7 @@ export const searchEnabledServiceNames = [
   "Secret Manager",
   "Service Accounts",
   "Pub/Sub",
+  "API Gateway",
   "Workflows",
   "Cloud Scheduler",
   "Artifact Registry",
