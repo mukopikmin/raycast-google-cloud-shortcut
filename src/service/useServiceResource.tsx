@@ -27,6 +27,7 @@ import { ComputeEngineInstanceList } from "../resources/compute-engine/ComputeEn
 import { LoadBalancerList } from "../resources/load-balancing/LoadBalancerList";
 import { IamList } from "../resources/iam/IamList";
 import { AlertPolicyList } from "../resources/cloud-monitoring/AlertPolicyList";
+import { DatastoreDatabaseList } from "../datastore/DatastoreDatabaseList";
 import { WorkloadIdentityPoolList } from "../workload-identity/WorkloadIdentityPoolList";
 
 export type UserServiceResourceResult = {
@@ -78,6 +79,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               target: <CloudSqlInstanceList projectId={projectId} />,
+            };
+          case "Datastore":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              searchAction: <Action.Push title={title} target={<DatastoreDatabaseList projectId={projectId} />} />,
             };
           case "AlloyDB":
             return {
