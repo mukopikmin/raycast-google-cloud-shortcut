@@ -15,7 +15,7 @@ export const availableServices: Service[] = [
   {
     name: "Cloud Run Services",
     category: "Compute",
-    url: "https://console.cloud.google.com/run",
+    url: "https://console.cloud.google.com/run/services",
   },
   {
     name: "Cloud Run Jobs",
@@ -25,7 +25,7 @@ export const availableServices: Service[] = [
   {
     name: "Cloud Run Worker Pools",
     category: "Compute",
-    url: "https://console.cloud.google.com/run/workerpools",
+    url: "https://console.cloud.google.com/run/worker-pools",
   },
   {
     name: "Cloud Functions",

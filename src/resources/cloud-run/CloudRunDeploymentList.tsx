@@ -1,7 +1,9 @@
+import { RESOURCE_LIMIT } from "../../pagination/pages";
 import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { ErrorDetail } from "../../components/ErrorDetail";
+import { SearchDiagnosticsAction } from "../../components/SearchDiagnosticsAction";
 import { CloudRunDeployment } from "./types";
 
 export type CloudRunDeploymentListResult = {
@@ -11,13 +13,20 @@ export type CloudRunDeploymentListResult = {
   hasMore: boolean;
   isTruncated: boolean;
   loadMore: () => Promise<void>;
+  reload?: () => Promise<void>;
   error: Error | undefined;
   unreachable?: string[];
+  isSearching?: boolean;
+  pagesSearched?: number;
+  resourcesSearched?: number;
 };
 
 type Props = CloudRunDeploymentListResult & {
+  projectId?: string;
   resourceName: string;
   secondaryAction?: (deployment: CloudRunDeployment) => React.ReactNode;
+  searchText?: string;
+  onSearchTextChange?: (text: string) => void;
 };
 
 export const CloudRunDeploymentList = ({
@@ -27,13 +36,22 @@ export const CloudRunDeploymentList = ({
   hasMore,
   isTruncated,
   loadMore,
+  reload,
   error,
   resourceName,
   secondaryAction,
   unreachable = [],
+  searchText: controlledSearchText,
+  onSearchTextChange,
+  isSearching = false,
+  pagesSearched = 0,
+  resourcesSearched = 0,
+  projectId,
 }: Props) => {
-  const [searchText, setSearchText] = useState("");
-  const canLoadMore = hasMore && !isTruncated;
+  const [localSearchText, setLocalSearchText] = useState("");
+  const searchText = controlledSearchText ?? localSearchText;
+  const canLoadMore = hasMore;
+  const searching = Boolean(searchText.trim());
 
   if (error) {
     return <ErrorDetail error={error} />;
@@ -42,30 +60,78 @@ export const CloudRunDeploymentList = ({
   const loadMoreAction = canLoadMore ? (
     <Action title={`Load More ${resourceName}`} icon={Icon.ArrowDown} onAction={loadMore} />
   ) : null;
+  const reloadAction =
+    isTruncated && reload ? <Action title="Reload from Start" icon={Icon.ArrowClockwise} onAction={reload} /> : null;
+  const diagnosticsAction =
+    projectId && searching ? (
+      <SearchDiagnosticsAction
+        projectId={projectId}
+        resourceName={`Cloud Run ${resourceName}`}
+        searchText={searchText}
+        isLoading={isLoading || isLoadingMore}
+        isSearching={isSearching}
+        pagesSearched={pagesSearched}
+        resourcesSearched={resourcesSearched}
+        displayedCount={deployments?.length ?? 0}
+        hasMore={hasMore}
+        isTruncated={isTruncated}
+        unreachable={unreachable}
+      />
+    ) : null;
 
   return (
     <List
       isLoading={isLoading || isLoadingMore}
-      filtering
-      onSearchTextChange={setSearchText}
-      searchBarPlaceholder={`Search loaded ${resourceName.toLowerCase()}...`}
+      filtering={false}
+      throttle
+      searchText={searchText}
+      onSearchTextChange={(text) => {
+        setLocalSearchText(text);
+        onSearchTextChange?.(text);
+      }}
+      searchBarPlaceholder={`Search all ${resourceName.toLowerCase()}...`}
     >
       <List.EmptyView
         icon={Icon.MagnifyingGlass}
         title={
-          searchText && hasMore
-            ? `No loaded ${resourceName.toLowerCase()} match this search`
-            : `No ${resourceName.toLowerCase()} found`
+          isSearching
+            ? `Searching all ${resourceName.toLowerCase()}...`
+            : searchText
+              ? `No ${resourceName.toLowerCase()} match this search`
+              : `No ${resourceName.toLowerCase()} found`
         }
         description={
-          searchText && hasMore
-            ? `More ${resourceName.toLowerCase()} may exist. Load more to expand the searchable set.`
-            : isTruncated
-              ? `The ${resourceName.toLowerCase()} list is truncated to keep memory usage bounded.`
-              : undefined
+          isSearching
+            ? `${pagesSearched} API pages checked. Searching includes resources outside the displayed results.`
+            : searchText && hasMore
+              ? "More matching results may exist. Load more to continue searching."
+              : isTruncated
+                ? searching
+                  ? "More than 500 resources match. Refine the search to find a specific service."
+                  : "Earlier displayed results are omitted. Search to find them, or reload from start."
+                : searching && !isLoading
+                  ? `Checked ${resourcesSearched} ${resourceName.toLowerCase()} across ${pagesSearched} API pages.`
+                  : undefined
         }
-        actions={loadMoreAction ? <ActionPanel>{loadMoreAction}</ActionPanel> : undefined}
+        actions={
+          loadMoreAction || reloadAction || diagnosticsAction ? (
+            <ActionPanel>
+              {loadMoreAction}
+              {reloadAction}
+              {diagnosticsAction}
+            </ActionPanel>
+          ) : undefined
+        }
       />
+      {isSearching && (
+        <List.Item
+          id="cloud-run-search-progress"
+          title={`Searching all ${resourceName}...`}
+          icon={Icon.MagnifyingGlass}
+          accessories={[{ text: `${pagesSearched} API pages checked` }]}
+          actions={diagnosticsAction ? <ActionPanel>{diagnosticsAction}</ActionPanel> : undefined}
+        />
+      )}
       {unreachable.length > 0 && (
         <List.Item
           id="cloud-run-services-unreachable"
@@ -89,6 +155,8 @@ export const CloudRunDeploymentList = ({
                 }
               />
               {loadMoreAction}
+              {reloadAction}
+              {diagnosticsAction}
             </ActionPanel>
           }
         />
@@ -108,6 +176,8 @@ export const CloudRunDeploymentList = ({
               {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
               {secondaryAction?.(deployment)}
               {loadMoreAction}
+              {reloadAction}
+              {diagnosticsAction}
             </ActionPanel>
           }
         />
@@ -119,16 +189,43 @@ export const CloudRunDeploymentList = ({
           keywords={[searchText]}
           icon={Icon.ArrowDown}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
-          actions={<ActionPanel>{loadMoreAction}</ActionPanel>}
+          subtitle={
+            (deployments?.length ?? 0) >= RESOURCE_LIMIT
+              ? "Loading more replaces the oldest displayed results"
+              : undefined
+          }
+          actions={
+            <ActionPanel>
+              {loadMoreAction}
+              {diagnosticsAction}
+            </ActionPanel>
+          }
         />
       )}
       {isTruncated && (
         <List.Item
           id={`cloud-run-${resourceName.toLowerCase().replaceAll(" ", "-")}-truncated`}
-          title={`${resourceName} List Truncated`}
+          title={
+            searching
+              ? `Showing Top ${RESOURCE_LIMIT} Matches`
+              : `Showing Latest ${RESOURCE_LIMIT} Loaded ${resourceName}`
+          }
+          subtitle={
+            searching
+              ? "Refine the search to narrow the results."
+              : "Search to find earlier results, or reload from start."
+          }
           keywords={[searchText]}
           icon={Icon.ExclamationMark}
           accessories={[{ text: `${deployments?.length ?? 0} loaded` }].filter((a) => a.text)}
+          actions={
+            reloadAction || diagnosticsAction ? (
+              <ActionPanel>
+                {reloadAction}
+                {diagnosticsAction}
+              </ActionPanel>
+            ) : undefined
+          }
         />
       )}
     </List>

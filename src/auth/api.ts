@@ -1,4 +1,5 @@
 import { refreshGoogleAccessToken } from "./google";
+import { GoogleApiError } from "./GoogleApiError";
 
 const requestGoogleApi = (url: string, accessToken: string, init?: RequestInit) =>
   fetch(url, {
@@ -30,16 +31,20 @@ export const fetchGoogleApi = async <T>(url: string, accessToken: string, init?:
     const errorDetail = await getErrorDetail(response);
 
     if (response.status === 401) {
-      throw new Error(`Unauthorized (401): Access token is invalid or expired. URL: ${url} Response: ${errorDetail}`);
+      throw new GoogleApiError(
+        401,
+        `Unauthorized (401): Access token is invalid or expired. URL: ${url} Response: ${errorDetail}`,
+      );
     }
 
     if (response.status === 403) {
-      throw new Error(
+      throw new GoogleApiError(
+        403,
         `Forbidden (403): You don't have permission to access this resource. URL: ${url} Response: ${errorDetail}`,
       );
     }
 
-    throw new Error(`Failed to fetch (${response.status}): ${errorDetail}. URL: ${url}`);
+    throw new GoogleApiError(response.status, `Failed to fetch (${response.status}): ${errorDetail}. URL: ${url}`);
   }
 
   return (await response.json()) as T;
