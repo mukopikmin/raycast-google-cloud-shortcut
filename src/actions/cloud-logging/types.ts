@@ -1,5 +1,10 @@
 export type CloudLoggingTarget =
   | {
+      kind: "app-engine-service";
+      projectId: string;
+      name: string;
+    }
+  | {
       kind: "alloydb-cluster";
       projectId: string;
       clusterId: string;
@@ -16,6 +21,12 @@ export type CloudLoggingTarget =
       projectId: string;
       instanceId: string;
       region: string;
+    }
+  | {
+      kind: "gce-instance";
+      projectId: string;
+      instanceId: string;
+      zone: string;
     }
   | {
       kind: "cloud-function-gen1";

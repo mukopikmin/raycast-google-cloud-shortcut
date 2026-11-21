@@ -1,4 +1,5 @@
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { useAppEngineServices } from "./useAppEngineServices";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { withGoogleAccessToken } from "../../auth/google";
@@ -27,6 +28,7 @@ const AppEngineServiceListComponent = (props: Props) => {
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser url={service.url} />
+                <OpenCloudLoggingAction target={service} />
               </ActionPanel>
             }
           />
