@@ -942,7 +942,7 @@ describe("resource pagination beyond 500", () => {
       runtime.render(hook);
       await runtime.settle();
       if (stage === "load-more") {
-        expect(runtime.render(hook).scheduledJobs).toHaveLength(100);
+        expect(runtime.render(hook).scheduledJobs).toHaveLength(500);
         expired = true;
         await runtime.render(hook).loadMore();
       }
