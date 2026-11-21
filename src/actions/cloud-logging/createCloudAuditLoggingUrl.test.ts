@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createCloudAuditLoggingUrl } from "./createCloudAuditLoggingUrl";
-import { CloudLoggingTarget } from "./types";
+import { createCloudAuditLoggingUrl, type CloudAuditLoggingTarget } from "./createCloudAuditLoggingUrl";
 
 const parseCloudAuditLoggingUrl = (url: string): { query: string; projectId: string } => {
   const parsedUrl = new URL(url);
@@ -16,7 +15,7 @@ const parseCloudAuditLoggingUrl = (url: string): { query: string; projectId: str
   };
 };
 
-const targets: { name: string; target: CloudLoggingTarget; serviceName: string; resourceName: string }[] = [
+const targets: { name: string; target: CloudAuditLoggingTarget; serviceName: string; resourceName: string }[] = [
   {
     name: "App Engine service",
     target: { kind: "app-engine-service", projectId: "sample-project", name: "api-service" },
@@ -126,7 +125,7 @@ describe("createCloudAuditLoggingUrl", () => {
   });
 
   it("encodes special characters in query and project values", () => {
-    const target: CloudLoggingTarget = {
+    const target: CloudAuditLoggingTarget = {
       kind: "cloud-run-service",
       projectId: 'project with spaces & "quotes"',
       name: 'service/with spaces & "quotes"',

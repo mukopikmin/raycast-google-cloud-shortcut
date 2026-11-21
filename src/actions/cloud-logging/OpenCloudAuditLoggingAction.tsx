@@ -1,9 +1,8 @@
 import { Action } from "@raycast/api";
-import { createCloudAuditLoggingUrl } from "./createCloudAuditLoggingUrl";
-import { CloudLoggingTarget } from "./types";
+import { createCloudAuditLoggingUrl, type CloudAuditLoggingTarget } from "./createCloudAuditLoggingUrl";
 
 type Props = {
-  target: CloudLoggingTarget;
+  target: CloudAuditLoggingTarget;
 };
 
 export const OpenCloudAuditLoggingAction = ({ target }: Props) => {

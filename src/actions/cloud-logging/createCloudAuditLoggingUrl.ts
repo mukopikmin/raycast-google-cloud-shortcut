@@ -1,11 +1,13 @@
 import { CloudLoggingTarget } from "./types";
 
+export type CloudAuditLoggingTarget = Exclude<CloudLoggingTarget, { kind: "gce-instance" }>;
+
 type CloudAuditLoggingIdentity = {
   serviceName: string;
   resourceName: string;
 };
 
-const getCloudAuditLoggingIdentity = (target: CloudLoggingTarget): CloudAuditLoggingIdentity => {
+const getCloudAuditLoggingIdentity = (target: CloudAuditLoggingTarget): CloudAuditLoggingIdentity => {
   switch (target.kind) {
     case "app-engine-service":
       return {
@@ -55,7 +57,7 @@ const getCloudAuditLoggingIdentity = (target: CloudLoggingTarget): CloudAuditLog
   }
 };
 
-export const createCloudAuditLoggingUrl = (target: CloudLoggingTarget): string => {
+export const createCloudAuditLoggingUrl = (target: CloudAuditLoggingTarget): string => {
   const identity = getCloudAuditLoggingIdentity(target);
   const query = [
     `protoPayload.@type=${JSON.stringify("type.googleapis.com/google.cloud.audit.AuditLog")}`,

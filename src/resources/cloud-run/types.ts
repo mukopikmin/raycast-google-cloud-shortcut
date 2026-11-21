@@ -1,4 +1,7 @@
 import { CloudLoggingTarget } from "../../actions/cloud-logging/types";
+import { PageOptions } from "../../pagination/types";
+
+export type CloudRunPageOptions = PageOptions & { signal?: AbortSignal };
 
 export type CloudRunDeployment = {
   id: string;
@@ -51,6 +54,23 @@ export type CloudRunServicesPage = CloudRunDeploymentPage & {
   unreachable: string[];
 };
 
+export type CloudRunRegionStream = { region: string; nextPageToken?: string };
+export type CloudRunRegionalResult =
+  { stream: CloudRunRegionStream; page: CloudRunServicesPage } | { stream: CloudRunRegionStream; error: unknown };
+
+export type CloudRunServicesCursor = {
+  phase: "global" | "locations" | "regional" | "done";
+  globalNextPageToken?: string;
+  locationsNextPageToken?: string;
+  regions: string[];
+  ready: CloudRunRegionStream[];
+  inFlight: Map<string, Promise<CloudRunRegionalResult>>;
+  seenRegions: Set<string>;
+  completedRegions: Set<string>;
+  continuation: number;
+  controller: AbortController;
+};
+
 export type CloudRunServicesResponse = {
   items?: {
     metadata: {
@@ -63,6 +83,17 @@ export type CloudRunServicesResponse = {
   }[];
   metadata?: { continue?: string };
   unreachable?: string[];
+};
+
+export type CloudRunRegionalServicesResponse = {
+  services?: {
+    name: string;
+    uid?: string;
+    uri?: string;
+    labels?: Record<string, string>;
+    buildConfig?: { functionTarget?: string };
+  }[];
+  nextPageToken?: string;
 };
 
 export type CloudRunServicesState = {
