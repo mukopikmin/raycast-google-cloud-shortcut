@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchGoogleApi } from "./api";
 import { refreshGoogleAccessToken } from "./google";
+import { GoogleAuthenticationRequiredError } from "./GoogleAuthenticationRequiredError";
 
 vi.mock("./google", () => ({ refreshGoogleAccessToken: vi.fn() }));
 
@@ -41,5 +42,13 @@ describe("Google API authentication recovery", () => {
     await expect(fetchGoogleApi("https://example.com", "old-access")).rejects.toThrow("Unauthorized (401)");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(refreshGoogleAccessToken).toHaveBeenCalledOnce();
+  });
+
+  it("propagates a sign-in requirement from a 401 without retrying the rejected token", async () => {
+    const error = new GoogleAuthenticationRequiredError();
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    vi.mocked(refreshGoogleAccessToken).mockRejectedValueOnce(error);
+    await expect(fetchGoogleApi("https://example.com", "old-access")).rejects.toBe(error);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

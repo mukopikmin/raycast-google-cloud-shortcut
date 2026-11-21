@@ -7,6 +7,7 @@ import { useCloudRunWorkerPools } from "../resources/cloud-run/useCloudRunWorker
 import { usePubSubResources } from "../resources/pubsub/usePubSubResources";
 import { useCloudSchedulerJobs } from "../resources/cloud-scheduler/useCloudSchedulerJobs";
 import { GoogleApiError } from "../auth/GoogleApiError";
+import { GoogleAuthenticationRequiredError } from "../auth/GoogleAuthenticationRequiredError";
 
 const credentials = vi.hoisted(() => ({ accessToken: "token" }));
 
@@ -416,29 +417,31 @@ describe("resource pagination beyond 500", () => {
     expect(result.pagesSearched).toBe(9);
   });
 
-  it("stops outstanding parallel work on an authentication failure", async () => {
-    const signals: AbortSignal[] = [];
-    const failure = new GoogleApiError(401, "Unauthorized");
-    fetchMock.mockImplementation(async (url, _token, init) => {
-      if (url.includes("/locations/-/services"))
-        return { unreachable: Array.from({ length: 8 }, (_, index) => `region-${index}`) };
-      const signal = init!.signal as AbortSignal;
-      signals.push(signal);
-      if (url.includes("/region-0/")) throw failure;
-      return new Promise((_resolve, reject) =>
-        signal.addEventListener("abort", () => reject(Object.assign(new Error("Aborted"), { name: "AbortError" })), {
-          once: true,
-        }),
-      );
-    });
-    const hook = () => useCloudRunServices("project", "journal");
-    runtime.render(hook);
-    await runtime.settle();
-    expect(runtime.render(hook).error).toBe(failure);
-    expect(signals).toHaveLength(CLOUD_RUN_SEARCH_CONCURRENCY);
-    expect(signals.every((signal) => signal.aborted)).toBe(true);
-    expect(fetchMock).toHaveBeenCalledTimes(1 + CLOUD_RUN_SEARCH_CONCURRENCY);
-  });
+  it.each([new GoogleApiError(401, "Unauthorized"), new GoogleAuthenticationRequiredError()])(
+    "stops outstanding parallel work on an authentication failure: %s",
+    async (failure) => {
+      const signals: AbortSignal[] = [];
+      fetchMock.mockImplementation(async (url, _token, init) => {
+        if (url.includes("/locations/-/services"))
+          return { unreachable: Array.from({ length: 8 }, (_, index) => `region-${index}`) };
+        const signal = init!.signal as AbortSignal;
+        signals.push(signal);
+        if (url.includes("/region-0/")) throw failure;
+        return new Promise((_resolve, reject) =>
+          signal.addEventListener("abort", () => reject(Object.assign(new Error("Aborted"), { name: "AbortError" })), {
+            once: true,
+          }),
+        );
+      });
+      const hook = () => useCloudRunServices("project", "journal");
+      runtime.render(hook);
+      await runtime.settle();
+      expect(runtime.render(hook).error).toBe(failure);
+      expect(signals).toHaveLength(CLOUD_RUN_SEARCH_CONCURRENCY);
+      expect(signals.every((signal) => signal.aborted)).toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(1 + CLOUD_RUN_SEARCH_CONCURRENCY);
+    },
+  );
 
   it.each(["query", "project", "credentials", "reload"])(
     "fetches a fresh global list after %s changes without regional discovery",
@@ -925,6 +928,27 @@ describe("resource pagination beyond 500", () => {
     expect(result.error).toBeUndefined();
     expect(result.secrets).toHaveLength(100);
   });
+
+  it.each(["initial", "load-more"])(
+    "exposes a Cloud Scheduler sign-in requirement during %s loading",
+    async (stage) => {
+      const failure = new GoogleAuthenticationRequiredError();
+      let expired = stage === "initial";
+      fetchMock.mockImplementation(async (url) => {
+        if (expired && new URL(url).searchParams.has("legacyAppEngineCron")) throw failure;
+        return pageResponse(url);
+      });
+      const hook = () => useCloudSchedulerJobs("project", "us-central1");
+      runtime.render(hook);
+      await runtime.settle();
+      if (stage === "load-more") {
+        expect(runtime.render(hook).scheduledJobs).toHaveLength(100);
+        expired = true;
+        await runtime.render(hook).loadMore();
+      }
+      expect(runtime.render(hook).error).toBe(failure);
+    },
+  );
 
   it("preserves Cloud Scheduler partial success when legacy jobs cannot be read", async () => {
     fetchMock.mockImplementation(async (url) => {

@@ -1,23 +1,29 @@
 import type { OAuth } from "@raycast/api";
+import { GoogleAuthenticationRequiredError } from "./GoogleAuthenticationRequiredError";
+import { GoogleAuthenticationError } from "./GoogleAuthenticationError";
 
 type OAuthProvider = {
-  client: Pick<OAuth.PKCEClient, "getTokens" | "setTokens" | "removeTokens">;
+  client: Pick<OAuth.PKCEClient, "getTokens" | "setTokens">;
+  // Starts fresh PKCE authorization rather than reusing stored tokens.
   authorize: () => Promise<string>;
 };
 
-// Own refresh handling: OAuthService can discard the result of reauthorization
-// after a failed refresh and return the expired access token instead.
+type Operation = "authorize" | "silent" | "refresh" | "sign-in";
+
+// API requests refresh silently; views own interactive sign-in and recovery.
 export const createGoogleSession = (provider: OAuthProvider, clientId: string) => {
   let pending: Promise<string> | undefined;
   let accessToken: string | undefined;
 
-  const acquire = async (forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
+  const acquire = async (operation: Operation, rejectedToken?: string): Promise<string> => {
+    if (operation === "sign-in") return provider.authorize();
+    const interactive = operation === "authorize";
     const tokens = await provider.client.getTokens();
     if (tokens?.accessToken) {
       if (rejectedToken && tokens.accessToken !== rejectedToken && !tokens.isExpired()) {
         return tokens.accessToken;
       }
-      if (!forceRefresh && !tokens.isExpired()) return tokens.accessToken;
+      if (operation !== "refresh" && !tokens.isExpired()) return tokens.accessToken;
 
       if (tokens.refreshToken) {
         const response = await fetch("https://oauth2.googleapis.com/token", {
@@ -44,19 +50,24 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
         }
       }
 
-      // Expired/rejected credentials cannot be refreshed. Start a fresh PKCE flow
-      // and return its result, including for session-policy errors (invalid_rapt).
-      await provider.client.removeTokens();
+      // API requests report a sign-in requirement to their view instead of
+      // opening an OAuth overlay during an in-flight data request.
+      if (!interactive) throw new GoogleAuthenticationRequiredError();
     }
+    if (!interactive) throw new GoogleAuthenticationRequiredError();
     return provider.authorize();
   };
 
-  const run = (forceRefresh: boolean, rejectedToken?: string): Promise<string> => {
+  const run = (operation: Operation, rejectedToken?: string): Promise<string> => {
     if (!pending) {
-      pending = acquire(forceRefresh, rejectedToken)
+      pending = acquire(operation, rejectedToken)
         .then((token) => {
           accessToken = token;
           return token;
+        })
+        .catch((error: unknown) => {
+          if (error instanceof GoogleAuthenticationError) throw error;
+          throw new GoogleAuthenticationError(error instanceof Error ? error.message : String(error), { cause: error });
         })
         .finally(() => {
           pending = undefined;
@@ -66,8 +77,10 @@ export const createGoogleSession = (provider: OAuthProvider, clientId: string) =
   };
 
   return {
-    authorize: () => run(false),
-    refresh: (rejectedToken?: string) => run(true, rejectedToken),
+    authorize: () => run("authorize"),
+    signIn: () => run("sign-in"),
+    authorizeSilently: () => run("silent"),
+    refresh: (rejectedToken?: string) => run("refresh", rejectedToken),
     getAccessToken: () => accessToken,
   };
 };
