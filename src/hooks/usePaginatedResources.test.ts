@@ -8,6 +8,7 @@ import { usePubSubResources } from "../resources/pubsub/usePubSubResources";
 import { useCloudSchedulerJobs } from "../resources/cloud-scheduler/useCloudSchedulerJobs";
 import { GoogleApiError } from "../auth/GoogleApiError";
 import { GoogleAuthenticationRequiredError } from "../auth/GoogleAuthenticationRequiredError";
+import { RESOURCE_PAGE_SIZE } from "../pagination/pages";
 
 const credentials = vi.hoisted(() => ({ accessToken: "token" }));
 
@@ -942,7 +943,7 @@ describe("resource pagination beyond 500", () => {
       runtime.render(hook);
       await runtime.settle();
       if (stage === "load-more") {
-        expect(runtime.render(hook).scheduledJobs).toHaveLength(100);
+        expect(runtime.render(hook).scheduledJobs).toHaveLength(RESOURCE_PAGE_SIZE);
         expired = true;
         await runtime.render(hook).loadMore();
       }
