@@ -28,7 +28,8 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/run/worker-pools",
   },
   {
-    name: "Cloud Functions",
+    name: "Cloud Run functions (1st gen)",
+    aliases: ["Cloud Functions", "Cloud Functions gen1"],
     category: "Compute",
     url: "https://console.cloud.google.com/functions",
   },
@@ -241,7 +242,8 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/bigquery/transfers",
   },
   {
-    name: "Dataproc",
+    name: "Managed Service for Apache Spark (Dataproc Clusters)",
+    aliases: ["Dataproc"],
     category: "Data Analytics",
     url: "https://console.cloud.google.com/dataproc/clusters",
   },
@@ -251,7 +253,8 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/dataflow",
   },
   {
-    name: "Composer",
+    name: "Managed Service for Apache Airflow",
+    aliases: ["Composer", "Cloud Composer"],
     category: "Data Analytics",
     url: "https://console.cloud.google.com/composer",
   },
@@ -261,13 +264,15 @@ export const availableServices: Service[] = [
     url: "https://console.cloud.google.com/data-fusion",
   },
   {
-    name: "Dataplex",
+    name: "Knowledge Catalog",
+    aliases: ["Dataplex", "Dataplex Universal Catalog"],
     category: "Data Analytics",
     url: "https://console.cloud.google.com/dataplex",
   },
 
   {
-    name: "Vertex AI",
+    name: "Gemini Enterprise Agent Platform",
+    aliases: ["Vertex AI"],
     category: "Machine Learning",
     url: "https://console.cloud.google.com/vertex-ai",
   },

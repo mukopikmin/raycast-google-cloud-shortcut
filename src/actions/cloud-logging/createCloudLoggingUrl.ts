@@ -30,11 +30,12 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.labels.workflow_id", value: target.name },
       ]);
     case "cloud-sql-instance":
+      // Some Cloud SQL regions use legacy labels in Logging. The project and database ID identify the instance.
+      // https://docs.cloud.google.com/sql/docs/mysql/known-issues
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "cloudsql_database" },
         { key: "resource.labels.project_id", value: target.projectId },
         { key: "resource.labels.database_id", value: `${target.projectId}:${target.instanceId}` },
-        { key: "resource.labels.region", value: target.region },
       ]);
     case "gce-instance":
       return createCloudLoggingQueryFromFilters([
