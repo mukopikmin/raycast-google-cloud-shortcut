@@ -79,7 +79,7 @@ Cloud Logging and Cloud Audit Logs shortcuts are available for selected resource
 | Cloud SQL | Database | Instances | Yes | Yes |
 | Cloud Spanner | Database | - | - | - |
 | Firestore | Database | - | - | - |
-| Datastore | Database | - | - | - |
+| Datastore | Database | Databases | - | - |
 | Memorystore | Database | - | - | - |
 | VPC Networks | Networking | Networks | - | - |
 | Load Balancing | Networking | Forwarding Rules | - | - |
