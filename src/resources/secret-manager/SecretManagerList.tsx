@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudAuditLoggingAction } from "../../actions/cloud-logging/OpenCloudAuditLoggingAction";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { useSecretManager } from "./useSecretManager";
 import { ErrorDetail } from "../../components/ErrorDetail";
@@ -38,6 +39,7 @@ const SecretManagerListComponent = (props: Props) => {
               <ActionPanel>
                 <Action.OpenInBrowser url={secret.url} />
                 <OpenCloudLoggingAction target={secret} />
+                <OpenCloudAuditLoggingAction target={secret} />
                 {loadMoreAction}
               </ActionPanel>
             }
