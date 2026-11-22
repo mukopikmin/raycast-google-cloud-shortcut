@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudAuditLoggingAction } from "../../actions/cloud-logging/OpenCloudAuditLoggingAction";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { useCloudFunctions } from "./useCloudFunctions";
@@ -43,6 +44,7 @@ const CloudFunctionListComponent = ({ projectId }: Props) => {
               <ActionPanel>
                 <Action.OpenInBrowser url={cloudFunction.url} />
                 <OpenCloudLoggingAction target={cloudFunction} />
+                <OpenCloudAuditLoggingAction target={cloudFunction} />
                 {loadMoreAction}
               </ActionPanel>
             }
