@@ -1,6 +1,7 @@
 import { RESOURCE_LIMIT } from "../../pagination/pages";
 import { useState } from "react";
 import { Action, ActionPanel, Icon, List } from "@raycast/api";
+import { OpenCloudAuditLoggingAction } from "../../actions/cloud-logging/OpenCloudAuditLoggingAction";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { SearchDiagnosticsAction } from "../../components/SearchDiagnosticsAction";
@@ -173,6 +174,7 @@ export const CloudRunDeploymentList = ({
             <ActionPanel>
               <Action.OpenInBrowser url={deployment.url} />
               <OpenCloudLoggingAction target={deployment} />
+              <OpenCloudAuditLoggingAction target={deployment} />
               {deployment.uri && <Action.CopyToClipboard title="Copy Primary URL" content={deployment.uri} />}
               {secondaryAction?.(deployment)}
               {loadMoreAction}
