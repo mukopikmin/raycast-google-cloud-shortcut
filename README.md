@@ -65,7 +65,7 @@ Cloud Logging and Cloud Audit Logs shortcuts are available for selected resource
 | Service Name | Category | Resource Search | Cloud Logging Shortcut | Audit Logs Shortcut |
 |---|---|---|---|---|
 | Compute Engine | Compute | Instances | Yes | - |
-| Kubernetes Engine | Compute | Clusters | - | - |
+| Kubernetes Engine | Compute | Clusters | Yes | - |
 | Cloud Run Services | Compute | Services | Yes | Yes |
 | Cloud Run Jobs | Compute | Jobs | Yes | Yes |
 | Cloud Run Worker Pools | Compute | Worker Pools | Yes | Yes |

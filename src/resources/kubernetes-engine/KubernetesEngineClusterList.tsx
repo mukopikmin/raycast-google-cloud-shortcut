@@ -1,3 +1,4 @@
+import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
 import { useState } from "react";
 import { PaginatedResourceList } from "../../components/PaginatedResourceList";
 import { ActionPanel, Action, Icon, List } from "@raycast/api";
@@ -42,6 +43,7 @@ const KubernetesEngineClusterListComponent = ({ projectId }: Props) => {
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser title="Open in Cloud Console" url={createKubernetesEngineClusterUrl(cluster)} />
+                <OpenCloudLoggingAction target={cluster} />
                 <Action.CopyToClipboard title="Copy Cluster Name" content={cluster.name} />
                 {cluster.endpoint && <Action.CopyToClipboard title="Copy Endpoint" content={cluster.endpoint} />}
                 {loadMoreAction}

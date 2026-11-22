@@ -1,6 +1,9 @@
 import { CloudLoggingTarget } from "./types";
 
-export type CloudAuditLoggingTarget = Exclude<CloudLoggingTarget, { kind: "gce-instance" }>;
+export type CloudAuditLoggingTarget = Exclude<
+  CloudLoggingTarget,
+  { kind: "gce-instance" | "kubernetes-engine-cluster" }
+>;
 
 type CloudAuditLoggingIdentity = {
   serviceName: string;
