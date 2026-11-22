@@ -11,6 +11,11 @@ const createCloudLoggingQueryFromFilters = (filters: CloudLoggingFilter[]): stri
 
 const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
   switch (target.kind) {
+    case "app-engine-service":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "gae_app" },
+        { key: "resource.labels.module_id", value: target.name },
+      ]);
     case "alloydb-cluster":
       return createCloudLoggingQueryFromFilters([
         { key: "resource.type", value: "alloydb.googleapis.com/Cluster" },
@@ -30,6 +35,12 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
         { key: "resource.labels.project_id", value: target.projectId },
         { key: "resource.labels.database_id", value: `${target.projectId}:${target.instanceId}` },
         { key: "resource.labels.region", value: target.region },
+      ]);
+    case "gce-instance":
+      return createCloudLoggingQueryFromFilters([
+        { key: "resource.type", value: "gce_instance" },
+        { key: "resource.labels.instance_id", value: target.instanceId },
+        { key: "resource.labels.zone", value: target.zone },
       ]);
     case "cloud-function-gen1":
       return createCloudLoggingQueryFromFilters([
@@ -57,9 +68,9 @@ const createCloudLoggingQuery = (target: CloudLoggingTarget): string => {
       ]);
     case "secret-manager-secret":
       return createCloudLoggingQueryFromFilters([
-        { key: "resource.type", value: "audited_resource" },
-        { key: "resource.labels.service", value: "secretmanager.googleapis.com" },
-        { key: "protoPayload.resourceName", value: target.resourceName },
+        { key: "resource.type", value: "secretmanager.googleapis.com/Secret" },
+        { key: "resource.labels.resource_container", value: target.projectId },
+        { key: "resource.labels.secret_id", value: target.name },
       ]);
   }
 };

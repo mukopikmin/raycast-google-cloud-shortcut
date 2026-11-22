@@ -2,6 +2,7 @@ import { Action, ActionPanel, Icon, List } from "@raycast/api";
 import { useCloudSqlInstances } from "./useCloudSqlInstances";
 import { ErrorDetail } from "../../components/ErrorDetail";
 import { OpenCloudLoggingAction } from "../../actions/cloud-logging/OpenCloudLoggingAction";
+import { OpenCloudAuditLoggingAction } from "../../actions/cloud-logging/OpenCloudAuditLoggingAction";
 import { withGoogleAccessToken } from "../../auth/google";
 
 type Props = {
@@ -28,6 +29,7 @@ const CloudSqlInstanceListComponent = (props: Props) => {
             <ActionPanel>
               <Action.OpenInBrowser url={instance.url} />
               <OpenCloudLoggingAction target={instance} />
+              <OpenCloudAuditLoggingAction target={instance} />
             </ActionPanel>
           }
         />
