@@ -101,6 +101,7 @@ Cloud Logging and Cloud Audit Logs shortcuts are available for selected resource
 | Cloud Trace | Operations | - | - | - |
 | Cloud Profiler | Operations | - | - | - |
 | Pub/Sub | Integration | Topics & Subscriptions | - | - |
+| API Gateway | Integration | Gateways | - | - |
 | Eventarc | Integration | - | - | - |
 | Workflows | Integration | Workflows | Yes | Yes |
 | Cloud Scheduler | Integration | Jobs | - | - |

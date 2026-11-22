@@ -28,6 +28,7 @@ import { LoadBalancerList } from "../resources/load-balancing/LoadBalancerList";
 import { IamList } from "../resources/iam/IamList";
 import { AlertPolicyList } from "../resources/cloud-monitoring/AlertPolicyList";
 import { WorkloadIdentityPoolList } from "../workload-identity/WorkloadIdentityPoolList";
+import { ApiGatewayList } from "../resources/api-gateway/ApiGatewayList";
 
 export type UserServiceResourceResult = {
   services: (SearchableService | NonSearchableService)[];
@@ -131,6 +132,13 @@ export const useServiceResource = (projectId: string): UserServiceResourceResult
               keywords,
               isSearchEnabled: true,
               target: <PubSubSubscriptionList projectId={projectId} />,
+            };
+          case "API Gateway":
+            return {
+              ...service,
+              keywords,
+              isSearchEnabled: true,
+              target: <ApiGatewayList projectId={projectId} />,
             };
           case "Workflows":
             return {
