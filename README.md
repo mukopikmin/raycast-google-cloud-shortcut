@@ -78,7 +78,7 @@ Cloud Logging and Cloud Audit Logs shortcuts are available for selected resource
 | Bigtable | Database | - | - | - |
 | Cloud SQL | Database | Instances | Yes | Yes |
 | Cloud Spanner | Database | - | - | - |
-| Firestore | Database | - | - | - |
+| Firestore | Database | Databases | - | - |
 | Datastore | Database | Databases | - | - |
 | Memorystore | Database | - | - | - |
 | VPC Networks | Networking | Networks | - | - |
